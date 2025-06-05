@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controlador.ClientesController" spacing="10" padding="10">
+
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Button text="Nuevo Cliente" onAction="#handleNuevoCliente" style="-fx-font-weight: bold;"/>
+        <Button text="Editar" onAction="#handleEditarCliente" disable="true"/>
+        <Button text="Eliminar" onAction="#handleEliminarCliente" disable="true"/>
+    </HBox>
+
+    <TableView fx:id="clientesTable" style="-fx-font-size: 14px;">
+        <columns>
+            <TableColumn text="RFC/CURP" prefWidth="150" fx:id="rfcColumn"/>
+            <TableColumn text="Nombre" prefWidth="120" fx:id="nombreColumn"/>
+            <TableColumn text="Apellidos" prefWidth="120" fx:id="apellidosColumn"/>
+            <TableColumn text="Teléfono" prefWidth="100" fx:id="telefonoColumn"/>
+            <TableColumn text="Correo" prefWidth="150" fx:id="correoColumn"/>
+            <TableColumn text="Cuentas" prefWidth="80" fx:id="cuentasColumn"/>
+        </columns>
+    </TableView>
+
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Label text="Total clientes:"/>
+        <Label fx:id="totalClientesLabel" text="0" style="-fx-font-weight: bold;"/>
+    </HBox>
+</VBox>

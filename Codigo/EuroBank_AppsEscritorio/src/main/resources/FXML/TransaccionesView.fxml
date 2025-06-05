@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controlador.TransaccionesController" spacing="10">
+
+    <TableView fx:id="transaccionesTable">
+        <columns>
+            <TableColumn text="ID" prefWidth="100" fx:id="idColumn"/>
+            <TableColumn text="Tipo" prefWidth="100" fx:id="tipoColumn"/>
+            <TableColumn text="Monto" prefWidth="100" fx:id="montoColumn"/>
+            <TableColumn text="Fecha/Hora" prefWidth="150" fx:id="fechaColumn"/>
+            <TableColumn text="Cuenta Origen" prefWidth="150" fx:id="cuentaOrigenColumn"/>
+            <TableColumn text="Cuenta Destino" prefWidth="150" fx:id="cuentaDestinoColumn"/>
+            <TableColumn text="Sucursal" prefWidth="150" fx:id="sucursalColumn"/>
+        </columns>
+    </TableView>
+</VBox>

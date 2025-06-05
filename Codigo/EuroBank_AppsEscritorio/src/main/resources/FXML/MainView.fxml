@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controlador.MainController">
+
+    <top>
+        <MenuBar>
+            <Menu text="Archivo">
+                <MenuItem text="Cerrar Sesión" onAction="#handleLogout"/>
+            </Menu>
+            <Menu text="Administración">
+                <MenuItem text="Clientes" onAction="#showClientesView"/>
+                <MenuItem text="Cuentas" onAction="#showCuentasView"/>
+                <MenuItem text="Empleados" onAction="#showEmpleadosView"/>
+                <MenuItem text="Sucursales" onAction="#showSucursalesView"/>
+            </Menu>
+            <Menu text="Transacciones">
+                <MenuItem text="Nuevo Depósito" onAction="#showDepositoView"/>
+                <MenuItem text="Nuevo Retiro" onAction="#showRetiroView"/>
+                <MenuItem text="Transferencia" onAction="#showTransferenciaView"/>
+            </Menu>
+        </MenuBar>
+    </top>
+
+    <center>
+        <StackPane fx:id="contentArea"/>
+    </center>
+
+    <bottom>
+        <Label fx:id="statusBar" text="Bienvenido"/>
+    </bottom>
+</BorderPane>

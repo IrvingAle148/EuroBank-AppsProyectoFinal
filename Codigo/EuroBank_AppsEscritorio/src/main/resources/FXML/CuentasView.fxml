@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controlador.CuentasController" spacing="10">
+
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Button text="Nueva Cuenta" onAction="#handleNuevaCuenta"/>
+        <Button text="Editar" onAction="#handleEditarCuenta" disable="true"/>
+        <Button text="Eliminar" onAction="#handleEliminarCuenta" disable="true"/>
+    </HBox>
+
+    <TableView fx:id="cuentasTable">
+        <columns>
+            <TableColumn text="Número" prefWidth="150" fx:id="numeroColumn"/>
+            <TableColumn text="Tipo" prefWidth="100" fx:id="tipoColumn"/>
+            <TableColumn text="Saldo" prefWidth="120" fx:id="saldoColumn"/>
+            <TableColumn text="Límite Crédito" prefWidth="120" fx:id="limiteColumn"/>
+            <TableColumn text="Cliente" prefWidth="200" fx:id="clienteColumn"/>
+        </columns>
+    </TableView>
+</VBox>
