@@ -1,14 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="FXML2.ClienteMainView"
-            prefHeight="400.0" prefWidth="600.0">
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="vista.ClienteMainViewController" spacing="10" padding="10">
 
-</AnchorPane>
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Button text="Cerrar sesión" onAction="#manejarCerrarSesion"/>
+        <Label fx:id="lblBienvenida" style="-fx-font-weight: bold; -fx-font-size: 16px;"/>
+    </HBox>
+
+    <TabPane>
+        <Tab text="Mis Cuentas">
+            <VBox spacing="10">
+                <TableView fx:id="tablaCuentas">
+                    <columns>
+                        <TableColumn text="Número de Cuenta" prefWidth="150"/>
+                        <TableColumn text="Tipo" prefWidth="100"/>
+                        <TableColumn text="Saldo" prefWidth="120"/>
+                        <TableColumn text="Límite de Crédito" prefWidth="120"/>
+                    </columns>
+                </TableView>
+                <Label fx:id="lblBalanceTotal" style="-fx-font-weight: bold;"/>
+            </VBox>
+        </Tab>
+
+        <Tab text="Transacciones">
+            <VBox spacing="10">
+                <HBox spacing="10">
+                    <Button text="Nuevo Depósito" onAction="#manejarNuevoDeposito"/>
+                    <Button text="Nuevo Retiro" onAction="#manejarNuevoRetiro"/>
+                    <Button text="Nueva Transferencia" onAction="#manejarNuevaTransferencia"/>
+                </HBox>
+
+                <TableView fx:id="tablaTransacciones">
+                    <columns>
+                        <TableColumn text="Fecha" prefWidth="150"/>
+                        <TableColumn text="Tipo" prefWidth="100"/>
+                        <TableColumn text="Monto" prefWidth="100"/>
+                        <TableColumn text="Descripción" prefWidth="200"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </Tab>
+    </TabPane>
+</VBox>

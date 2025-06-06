@@ -1,14 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="FXML2.EmpleadosMainView"
-            prefHeight="400.0" prefWidth="600.0">
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="vista.EmpleadosMainViewController">
 
-</AnchorPane>
+    <top>
+        <MenuBar>
+            <Menu text="Archivo">
+                <MenuItem text="Cerrar sesión" onAction="#manejarCerrarSesion"/>
+            </Menu>
+            <Menu text="Administración">
+                <MenuItem text="Clientes" onAction="#mostrarGestionClientes"/>
+                <MenuItem text="Cuentas" onAction="#mostrarGestionCuentas"/>
+                <MenuItem text="Empleados" onAction="#mostrarGestionEmpleados" fx:id="menuEmpleados" visible="false"/>
+                <MenuItem text="Sucursales" onAction="#mostrarGestionSucursales" fx:id="menuSucursales" visible="false"/>
+            </Menu>
+            <Menu text="Transacciones">
+                <MenuItem text="Depósito" onAction="#mostrarVistaDeposito"/>
+                <MenuItem text="Retiro" onAction="#mostrarVistaRetiro"/>
+                <MenuItem text="Transferencia" onAction="#mostrarVistaTransferencia"/>
+            </Menu>
+        </MenuBar>
+    </top>
+
+    <center>
+        <StackPane fx:id="panelContenido">
+            <VBox alignment="CENTER">
+                <Label text="Bienvenido al Sistema EuroBank"
+                       style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                <Label fx:id="lblInfoUsuario" style="-fx-font-size: 14px;"/>
+            </VBox>
+        </StackPane>
+    </center>
+
+    <bottom>
+        <Label fx:id="lblEstado" text="Sistema de Gestión Bancaria - EuroBank"/>
+    </bottom>
+</BorderPane>

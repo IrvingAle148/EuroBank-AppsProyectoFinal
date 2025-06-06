@@ -1,21 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.PasswordField?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.Pane?>
-<?import javafx.scene.shape.Rectangle?>
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="vista.LoginMainViewController" prefWidth="400" prefHeight="400">
 
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="vista.LoginMainViewController">
-    <children>
-        <Rectangle fx:id="blueFringe" arcHeight="5.0" arcWidth="5.0" fill="#326bc9" height="92.0" stroke="BLACK" strokeType="INSIDE" width="600.0" />
-        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#4daa59" height="21.0" layoutY="54.0" stroke="BLACK" strokeType="INSIDE" width="600.0" />
-        <Label layoutX="248.0" layoutY="151.0" text="Nombre de usuario" />
-        <TextField id="userNameTextField" fx:id="cuentaTextField" layoutX="220.0" layoutY="175.0" />
-        <PasswordField id="userPasswordTextField" fx:id="passwordTextField" layoutX="220.0" layoutY="242.0" />
-        <Label layoutX="268.0" layoutY="218.0" text="Contraseña" />
-        <Button layoutX="194.0" layoutY="313.0" mnemonicParsing="false" onAction="#handleCerrar" text="Cerrar" />
-        <Button layoutX="354.0" layoutY="313.0" mnemonicParsing="false" onAction="#handleIngresar" text="Ingresar" />
-    </children>
-</Pane>
+    <center>
+        <VBox alignment="CENTER" spacing="20">
+            <Text text="EuroBank" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+
+            <HBox spacing="20" alignment="CENTER">
+                <RadioButton text="Empleado" toggleGroup="$userTypeGroup" selected="true"
+                             fx:id="rbEmpleado"/>
+                <RadioButton text="Cliente" toggleGroup="$userTypeGroup"
+                             fx:id="rbCliente"/>
+            </HBox>
+
+            <GridPane hgap="10" vgap="10">
+                <Label text="Usuario/Correo:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <TextField fx:id="tfCorreo" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                <Label text="Contraseña:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <PasswordField fx:id="pfContrasena" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+            </GridPane>
+
+            <Button text="Iniciar Sesión" onAction="#manejarLogin"
+                    defaultButton="true" style="-fx-font-weight: bold;"/>
+            <Label fx:id="lblError" style="-fx-text-fill: red;" visible="false"/>
+        </VBox>
+    </center>
+</BorderPane>
