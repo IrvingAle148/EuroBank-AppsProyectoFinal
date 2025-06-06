@@ -15,7 +15,7 @@
         <TextField id="userNameTextField" fx:id="cuentaTextField" layoutX="220.0" layoutY="175.0" />
         <PasswordField id="userPasswordTextField" fx:id="passwordTextField" layoutX="220.0" layoutY="242.0" />
         <Label layoutX="268.0" layoutY="218.0" text="Contraseña" />
-        <Button layoutX="194.0" layoutY="313.0" mnemonicParsing="false" onAction="#Cerrar" text="Cerrar" />
-        <Button layoutX="354.0" layoutY="313.0" mnemonicParsing="false" onAction="#Ingresar" text="Ingresar" />
+        <Button layoutX="194.0" layoutY="313.0" mnemonicParsing="false" onAction="#handleCerrar" text="Cerrar" />
+        <Button layoutX="354.0" layoutY="313.0" mnemonicParsing="false" onAction="#handleIngresar" text="Ingresar" />
     </children>
 </Pane>
