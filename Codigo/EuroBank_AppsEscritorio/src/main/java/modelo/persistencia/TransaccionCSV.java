@@ -1,6 +1,7 @@
 package modelo.persistencia;
 
 import modelo.entidades.*;
+
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -33,31 +34,47 @@ public class TransaccionCSV {
         List<Transaccion> transacciones = new ArrayList<>();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(rutaArchivo))) {
-            reader.readLine(); // Saltar encabezados
+            reader.readLine();
 
             String linea;
             while ((linea = reader.readLine()) != null) {
                 String[] datos = parseCSVLine(linea);
-                if (datos.length >= 7) {
-                    Cuenta cuentaOrigen = buscarCuenta(cuentas, datos[4]);
-                    Cuenta cuentaDestino = datos[5].isEmpty() ? null : buscarCuenta(cuentas, datos[5]);
-                    Sucursal sucursal = buscarSucursal(sucursales, datos[6]);
 
-                    if (cuentaOrigen != null && sucursal != null) {
-                        Transaccion transaccion = new Transaccion(
-                                datos[0], // id
-                                Double.parseDouble(datos[1]), // monto
-                                LocalDateTime.parse(datos[2], formatter), // fechaHora
-                                datos[3], // tipo
-                                cuentaOrigen,
-                                cuentaDestino,
-                                sucursal
-                        );
-                        transacciones.add(transaccion);
+                if (datos.length < 7) continue;
+
+                String id = datos[0];
+                String montoStr = datos[1];
+                String fechaStr = datos[2];
+                String tipo = datos[3];
+                String cuentaOrigenId = datos[4];
+                String cuentaDestinoId = datos[5];
+                String sucursalId = datos[6];
+
+                try {
+                    if (id.isEmpty() || montoStr.isEmpty() || fechaStr.isEmpty() ||
+                            tipo.isEmpty() || cuentaOrigenId.isEmpty() || sucursalId.isEmpty()) {
+                        continue; // Datos obligatorios faltantes
                     }
+
+                    double monto = Double.parseDouble(montoStr);
+                    LocalDateTime fecha = LocalDateTime.parse(fechaStr, formatter);
+                    Cuenta cuentaOrigen = buscarCuenta(cuentas, cuentaOrigenId);
+                    Cuenta cuentaDestino = cuentaDestinoId.isEmpty() ? null : buscarCuenta(cuentas, cuentaDestinoId);
+                    Sucursal sucursal = buscarSucursal(sucursales, sucursalId);
+
+                    if (cuentaOrigen == null || sucursal == null) continue;
+
+                    Transaccion transaccion = new Transaccion(
+                            id, monto, fecha, tipo, cuentaOrigen, cuentaDestino, sucursal
+                    );
+
+                    transacciones.add(transaccion);
+                } catch (RuntimeException e) {
+                    System.err.println("Error al cargar línea: " + linea + " → " + e.getMessage());
                 }
             }
         }
+
         return transacciones;
     }
 
@@ -67,7 +84,6 @@ public class TransaccionCSV {
     }
 
     private String[] parseCSVLine(String line) {
-        // Lógica para manejar comas dentro de campos entre comillas
         List<String> values = new ArrayList<>();
         boolean inQuotes = false;
         StringBuilder buffer = new StringBuilder();
@@ -84,5 +100,23 @@ public class TransaccionCSV {
         }
         values.add(buffer.toString());
         return values.toArray(new String[0]);
+    }
+
+    private Cuenta buscarCuenta(List<Cuenta> cuentas, String numero) {
+        for (Cuenta c : cuentas) {
+            if (c.getNumeroCuenta().equals(numero)) {
+                return c;
+            }
+        }
+        return null;
+    }
+
+    private Sucursal buscarSucursal(List<Sucursal> sucursales, String id) {
+        for (Sucursal s : sucursales) {
+            if (s.getId().equals(id)) {
+                return s;
+            }
+        }
+        return null;
     }
 }
