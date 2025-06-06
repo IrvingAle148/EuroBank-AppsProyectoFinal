@@ -2,183 +2,186 @@ package controlador;
 
 import modelo.entidades.*;
 import modelo.excepciones.*;
+import modelo.persistencia.*;
 
-import java.io.*;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import modelo.persistencia.ClienteCSV;
-import modelo.persistencia.CuentaCSV;
+import java.util.stream.Collectors;
 
 public class BancoController {
-
     private List<Sucursal> sucursales;
     private List<Cliente> clientes;
     private List<Empleado> empleados;
     private List<Cuenta> cuentas;
     private List<Transaccion> transacciones;
 
+    private final SucursalCSV sucursalCSV;
+    private final ClienteCSV clienteCSV;
+    private final EmpleadoCSV empleadoCSV;
+    private final CuentaCSV cuentaCSV;
+    private final TransaccionCSV transaccionCSV;
+
     public BancoController() {
-        sucursales = new ArrayList<>();
-        clientes = new ArrayList<>();
-        empleados = new ArrayList<>();
-        cuentas = new ArrayList<>();
-        transacciones = new ArrayList<>();
+        this.sucursalCSV = new SucursalCSV();
+        this.clienteCSV = new ClienteCSV();
+        this.empleadoCSV = new EmpleadoCSV();
+        this.cuentaCSV = new CuentaCSV();
+        this.transaccionCSV = new TransaccionCSV();
+
+        cargarDatosIniciales();
     }
 
-    public List<Cliente> getClientes() {
-        return clientes;
+    private void cargarDatosIniciales() {
+        this.sucursales = sucursalCSV.cargar("archivos/sucursales.csv");
+        this.clientes = clienteCSV.cargar("archivos/clientes.csv");
+        this.empleados = empleadoCSV.cargar("archivos/empleados.csv");
+        this.cuentas = cuentaCSV.cargar("archivos/cuentas.csv", clientes);
+        this.transacciones = transaccionCSV.cargar("archivos/transacciones.csv", cuentas, sucursales);
     }
 
+    public void guardarDatos() {
+        sucursalCSV.guardar(sucursales, "archivos/sucursales.csv");
+        clienteCSV.guardar(clientes, "archivos/clientes.csv");
+        empleadoCSV.guardar(empleados, "archivos/empleados.csv");
+        cuentaCSV.guardar(cuentas, "archivos/cuentas.csv");
+        transaccionCSV.guardar(transacciones, "archivos/transacciones.csv");
+    }
+
+    // Métodos para sucursales
+    public void agregarSucursal(Sucursal sucursal) {
+        sucursales.add(sucursal);
+    }
+
+    public Sucursal buscarSucursalPorId(String id) {
+        return sucursales.stream()
+                .filter(s -> s.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public List<Sucursal> obtenerTodasSucursales() {
+        return new ArrayList<>(sucursales);
+    }
+
+    public boolean eliminarSucursal(String id) {
+        return sucursales.removeIf(s -> s.getId().equals(id));
+    }
+
+    // Métodos para clientes
     public void agregarCliente(Cliente cliente) throws ClienteNoEncontradoException {
-        if(buscarClientePorRFC(cliente.getRfcCurp()) != null) {
+        if (buscarClientePorRFC(cliente.getRfcCurp()) != null) {
             throw new ClienteNoEncontradoException("Cliente con RFC ya existe");
         }
         clientes.add(cliente);
     }
 
     public Cliente buscarClientePorRFC(String rfc) {
-        for (Cliente c : clientes) {
-            if (c.getRfcCurp().equalsIgnoreCase(rfc)) {
-                return c;
-            }
-        }
-        return null;
+        return clientes.stream()
+                .filter(c -> c.getRfcCurp().equalsIgnoreCase(rfc))
+                .findFirst()
+                .orElse(null);
     }
 
-    public void eliminarCliente(String rfc) throws ClienteNoEncontradoException {
-        Cliente c = buscarClientePorRFC(rfc);
-        if (c == null) {
-            throw new ClienteNoEncontradoException("Cliente no encontrado para eliminar");
-        }
-        clientes.remove(c);
+    public List<Cliente> obtenerTodosClientes() {
+        return new ArrayList<>(clientes);
     }
 
-    public void agregarCuenta(Cuenta cuenta) {
-        cuentas.add(cuenta);
+    public List<Cliente> buscarClientes(String busqueda) {
+        return clientes.stream()
+                .filter(c -> c.getNombre().toLowerCase().contains(busqueda.toLowerCase()) ||
+                        c.getApellidos().toLowerCase().contains(busqueda.toLowerCase()) ||
+                        c.getRfcCurp().toLowerCase().contains(busqueda.toLowerCase()))
+                .collect(Collectors.toList());
     }
 
-    public Cuenta buscarCuentaPorNumero(String numeroCuenta) {
-        for (Cuenta c : cuentas) {
-            if (c.getNumeroCuenta().equalsIgnoreCase(numeroCuenta)) {
-                return c;
-            }
-        }
-        return null;
+    public boolean eliminarCliente(String rfc) {
+        return clientes.removeIf(c -> c.getRfcCurp().equalsIgnoreCase(rfc));
     }
 
-    public void realizarDeposito(String numeroCuenta, double monto, Sucursal sucursal) throws TransaccionFallidaException {
-        Cuenta cuenta = buscarCuentaPorNumero(numeroCuenta);
-        if (cuenta == null) {
-            throw new TransaccionFallidaException("Cuenta no encontrada para depósito");
-        }
-        cuenta.setSaldoActual(cuenta.getSaldoActual() + monto);
-
-        Transaccion transaccion = new Transaccion(
-                generarIDTransaccion(),
-                monto,
-                LocalDateTime.now(),
-                "depósito",
-                cuenta,
-                null,
-                sucursal
-        );
-        transacciones.add(transaccion);
-    }
-
-    public void realizarRetiro(String numeroCuenta, double monto, Sucursal sucursal) throws SaldoInsuficienteException, TransaccionFallidaException {
-        Cuenta cuenta = buscarCuentaPorNumero(numeroCuenta);
-        if (cuenta == null) {
-            throw new TransaccionFallidaException("Cuenta no encontrada para retiro");
-        }
-        if (cuenta.getSaldoActual() + cuenta.getLimiteCredito() < monto) {
-            throw new SaldoInsuficienteException("Saldo insuficiente para retiro");
-        }
-        cuenta.setSaldoActual(cuenta.getSaldoActual() - monto);
-
-        Transaccion transaccion = new Transaccion(
-                generarIDTransaccion(),
-                monto,
-                LocalDateTime.now(),
-                "retiro",
-                cuenta,
-                null,
-                sucursal
-        );
-        transacciones.add(transaccion);
-    }
-
-    public void realizarTransferencia(String cuentaOrigenNum, String cuentaDestinoNum, double monto, Sucursal sucursal) throws SaldoInsuficienteException, TransaccionFallidaException {
-        Cuenta cuentaOrigen = buscarCuentaPorNumero(cuentaOrigenNum);
-        Cuenta cuentaDestino = buscarCuentaPorNumero(cuentaDestinoNum);
-
-        if (cuentaOrigen == null || cuentaDestino == null) {
-            throw new TransaccionFallidaException("Cuenta origen o destino no encontrada para transferencia");
-        }
-        if (cuentaOrigen.getSaldoActual() + cuentaOrigen.getLimiteCredito() < monto) {
-            throw new SaldoInsuficienteException("Saldo insuficiente para transferencia");
-        }
-
-        cuentaOrigen.setSaldoActual(cuentaOrigen.getSaldoActual() - monto);
-        cuentaDestino.setSaldoActual(cuentaDestino.getSaldoActual() + monto);
-
-        Transaccion transaccion = new Transaccion(
-                generarIDTransaccion(),
-                monto,
-                LocalDateTime.now(),
-                "transferencia",
-                cuentaOrigen,
-                cuentaDestino,
-                sucursal
-        );
-        transacciones.add(transaccion);
-    }
-
-    public void agregarSucursal(Sucursal sucursal) {
-        sucursales.add(sucursal);
-    }
-
-    public Sucursal buscarSucursalPorId(int id) {
-        for (Sucursal s : sucursales) {
-            if (s.getId().equals(id)) {
-                return s;
-            }
-        }
-        return null;
-    }
-
+    // Métodos para empleados
     public void agregarEmpleado(Empleado empleado) {
         empleados.add(empleado);
     }
 
-    public Empleado buscarEmpleadoPorId(int id) {
-        for (Empleado e : empleados) {
-            if (e.getId().equals(id)){
-                return e;
-            }
+    public Empleado buscarEmpleadoPorId(String id) {
+        return empleados.stream()
+                .filter(e -> e.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public List<Empleado> obtenerTodosEmpleados() {
+        return new ArrayList<>(empleados);
+    }
+
+    public List<Empleado> buscarEmpleados(String busqueda) {
+        return empleados.stream()
+                .filter(e -> e.getNombre().toLowerCase().contains(busqueda.toLowerCase()) ||
+                        e.getId().toLowerCase().contains(busqueda.toLowerCase()))
+                .collect(Collectors.toList());
+    }
+
+    public boolean eliminarEmpleado(String id) {
+        return empleados.removeIf(e -> e.getId().equals(id));
+    }
+
+    // Métodos para cuentas
+    public void agregarCuenta(Cuenta cuenta) throws ClienteNoEncontradoException {
+        if (buscarCuentaPorNumero(cuenta.getNumeroCuenta()) != null) {
+            throw new ClienteNoEncontradoException("Cuenta con este número ya existe");
         }
-        return null;
+        cuentas.add(cuenta);
     }
 
-    private String generarIDTransaccion() {
-        return "TX" + (transacciones.size() + 1);
+    public Cuenta buscarCuentaPorNumero(String numeroCuenta) {
+        return cuentas.stream()
+                .filter(c -> c.getNumeroCuenta().equalsIgnoreCase(numeroCuenta))
+                .findFirst()
+                .orElse(null);
     }
 
-    // Métodos para guardar/cargar datos desde archivos (persistencia)
-    public void guardarClientesCSV(String ruta) {
-        ClienteCSV.guardar(clientes, ruta);
+    public List<Cuenta> obtenerTodasCuentas() {
+        return new ArrayList<>(cuentas);
     }
 
-    public void cargarClientesCSV(String ruta) {
-        clientes = ClienteCSV.cargar(ruta);
+    public List<Cuenta> obtenerCuentasPorCliente(String rfcCliente) {
+        return cuentas.stream()
+                .filter(c -> c.getClienteAsociado().getRfcCurp().equalsIgnoreCase(rfcCliente))
+                .collect(Collectors.toList());
     }
 
-    public void guardarCuentasCSV(String ruta) {
-        CuentaCSV.guardar(cuentas, ruta);
+    public boolean eliminarCuenta(String numeroCuenta) {
+        return cuentas.removeIf(c -> c.getNumeroCuenta().equalsIgnoreCase(numeroCuenta));
     }
 
-    public void cargarCuentasCSV(String ruta) {
-        cuentas = CuentaCSV.cargar(ruta, clientes);
+    // Métodos para transacciones
+    public void agregarTransaccion(Transaccion transaccion) {
+        transacciones.add(transaccion);
     }
 
+    public List<Transaccion> obtenerTodasTransacciones() {
+        return new ArrayList<>(transacciones);
+    }
+
+    public List<Transaccion> obtenerTransaccionesPorCuenta(String numeroCuenta) {
+        return transacciones.stream()
+                .filter(t -> t.getCuentaOrigen().getNumeroCuenta().equalsIgnoreCase(numeroCuenta) ||
+                        (t.getCuentaDestino() != null &&
+                                t.getCuentaDestino().getNumeroCuenta().equalsIgnoreCase(numeroCuenta)))
+                .collect(Collectors.toList());
+    }
+
+    public List<Transaccion> obtenerTransaccionesPorCliente(String rfcCliente) {
+        return transacciones.stream()
+                .filter(t -> t.getCuentaOrigen().getClienteAsociado().getRfcCurp().equalsIgnoreCase(rfcCliente) ||
+                        (t.getCuentaDestino() != null &&
+                                t.getCuentaDestino().getClienteAsociado().getRfcCurp().equalsIgnoreCase(rfcCliente)))
+                .collect(Collectors.toList());
+    }
+
+    public List<Transaccion> obtenerTransaccionesPorSucursal(String idSucursal) {
+        return transacciones.stream()
+                .filter(t -> t.getSucursal().getId().equalsIgnoreCase(idSucursal))
+                .collect(Collectors.toList());
+    }
 }

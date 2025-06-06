@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="vista.ClientOrganizacionViewController"
+      spacing="10" padding="10">
+
+    <HBox spacing="10">
+        <Button text="Volver" onAction="#handleBack"/>
+        <Button text="Nuevo Cliente" onAction="#handleNewClient"/>
+        <Button text="Editar" onAction="#handleEditClient" disable="true"
+                fx:id="btnEdit"/>
+        <Button text="Eliminar" onAction="#handleDeleteClient" disable="true"
+                fx:id="btnDelete"/>
+        <Button text="Exportar CSV" onAction="#handleExportCSV"/>
+    </HBox>
+
+    <TableView fx:id="clientsTable">
+        <columns>
+            <TableColumn text="RFC/CURP" prefWidth="150" fx:id="colRfc"/>
+            <TableColumn text="Nombre" prefWidth="150" fx:id="colName"/>
+            <TableColumn text="Apellidos" prefWidth="150" fx:id="colLastName"/>
+            <TableColumn text="Correo" prefWidth="200" fx:id="colEmail"/>
+            <TableColumn text="Teléfono" prefWidth="120" fx:id="colPhone"/>
+            <TableColumn text="Cuentas" prefWidth="80" fx:id="colAccounts"/>
+        </columns>
+    </TableView>
+
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Label text="Buscar:"/>
+        <TextField fx:id="tfSearch" prefWidth="300"/>
+        <Button text="Buscar" onAction="#handleSearch"/>
+    </HBox>
+</VBox>

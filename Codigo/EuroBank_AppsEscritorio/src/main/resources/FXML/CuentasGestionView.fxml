@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="vista.CuentasGestionViewController"
+      spacing="10" padding="10">
+
+    <HBox spacing="10">
+        <Button text="Volver" onAction="#handleBack"/>
+        <Button text="Nueva Cuenta" onAction="#handleNewAccount"/>
+        <Button text="Editar" onAction="#handleEditAccount" disable="true"
+                fx:id="btnEdit"/>
+        <Button text="Eliminar" onAction="#handleDeleteAccount" disable="true"
+                fx:id="btnDelete"/>
+        <Button text="Exportar PDF" onAction="#handleExportPDF"/>
+    </HBox>
+
+    <TableView fx:id="accountsTable">
+        <columns>
+            <TableColumn text="Número" prefWidth="150" fx:id="colAccountNumber"/>
+            <TableColumn text="Tipo" prefWidth="100" fx:id="colType"/>
+            <TableColumn text="Saldo" prefWidth="120" fx:id="colBalance"/>
+            <TableColumn text="Límite" prefWidth="100" fx:id="colCreditLimit"/>
+            <TableColumn text="Cliente" prefWidth="200" fx:id="colClient"/>
+            <TableColumn text="Sucursal" prefWidth="150" fx:id="colBranch"/>
+        </columns>
+    </TableView>
+</VBox>

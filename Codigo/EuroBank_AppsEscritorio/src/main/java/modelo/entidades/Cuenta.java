@@ -3,21 +3,21 @@ package modelo.entidades;
 import java.io.Serializable;
 
 public class Cuenta implements Serializable {
-    private String numeroCuenta; // identificador único
-    private String tipo; // corriente, ahorros, empresarial
+    private String numeroCuenta;
+    private String tipo;
     private double saldoActual;
     private double limiteCredito;
     private Cliente clienteAsociado;
+    private Sucursal sucursal;
 
-    public Cuenta(String numeroCuenta, String tipo, double saldoActual, double limiteCredito, Cliente clienteAsociado) {
+    public Cuenta(String numeroCuenta, String tipo, double saldoActual,
+                  double limiteCredito, Cliente clienteAsociado, Sucursal sucursal) {
         this.numeroCuenta = numeroCuenta;
         this.tipo = tipo;
         this.saldoActual = saldoActual;
         this.limiteCredito = limiteCredito;
         this.clienteAsociado = clienteAsociado;
-    }
-
-    public Cuenta(String numeroCuenta, double saldoActual, double limiteCredito, Cliente cliente) {
+        this.sucursal = sucursal;
     }
 
     // Getters y Setters
@@ -36,8 +36,11 @@ public class Cuenta implements Serializable {
     public Cliente getClienteAsociado() { return clienteAsociado; }
     public void setClienteAsociado(Cliente clienteAsociado) { this.clienteAsociado = clienteAsociado; }
 
+    public Sucursal getSucursal() { return sucursal; }
+    public void setSucursal(Sucursal sucursal) { this.sucursal = sucursal; }
+
     @Override
     public String toString() {
-        return "Cuenta: " + numeroCuenta + ", Tipo: " + tipo + ", Saldo: $" + saldoActual + ", Cliente: " + clienteAsociado.getNombre();
+        return "Cuenta " + numeroCuenta + " (" + tipo + ") - Saldo: $" + saldoActual;
     }
 }

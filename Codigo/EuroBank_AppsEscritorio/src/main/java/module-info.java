@@ -4,4 +4,6 @@ module controlador {
 
     opens controlador to javafx.fxml;
     exports controlador ;
+    exports vista;
+    opens vista to javafx.fxml;
 }

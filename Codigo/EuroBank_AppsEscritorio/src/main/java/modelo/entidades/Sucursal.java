@@ -2,9 +2,10 @@ package modelo.entidades;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Sucursal implements Serializable {
-    private String id; // número de identificación
+    private String id;
     private String nombre;
     private String direccion;
     private String telefono;
@@ -29,31 +30,31 @@ public class Sucursal implements Serializable {
     }
 
     public String getId() { return id; }
-    public String getNombre() { return nombre; }
-    public String getDireccion() { return direccion; }
-    public String getTelefono() { return telefono; }
-    public String getCorreo() { return correo; }
-    public String getNombreGerente() { return nombreGerente; }
-    public String getPersonaContacto() { return personaContacto; }
-    public ArrayList<Cuenta> getCuentas() { return cuentas; }
-    public ArrayList<Empleado> getEmpleados() { return empleados; }
-
     public void setId(String id) { this.id = id; }
+
+    public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }
+
+    public String getDireccion() { return direccion; }
     public void setDireccion(String direccion) { this.direccion = direccion; }
+
+    public String getTelefono() { return telefono; }
     public void setTelefono(String telefono) { this.telefono = telefono; }
+
+    public String getCorreo() { return correo; }
     public void setCorreo(String correo) { this.correo = correo; }
+
+    public String getNombreGerente() { return nombreGerente; }
     public void setNombreGerente(String nombreGerente) { this.nombreGerente = nombreGerente; }
+
+    public String getPersonaContacto() { return personaContacto; }
     public void setPersonaContacto(String personaContacto) { this.personaContacto = personaContacto; }
 
-    // Métodos para agregar cuentas y empleados
-    public void agregarCuenta(Cuenta cuenta) {
-        cuentas.add(cuenta);
-    }
+    public List<Cuenta> getCuentas() { return new ArrayList<>(cuentas); }
+    public void setCuenta(Cuenta cuenta) { this.cuentas.add(cuenta); }
 
-    public void agregarEmpleado(Empleado empleado) {
-        empleados.add(empleado);
-    }
+    public List<Empleado> getEmpleados() { return new ArrayList<>(empleados); }
+    public void setEmpleado(Empleado empleado) { this.empleados.add(empleado); }
 
     @Override
     public String toString() {

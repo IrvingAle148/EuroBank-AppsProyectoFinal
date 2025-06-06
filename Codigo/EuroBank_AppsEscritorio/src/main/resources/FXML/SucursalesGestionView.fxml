@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="vista.SucursalesGestionViewController"
+      spacing="10" padding="10">
+
+    <HBox spacing="10">
+        <Button text="Volver" onAction="#handleBack"/>
+        <Button text="Nueva Sucursal" onAction="#handleNewBranch"/>
+        <Button text="Editar" onAction="#handleEditBranch" disable="true"
+                fx:id="btnEdit"/>
+        <Button text="Eliminar" onAction="#handleDeleteBranch" disable="true"
+                fx:id="btnDelete"/>
+    </HBox>
+
+    <TableView fx:id="branchesTable">
+        <columns>
+            <TableColumn text="ID" prefWidth="80" fx:id="colId"/>
+            <TableColumn text="Nombre" prefWidth="200" fx:id="colName"/>
+            <TableColumn text="Dirección" prefWidth="250" fx:id="colAddress"/>
+            <TableColumn text="Teléfono" prefWidth="120" fx:id="colPhone"/>
+            <TableColumn text="Gerente" prefWidth="150" fx:id="colManager"/>
+        </columns>
+    </TableView>
+</VBox>

@@ -11,9 +11,10 @@ public class Cliente implements Serializable {
     private String direccion;
     private String telefono;
     private String correo;
+    private String contrasenia;
 
     public Cliente(String nombre, String apellidos, String nacionalidad, String fechaNacimiento,
-                   String rfcCurp, String direccion, String telefono, String correo) {
+                   String rfcCurp, String direccion, String telefono, String correo, String contrasenia) {
         this.nombre = nombre;
         this.apellidos = apellidos;
         this.nacionalidad = nacionalidad;
@@ -22,6 +23,7 @@ public class Cliente implements Serializable {
         this.direccion = direccion;
         this.telefono = telefono;
         this.correo = correo;
+        this.contrasenia = contrasenia;
     }
 
     // Getters y Setters
@@ -48,6 +50,9 @@ public class Cliente implements Serializable {
 
     public String getCorreo() { return correo; }
     public void setCorreo(String correo) { this.correo = correo; }
+
+    public String getContrasenia() { return contrasenia; }
+    public void setContrasenia(String contrasenia) { this.contrasenia = contrasenia; }
 
     @Override
     public String toString() {

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="vista.ClientMainViewController"
+      spacing="10" padding="10">
+
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Button text="Cerrar sesión" onAction="#handleLogout"/>
+        <Label fx:id="lblWelcome" style="-fx-font-weight: bold; -fx-font-size: 16px;"/>
+    </HBox>
+
+    <TabPane>
+        <Tab text="Mis Cuentas">
+            <VBox spacing="10">
+                <TableView fx:id="accountsTable">
+                    <columns>
+                        <TableColumn text="Número de Cuenta" prefWidth="150"
+                                     fx:id="colAccountNumber"/>
+                        <TableColumn text="Tipo" prefWidth="100" fx:id="colAccountType"/>
+                        <TableColumn text="Saldo" prefWidth="120" fx:id="colBalance"/>
+                        <TableColumn text="Límite de Crédito" prefWidth="120"
+                                     fx:id="colCreditLimit"/>
+                    </columns>
+                </TableView>
+                <Label fx:id="lblTotalBalance" style="-fx-font-weight: bold;"/>
+            </VBox>
+        </Tab>
+
+        <Tab text="Transacciones">
+            <VBox spacing="10">
+                <HBox spacing="10">
+                    <Button text="Nuevo Depósito" onAction="#handleNewDeposit"/>
+                    <Button text="Nuevo Retiro" onAction="#handleNewWithdrawal"/>
+                    <Button text="Nueva Transferencia" onAction="#handleNewTransfer"/>
+                </HBox>
+
+                <TableView fx:id="transactionsTable">
+                    <columns>
+                        <TableColumn text="Fecha" prefWidth="150" fx:id="colDate"/>
+                        <TableColumn text="Tipo" prefWidth="100" fx:id="colType"/>
+                        <TableColumn text="Monto" prefWidth="100" fx:id="colAmount"/>
+                        <TableColumn text="Descripción" prefWidth="200" fx:id="colDescription"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </Tab>
+    </TabPane>
+</VBox>

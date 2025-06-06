@@ -1,9 +1,6 @@
 package modelo.persistencia;
 
-import modelo.entidades.Transaccion;
-import modelo.entidades.Cuenta;
-import modelo.entidades.Sucursal;
-
+import modelo.entidades.*;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -11,45 +8,47 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TransaccionCSV {
-
     private static final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
-    public static void guardar(List<Transaccion> transacciones, String rutaArchivo) {
+    public void guardar(List<Transaccion> transacciones, String rutaArchivo) throws IOException {
         try (PrintWriter writer = new PrintWriter(new FileWriter(rutaArchivo))) {
+            writer.println("ID,Monto,FechaHora,Tipo,CuentaOrigen,CuentaDestino,Sucursal");
+
             for (Transaccion t : transacciones) {
                 writer.println(String.join(",",
-                        t.getId(),
+                        escapeCSV(t.getId()),
                         String.valueOf(t.getMonto()),
-                        t.getFechaHora().format(formatter),
-                        t.getTipo(),
-                        t.getCuentaOrigen().getNumeroCuenta(),
-                        t.getCuentaDestino() != null ? t.getCuentaDestino().getNumeroCuenta() : "",
-                        t.getSucursal().getId()
+                        escapeCSV(t.getFechaHora().format(formatter)),
+                        escapeCSV(t.getTipo()),
+                        escapeCSV(t.getCuentaOrigen().getNumeroCuenta()),
+                        t.getCuentaDestino() != null ?
+                                escapeCSV(t.getCuentaDestino().getNumeroCuenta()) : "",
+                        escapeCSV(t.getSucursal().getId())
                 ));
             }
-        } catch (IOException e) {
-            System.err.println("Error guardando transacciones: " + e.getMessage());
         }
     }
 
-    public static List<Transaccion> cargar(String rutaArchivo, List<Cuenta> cuentas, List<Sucursal> sucursales) {
+    public List<Transaccion> cargar(String rutaArchivo, List<Cuenta> cuentas, List<Sucursal> sucursales) throws IOException {
         List<Transaccion> transacciones = new ArrayList<>();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(rutaArchivo))) {
+            reader.readLine(); // Saltar encabezados
+
             String linea;
             while ((linea = reader.readLine()) != null) {
-                String[] datos = linea.split(",");
-                if (datos.length >= 6) {
-                    Cuenta cuentaOrigen = buscarCuentaPorNumero(cuentas, datos[4]);
-                    Cuenta cuentaDestino = datos[5].isEmpty() ? null : buscarCuentaPorNumero(cuentas, datos[5]);
-                    Sucursal sucursal = buscarSucursalPorId(sucursales, datos[6]);
+                String[] datos = parseCSVLine(linea);
+                if (datos.length >= 7) {
+                    Cuenta cuentaOrigen = buscarCuenta(cuentas, datos[4]);
+                    Cuenta cuentaDestino = datos[5].isEmpty() ? null : buscarCuenta(cuentas, datos[5]);
+                    Sucursal sucursal = buscarSucursal(sucursales, datos[6]);
 
                     if (cuentaOrigen != null && sucursal != null) {
                         Transaccion transaccion = new Transaccion(
-                                datos[0],
-                                Double.parseDouble(datos[1]),
-                                LocalDateTime.parse(datos[2], formatter),
-                                datos[3],
+                                datos[0], // id
+                                Double.parseDouble(datos[1]), // monto
+                                LocalDateTime.parse(datos[2], formatter), // fechaHora
+                                datos[3], // tipo
                                 cuentaOrigen,
                                 cuentaDestino,
                                 sucursal
@@ -58,28 +57,32 @@ public class TransaccionCSV {
                     }
                 }
             }
-        } catch (IOException e) {
-            System.err.println("Error cargando transacciones: " + e.getMessage());
         }
-
         return transacciones;
     }
 
-    private static Cuenta buscarCuentaPorNumero(List<Cuenta> cuentas, String numeroCuenta) {
-        for (Cuenta c : cuentas) {
-            if (c.getNumeroCuenta().equals(numeroCuenta)) {
-                return c;
-            }
-        }
-        return null;
+    private String escapeCSV(String value) {
+        if (value == null) return "";
+        return value.contains(",") ? "\"" + value + "\"" : value;
     }
 
-    private static Sucursal buscarSucursalPorId(List<Sucursal> sucursales, String id) {
-        for (Sucursal s : sucursales) {
-            if (s.getId().equals(id)) {
-                return s;
+    private String[] parseCSVLine(String line) {
+        // Lógica para manejar comas dentro de campos entre comillas
+        List<String> values = new ArrayList<>();
+        boolean inQuotes = false;
+        StringBuilder buffer = new StringBuilder();
+
+        for (char c : line.toCharArray()) {
+            if (c == '"') {
+                inQuotes = !inQuotes;
+            } else if (c == ',' && !inQuotes) {
+                values.add(buffer.toString());
+                buffer = new StringBuilder();
+            } else {
+                buffer.append(c);
             }
         }
-        return null;
+        values.add(buffer.toString());
+        return values.toArray(new String[0]);
     }
 }

@@ -4,7 +4,7 @@
 <?import javafx.scene.layout.*?>
 
 <VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="controlador.CuentasController" spacing="10">
+      fx:controller="vista.CuentasViewController" spacing="10">
 
     <HBox spacing="10" alignment="CENTER_LEFT">
         <Button text="Nueva Cuenta" onAction="#handleNuevaCuenta"/>
