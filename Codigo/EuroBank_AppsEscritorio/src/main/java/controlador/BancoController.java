@@ -25,7 +25,7 @@ public class BancoController {
     public BancoController() throws IOException {
         this.sucursalCSV = new SucursalCSV();
         this.clienteCSV = new ClienteCSV();
-        this.empleadoCSV = new EmpleadoCSV();
+        this.empleadoCSV = new EmpleadoCSV(this);
         this.cuentaCSV = new CuentaCSV();
         this.transaccionCSV = new TransaccionCSV();
 
