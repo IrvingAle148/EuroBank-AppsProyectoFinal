@@ -4,6 +4,7 @@ import modelo.entidades.Cliente;
 import modelo.excepciones.ClienteNoEncontradoException;
 import modelo.persistencia.ClienteCSV;
 
+import java.io.IOException;
 import java.util.List;
 
 public class ClienteController {
@@ -13,7 +14,7 @@ public class ClienteController {
         this.bancoController = bancoController;
     }
 
-    public void registrarCliente(Cliente cliente) throws ClienteNoEncontradoException {
+    public void registrarCliente(Cliente cliente) throws ClienteNoEncontradoException, IOException {
         bancoController.agregarCliente(cliente);
         bancoController.guardarDatos();
     }
@@ -30,7 +31,7 @@ public class ClienteController {
         return bancoController.buscarClientes(criterio);
     }
 
-    public boolean actualizarCliente(Cliente cliente) {
+    public boolean actualizarCliente(Cliente cliente) throws IOException {
         try {
             bancoController.eliminarCliente(cliente.getRfcCurp());
             bancoController.agregarCliente(cliente);
@@ -41,7 +42,7 @@ public class ClienteController {
         }
     }
 
-    public boolean eliminarCliente(String rfc) {
+    public boolean eliminarCliente(String rfc) throws IOException {
         boolean eliminado = bancoController.eliminarCliente(rfc);
         if (eliminado) {
             bancoController.guardarDatos();
@@ -49,7 +50,7 @@ public class ClienteController {
         return eliminado;
     }
 
-    public void exportarClientesACSV(String rutaDestino) {
+    public void exportarClientesACSV(String rutaDestino) throws IOException {
         ClienteCSV csv = new ClienteCSV();
         csv.guardar(bancoController.obtenerTodosClientes(), rutaDestino);
     }

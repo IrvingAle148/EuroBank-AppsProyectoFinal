@@ -4,6 +4,7 @@ import modelo.entidades.*;
 import modelo.excepciones.*;
 import modelo.persistencia.TransaccionCSV;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -15,7 +16,7 @@ public class TransaccionController {
     }
 
     public void realizarDeposito(String numeroCuenta, double monto, Sucursal sucursal)
-            throws TransaccionFallidaException {
+            throws TransaccionFallidaException, IOException {
         Cuenta cuenta = bancoController.buscarCuentaPorNumero(numeroCuenta);
         if (cuenta == null) {
             throw new TransaccionFallidaException("Cuenta no encontrada para depósito");
@@ -38,7 +39,7 @@ public class TransaccionController {
     }
 
     public void realizarRetiro(String numeroCuenta, double monto, Sucursal sucursal)
-            throws SaldoInsuficienteException, TransaccionFallidaException {
+            throws SaldoInsuficienteException, TransaccionFallidaException, IOException {
         Cuenta cuenta = bancoController.buscarCuentaPorNumero(numeroCuenta);
         if (cuenta == null) {
             throw new TransaccionFallidaException("Cuenta no encontrada para retiro");
@@ -66,7 +67,7 @@ public class TransaccionController {
 
     public void realizarTransferencia(String cuentaOrigenNum, String cuentaDestinoNum,
                                       double monto, Sucursal sucursal)
-            throws SaldoInsuficienteException, TransaccionFallidaException {
+            throws SaldoInsuficienteException, TransaccionFallidaException, IOException {
         Cuenta cuentaOrigen = bancoController.buscarCuentaPorNumero(cuentaOrigenNum);
         Cuenta cuentaDestino = bancoController.buscarCuentaPorNumero(cuentaDestinoNum);
 
@@ -111,7 +112,7 @@ public class TransaccionController {
         return bancoController.obtenerTransaccionesPorSucursal(idSucursal);
     }
 
-    public void exportarTransaccionesACSV(String rutaDestino) {
+    public void exportarTransaccionesACSV(String rutaDestino) throws IOException {
         TransaccionCSV csv = new TransaccionCSV();
         csv.guardar(bancoController.obtenerTodasTransacciones(), rutaDestino);
     }

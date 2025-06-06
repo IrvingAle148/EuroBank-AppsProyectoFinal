@@ -6,8 +6,8 @@ public class Cajero extends Empleado {
 
     public Cajero(String id, String nombre, String direccion, String fechaNacimiento,
                   String genero, double salario, String usuario, String contrasena,
-                  String horarioTrabajo, int numeroVentanilla) {
-        super(id, nombre, direccion, fechaNacimiento, genero, salario, usuario, contrasena);
+                  String horarioTrabajo, int numeroVentanilla, Sucursal sucursal) {
+        super(id, nombre, direccion, fechaNacimiento, genero, salario, usuario, contrasena, sucursal);
         this.horarioTrabajo = horarioTrabajo;
         this.numeroVentanilla = numeroVentanilla;
     }

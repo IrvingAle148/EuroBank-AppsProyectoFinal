@@ -4,6 +4,7 @@ import modelo.entidades.*;
 import modelo.excepciones.*;
 import modelo.persistencia.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,7 +22,7 @@ public class BancoController {
     private final CuentaCSV cuentaCSV;
     private final TransaccionCSV transaccionCSV;
 
-    public BancoController() {
+    public BancoController() throws IOException {
         this.sucursalCSV = new SucursalCSV();
         this.clienteCSV = new ClienteCSV();
         this.empleadoCSV = new EmpleadoCSV();
@@ -31,15 +32,15 @@ public class BancoController {
         cargarDatosIniciales();
     }
 
-    private void cargarDatosIniciales() {
+    private void cargarDatosIniciales() throws IOException {
         this.sucursales = sucursalCSV.cargar("archivos/sucursales.csv");
         this.clientes = clienteCSV.cargar("archivos/clientes.csv");
         this.empleados = empleadoCSV.cargar("archivos/empleados.csv");
-        this.cuentas = cuentaCSV.cargar("archivos/cuentas.csv", clientes);
+        this.cuentas = cuentaCSV.cargar("archivos/cuentas.csv", clientes, sucursales);
         this.transacciones = transaccionCSV.cargar("archivos/transacciones.csv", cuentas, sucursales);
     }
 
-    public void guardarDatos() {
+    public void guardarDatos() throws IOException {
         sucursalCSV.guardar(sucursales, "archivos/sucursales.csv");
         clienteCSV.guardar(clientes, "archivos/clientes.csv");
         empleadoCSV.guardar(empleados, "archivos/empleados.csv");

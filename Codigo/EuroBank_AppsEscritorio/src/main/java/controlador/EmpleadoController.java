@@ -4,6 +4,7 @@ import modelo.entidades.*;
 import modelo.excepciones.*;
 import modelo.persistencia.EmpleadoCSV;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,7 +15,7 @@ public class EmpleadoController {
         this.bancoController = bancoController;
     }
 
-    public void registrarEmpleado(Empleado empleado) {
+    public void registrarEmpleado(Empleado empleado) throws IOException {
         bancoController.agregarEmpleado(empleado);
         bancoController.guardarDatos();
     }
@@ -31,14 +32,14 @@ public class EmpleadoController {
         return bancoController.buscarEmpleados(criterio);
     }
 
-    public boolean actualizarEmpleado(Empleado empleado) {
+    public boolean actualizarEmpleado(Empleado empleado) throws IOException {
         bancoController.eliminarEmpleado(empleado.getId());
         bancoController.agregarEmpleado(empleado);
         bancoController.guardarDatos();
         return true;
     }
 
-    public boolean eliminarEmpleado(String id) {
+    public boolean eliminarEmpleado(String id) throws IOException {
         boolean eliminado = bancoController.eliminarEmpleado(id);
         if (eliminado) {
             bancoController.guardarDatos();
@@ -46,7 +47,7 @@ public class EmpleadoController {
         return eliminado;
     }
 
-    public void exportarEmpleadosACSV(String rutaDestino) {
+    public void exportarEmpleadosACSV(String rutaDestino) throws IOException {
         EmpleadoCSV csv = new EmpleadoCSV();
         csv.guardar(bancoController.obtenerTodosEmpleados(), rutaDestino);
     }

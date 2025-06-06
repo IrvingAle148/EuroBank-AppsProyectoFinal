@@ -50,7 +50,7 @@ public class EmpleadoCSV {
         }
     }
 
-    public List<Empleado> cargar(String rutaArchivo, List<Sucursal> sucursales) throws IOException {
+    public List<Empleado> cargar(String rutaArchivo) throws IOException {
         List<Empleado> empleados = new ArrayList<>();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(rutaArchivo))) {
@@ -81,22 +81,22 @@ public class EmpleadoCSV {
                 return new Cajero(
                         datos[0], datos[1], datos[2], datos[3],
                         datos[4], Double.parseDouble(datos[5]),
-                        datos[6], datos[7], sucursal,
-                        datos[10], Integer.parseInt(datos[11])
+                        datos[6], datos[7], datos[10],
+                        Integer.parseInt(datos[11]), sucursal
                 );
             case "EJECUTIVO":
                 return new Ejecutivo(
                         datos[0], datos[1], datos[2], datos[3],
                         datos[4], Double.parseDouble(datos[5]),
-                        datos[6], datos[7], sucursal,
-                        Integer.parseInt(datos[10]), datos[11]
+                        datos[6], datos[7], Integer.parseInt(datos[10]),
+                        datos[11], sucursal
                 );
             case "GERENTE":
                 return new Gerente(
                         datos[0], datos[1], datos[2], datos[3],
                         datos[4], Double.parseDouble(datos[5]),
-                        datos[6], datos[7], sucursal,
-                        datos[10], Integer.parseInt(datos[11])
+                        datos[6], datos[7], datos[10],
+                        Integer.parseInt(datos[11]), sucursal
                 );
             default:
                 return null;

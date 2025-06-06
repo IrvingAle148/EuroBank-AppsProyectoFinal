@@ -4,6 +4,7 @@ import modelo.entidades.*;
 import modelo.excepciones.*;
 import modelo.persistencia.*;
 
+import java.io.IOException;
 import java.util.List;
 
 public class AutentificacionController {
@@ -16,7 +17,7 @@ public class AutentificacionController {
     }
 
     public Object autenticar(String identificador, String contrasena, boolean esEmpleado)
-            throws AutenticacionFallidaException, EmpleadoNoEncontradoException {
+            throws AutenticacionFallidaException, EmpleadoNoEncontradoException, IOException {
 
         if (esEmpleado) {
             return autenticarEmpleado(identificador, contrasena);
@@ -26,7 +27,7 @@ public class AutentificacionController {
     }
 
     private Empleado autenticarEmpleado(String usuario, String contrasena)
-            throws EmpleadoNoEncontradoException {
+            throws EmpleadoNoEncontradoException, IOException, TransaccionFallidaException {
         List<Empleado> empleados = empleadoCSV.cargar("archivos/empleados.csv");
 
         for (Empleado emp : empleados) {
@@ -38,7 +39,7 @@ public class AutentificacionController {
     }
 
     private Cliente autenticarCliente(String correo, String contrasena)
-            throws AutenticacionFallidaException {
+            throws AutenticacionFallidaException, IOException {
         List<Cliente> clientes = clienteCSV.cargar("archivos/clientes.csv");
 
         for (Cliente cli : clientes) {

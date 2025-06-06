@@ -3,6 +3,7 @@ package controlador;
 import modelo.entidades.*;
 import modelo.excepciones.*;
 
+import java.io.IOException;
 import java.util.List;
 
 public class CuentaController {
@@ -12,7 +13,7 @@ public class CuentaController {
         this.bancoController = bancoController;
     }
 
-    public void crearCuenta(Cuenta cuenta) throws ClienteNoEncontradoException {
+    public void crearCuenta(Cuenta cuenta) throws ClienteNoEncontradoException, IOException {
         bancoController.agregarCuenta(cuenta);
         bancoController.guardarDatos();
     }
@@ -29,7 +30,7 @@ public class CuentaController {
         return bancoController.obtenerCuentasPorCliente(rfcCliente);
     }
 
-    public boolean actualizarCuenta(Cuenta cuenta) {
+    public boolean actualizarCuenta(Cuenta cuenta) throws IOException {
         try {
             bancoController.eliminarCuenta(cuenta.getNumeroCuenta());
             bancoController.agregarCuenta(cuenta);
@@ -40,7 +41,7 @@ public class CuentaController {
         }
     }
 
-    public boolean eliminarCuenta(String numeroCuenta) {
+    public boolean eliminarCuenta(String numeroCuenta) throws IOException {
         boolean eliminado = bancoController.eliminarCuenta(numeroCuenta);
         if (eliminado) {
             bancoController.guardarDatos();

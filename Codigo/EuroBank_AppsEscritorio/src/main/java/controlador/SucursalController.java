@@ -3,6 +3,7 @@ package controlador;
 import modelo.entidades.*;
 import modelo.persistencia.SucursalCSV;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,7 +14,7 @@ public class SucursalController {
         this.bancoController = bancoController;
     }
 
-    public void registrarSucursal(Sucursal sucursal) {
+    public void registrarSucursal(Sucursal sucursal) throws IOException {
         bancoController.agregarSucursal(sucursal);
         bancoController.guardarDatos();
     }
@@ -26,14 +27,14 @@ public class SucursalController {
         return bancoController.obtenerTodasSucursales();
     }
 
-    public boolean actualizarSucursal(Sucursal sucursal) {
+    public boolean actualizarSucursal(Sucursal sucursal) throws IOException {
         bancoController.eliminarSucursal(sucursal.getId());
         bancoController.agregarSucursal(sucursal);
         bancoController.guardarDatos();
         return true;
     }
 
-    public boolean eliminarSucursal(String id) {
+    public boolean eliminarSucursal(String id) throws IOException {
         boolean eliminado = bancoController.eliminarSucursal(id);
         if (eliminado) {
             bancoController.guardarDatos();
@@ -41,7 +42,7 @@ public class SucursalController {
         return eliminado;
     }
 
-    public void exportarSucursalesACSV(String rutaDestino) {
+    public void exportarSucursalesACSV(String rutaDestino) throws IOException {
         SucursalCSV csv = new SucursalCSV();
         csv.guardar(bancoController.obtenerTodasSucursales(), rutaDestino);
     }
