@@ -1,14 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.Rectangle?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="FXML2.TransaccionMainView"
-            prefHeight="400.0" prefWidth="600.0">
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="vista.TransaccionesMainViewController"
+      spacing="10">
 
-</AnchorPane>
+    <Rectangle fx:id="blueFringe" arcHeight="5.0" arcWidth="5.0"
+               fill="#326bc9" height="92.0" stroke="BLACK"
+               strokeType="INSIDE" width="925.0"/>
+
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Button text="Exportar" onAction="#handleExportarTransacciones"/>
+        <Button text="Volver" onAction="#handleVolver"/>
+    </HBox>
+
+    <TableView fx:id="transaccionesTable">
+        <columns>
+            <TableColumn text="ID" prefWidth="100" fx:id="idColumn"/>
+            <TableColumn text="Fecha" prefWidth="150" fx:id="fechaColumn"/>
+            <TableColumn text="Tipo" prefWidth="100" fx:id="tipoColumn"/>
+            <TableColumn text="Monto" prefWidth="120" fx:id="montoColumn"/>
+            <TableColumn text="Cuenta Origen" prefWidth="150" fx:id="cuentaOrigenColumn"/>
+            <TableColumn text="Cuenta Destino" prefWidth="150" fx:id="cuentaDestinoColumn"/>
+            <TableColumn text="Sucursal" prefWidth="150" fx:id="sucursalColumn"/>
+        </columns>
+    </TableView>
+</VBox>

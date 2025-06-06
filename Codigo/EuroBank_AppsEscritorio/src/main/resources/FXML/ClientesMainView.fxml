@@ -1,14 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.Rectangle?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="FXML2.ClientesMainView"
-            prefHeight="400.0" prefWidth="600.0">
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="vista.ClientesMainViewController"
+      spacing="10">
 
-</AnchorPane>
+    <Rectangle fx:id="blueFringe" arcHeight="5.0" arcWidth="5.0"
+               fill="#326bc9" height="92.0" stroke="BLACK"
+               strokeType="INSIDE" width="800.0"/>
+
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Button text="Agregar" onAction="#handleAgregarCliente"/>
+        <Button text="Editar" onAction="#handleEditarCliente"
+                disable="true" fx:id="editarButton"/>
+        <Button text="Eliminar" onAction="#handleEliminarCliente"
+                disable="true" fx:id="eliminarButton"/>
+        <Button text="Exportar" onAction="#handleExportarClientes"/>
+        <Button text="Volver" onAction="#handleVolver"/>
+    </HBox>
+
+    <TableView fx:id="clientesTable">
+        <columns>
+            <TableColumn text="RFC/CURP" prefWidth="150" fx:id="rfcColumn"/>
+            <TableColumn text="Nombre" prefWidth="200" fx:id="nombreColumn"/>
+            <TableColumn text="Apellidos" prefWidth="200" fx:id="apellidosColumn"/>
+            <TableColumn text="Correo" prefWidth="200" fx:id="correoColumn"/>
+        </columns>
+    </TableView>
+</VBox>

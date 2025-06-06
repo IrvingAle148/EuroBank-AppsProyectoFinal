@@ -1,19 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
 <?import javafx.scene.shape.Rectangle?>
-<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="vista.CuentasMainViewController" spacing="10">
 
-    <Rectangle fx:id="blueFringe" arcHeight="5.0" arcWidth="5.0" fill="#326bc9" height="92.0" stroke="BLACK" strokeType="INSIDE" width="600.0" />
-    <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#4daa59" height="21.0" layoutY="54.0" stroke="BLACK" strokeType="INSIDE" width="600.0" />
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="vista.CuentasMainViewController"
+      spacing="10">
+
+    <Rectangle fx:id="blueFringe" arcHeight="5.0" arcWidth="5.0"
+               fill="#326bc9" height="92.0" stroke="BLACK"
+               strokeType="INSIDE" width="700.0"/>
+
     <HBox spacing="10" alignment="CENTER_LEFT">
-        <Button text="Nueva Cuenta" onAction="#handleNuevaCuenta"/>
-        <Button text="Editar" onAction="#handleEditarCuenta" disable="true"/>
-        <Button text="Eliminar" onAction="#handleEliminarCuenta" disable="true"/>
-        <Button text="Exportar" onAction="#handleEliminarCuenta" disable="true"/>
-        <Button text="Volver" onAction="#handleEliminarCuenta" disable="true"/>
+        <Button text="Agregar" onAction="#handleAgregarCuenta"/>
+        <Button text="Editar" onAction="#handleEditarCuenta"
+                disable="true" fx:id="editarButton"/>
+        <Button text="Eliminar" onAction="#handleEliminarCuenta"
+                disable="true" fx:id="eliminarButton"/>
+        <Button text="Exportar" onAction="#handleExportarCuentas"/>
+        <Button text="Volver" onAction="#handleVolver"/>
     </HBox>
 
     <TableView fx:id="cuentasTable">
@@ -26,4 +32,3 @@
         </columns>
     </TableView>
 </VBox>
-

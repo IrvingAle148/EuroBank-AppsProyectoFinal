@@ -1,14 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="FXML2.ClienteAbonoMainView"
-            prefHeight="400.0" prefWidth="600.0">
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="vista.cliente.ClienteAbonoViewController"
+      spacing="20" alignment="CENTER"
+      style="-fx-padding: 20;">
 
-</AnchorPane>
+    <Label text="Realizar Abono" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+
+    <GridPane hgap="10" vgap="10">
+        <Label text="Cuenta:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="cuentaCombo" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+        <Label text="Monto:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <TextField fx:id="montoField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+    </GridPane>
+
+    <HBox spacing="20">
+        <Button text="Confirmar" onAction="#handleConfirmar"
+                style="-fx-font-weight: bold;"/>
+        <Button text="Cancelar" onAction="#handleCancelar"/>
+    </HBox>
+
+    <Label fx:id="errorLabel" style="-fx-text-fill: red;" visible="false"/>
+</VBox>

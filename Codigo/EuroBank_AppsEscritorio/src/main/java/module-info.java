@@ -7,4 +7,5 @@ module controlador {
     opens vista to javafx.fxml;
     exports vista.cliente;
     opens vista.cliente to javafx.fxml;
+    exports main;
 }

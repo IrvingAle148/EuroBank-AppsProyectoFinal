@@ -1,14 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="FXML2.CajeroMainView"
-            prefHeight="400.0" prefWidth="600.0">
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="vista.empleados.CajeroMainViewController"
+      spacing="20" alignment="CENTER"
+      style="-fx-padding: 20;">
 
-</AnchorPane>
+    <Label fx:id="welcomeLabel" text="Bienvenido Cajero [Nombre]"
+           style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+
+    <VBox spacing="10" alignment="CENTER">
+        <Button text="Ver Clientes" onAction="#handleVerClientes"
+                style="-fx-font-weight: bold; -fx-min-width: 200;"/>
+        <Button text="Ver Cuentas" onAction="#handleVerCuentas"
+                style="-fx-font-weight: bold; -fx-min-width: 200;"/>
+        <Button text="Ver Transacciones" onAction="#handleVerTransacciones"
+                style="-fx-font-weight: bold; -fx-min-width: 200;"/>
+    </VBox>
+
+    <Button text="Cerrar Sesión" onAction="#handleLogout"
+            style="-fx-font-weight: bold;"/>
+</VBox>

@@ -1,4 +1,4 @@
-package vista.ingresar;
+package vista;
 
 public class TransaccionesMainViewController {
 }

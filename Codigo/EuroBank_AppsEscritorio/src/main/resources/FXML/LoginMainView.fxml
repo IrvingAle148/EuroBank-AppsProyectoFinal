@@ -1,33 +1,40 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.PasswordField?>
 
-<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="vista.LoginMainViewController" prefWidth="400" prefHeight="400">
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="vista.LoginMainViewController"
+            prefWidth="400" prefHeight="400">
 
     <center>
         <VBox alignment="CENTER" spacing="20">
             <Text text="EuroBank" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
 
             <HBox spacing="20" alignment="CENTER">
-                <RadioButton text="Empleado" toggleGroup="$userTypeGroup" selected="true"
-                             fx:id="rbEmpleado"/>
-                <RadioButton text="Cliente" toggleGroup="$userTypeGroup"
-                             fx:id="rbCliente"/>
+                <RadioButton text="Empleado" toggleGroup="$userTypeGroup" selected="true"/>
+                <RadioButton text="Cliente" toggleGroup="$userTypeGroup"/>
             </HBox>
 
             <GridPane hgap="10" vgap="10">
-                <Label text="Usuario/Correo:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                <TextField fx:id="tfCorreo" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                <Label text="Usuario/Correo:" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                <TextField fx:id="usernameField" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
 
-                <Label text="Contraseña:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                <PasswordField fx:id="pfContrasena" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                <Label text="Contraseña:" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                <PasswordField fx:id="passwordField" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
             </GridPane>
 
-            <Button text="Iniciar Sesión" onAction="#manejarLogin"
-                    defaultButton="true" style="-fx-font-weight: bold;"/>
-            <Label fx:id="lblError" style="-fx-text-fill: red;" visible="false"/>
+            <Button text="Iniciar Sesión" onAction="#handleLogin" defaultButton="true"
+                    style="-fx-font-weight: bold;"/>
+            <Label fx:id="errorLabel" style="-fx-text-fill: red;" visible="false"/>
         </VBox>
     </center>
 </BorderPane>

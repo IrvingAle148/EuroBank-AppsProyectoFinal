@@ -1,47 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.Rectangle?>
 
-<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="vista.ClienteMainViewController" spacing="10" padding="10">
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="vista.cliente.ClienteMainViewController"
+      spacing="10">
 
-    <HBox spacing="10" alignment="CENTER_LEFT">
-        <Button text="Cerrar sesión" onAction="#manejarCerrarSesion"/>
-        <Label fx:id="lblBienvenida" style="-fx-font-weight: bold; -fx-font-size: 16px;"/>
+    <Rectangle fx:id="header" arcHeight="5.0" arcWidth="5.0"
+               fill="#326bc9" height="92.0" stroke="BLACK"
+               strokeType="INSIDE" width="600.0"/>
+
+    <Label fx:id="welcomeLabel" text="Bienvenido, [Nombre]"
+           style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+
+    <Label fx:id="balanceLabel" text="Balance total: €0.00"
+           style="-fx-font-size: 16px;"/>
+
+    <HBox spacing="20" alignment="CENTER">
+        <Button text="Realizar Abono" onAction="#handleAbono"
+                style="-fx-font-weight: bold;"/>
+        <Button text="Realizar Retiro" onAction="#handleRetiro"
+                style="-fx-font-weight: bold;"/>
+        <Button text="Realizar Transferencia" onAction="#handleTransferencia"
+                style="-fx-font-weight: bold;"/>
     </HBox>
 
-    <TabPane>
-        <Tab text="Mis Cuentas">
-            <VBox spacing="10">
-                <TableView fx:id="tablaCuentas">
-                    <columns>
-                        <TableColumn text="Número de Cuenta" prefWidth="150"/>
-                        <TableColumn text="Tipo" prefWidth="100"/>
-                        <TableColumn text="Saldo" prefWidth="120"/>
-                        <TableColumn text="Límite de Crédito" prefWidth="120"/>
-                    </columns>
-                </TableView>
-                <Label fx:id="lblBalanceTotal" style="-fx-font-weight: bold;"/>
-            </VBox>
-        </Tab>
-
-        <Tab text="Transacciones">
-            <VBox spacing="10">
-                <HBox spacing="10">
-                    <Button text="Nuevo Depósito" onAction="#manejarNuevoDeposito"/>
-                    <Button text="Nuevo Retiro" onAction="#manejarNuevoRetiro"/>
-                    <Button text="Nueva Transferencia" onAction="#manejarNuevaTransferencia"/>
-                </HBox>
-
-                <TableView fx:id="tablaTransacciones">
-                    <columns>
-                        <TableColumn text="Fecha" prefWidth="150"/>
-                        <TableColumn text="Tipo" prefWidth="100"/>
-                        <TableColumn text="Monto" prefWidth="100"/>
-                        <TableColumn text="Descripción" prefWidth="200"/>
-                    </columns>
-                </TableView>
-            </VBox>
-        </Tab>
-    </TabPane>
+    <Button text="Cerrar Sesión" onAction="#handleLogout"
+            style="-fx-font-weight: bold;"/>
 </VBox>
