@@ -1,11 +1,23 @@
 package modelo.persistencia;
 
 import modelo.entidades.*;
+import controlador.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class EmpleadoCSV {
+
+    private BancoController bancoController;
+
+    private EmpleadoCSV(BancoController bancoController){
+        this.bancoController = bancoController;
+    }
+
+    private Sucursal buscarSucursal(String id){
+        return bancoController.buscarSucursalPorId(id);
+    }
+
     public void guardar(List<Empleado> empleados, String rutaArchivo) throws IOException {
         try (PrintWriter writer = new PrintWriter(new FileWriter(rutaArchivo))) {
             writer.println("ID,Nombre,Direccion,FechaNacimiento,Genero,Salario,Usuario,Contrasenia,Tipo,Sucursal,DatosExtra1,DatosExtra2");
@@ -60,7 +72,7 @@ public class EmpleadoCSV {
             while ((linea = reader.readLine()) != null) {
                 String[] datos = parseCSVLine(linea);
                 if (datos.length >= 11) {
-                    Sucursal sucursal = buscarSucursal(sucursales, datos[9]);
+                    Sucursal sucursal = buscarSucursal(datos[9]);
                     if (sucursal == null) continue;
 
                     Empleado empleado = crearEmpleadoSegunTipo(datos, sucursal);

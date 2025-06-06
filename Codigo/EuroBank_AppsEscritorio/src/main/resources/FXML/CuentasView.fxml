@@ -10,6 +10,8 @@
         <Button text="Nueva Cuenta" onAction="#handleNuevaCuenta"/>
         <Button text="Editar" onAction="#handleEditarCuenta" disable="true"/>
         <Button text="Eliminar" onAction="#handleEliminarCuenta" disable="true"/>
+        <Button text="Exportar" onAction="#handleEliminarCuenta" disable="true"/>
+        <Button text="Volver" onAction="#handleEliminarCuenta" disable="true"/>
     </HBox>
 
     <TableView fx:id="cuentasTable">
@@ -22,3 +24,4 @@
         </columns>
     </TableView>
 </VBox>
+
