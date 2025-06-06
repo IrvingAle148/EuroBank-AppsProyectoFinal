@@ -1,21 +1,22 @@
 package modelo.persistencia;
 
+import controlador.BancoController;
 import modelo.entidades.*;
-import controlador.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class EmpleadoCSV {
-
     private BancoController bancoController;
 
-    private EmpleadoCSV(BancoController bancoController){
+    public EmpleadoCSV() {}
+
+    public EmpleadoCSV(BancoController bancoController) {
         this.bancoController = bancoController;
     }
 
-    private Sucursal buscarSucursal(String id){
-        return bancoController.buscarSucursalPorId(id);
+    public void setBancoController(BancoController bancoController) {
+        this.bancoController = bancoController;
     }
 
     public void guardar(List<Empleado> empleados, String rutaArchivo) throws IOException {
@@ -27,19 +28,16 @@ public class EmpleadoCSV {
                 String datosExtra1 = "";
                 String datosExtra2 = "";
 
-                if (e instanceof Cajero) {
+                if (e instanceof Cajero c) {
                     tipo = "CAJERO";
-                    Cajero c = (Cajero) e;
                     datosExtra1 = c.getHorarioTrabajo();
                     datosExtra2 = String.valueOf(c.getNumeroVentanilla());
-                } else if (e instanceof Ejecutivo) {
+                } else if (e instanceof Ejecutivo ej) {
                     tipo = "EJECUTIVO";
-                    Ejecutivo ej = (Ejecutivo) e;
                     datosExtra1 = String.valueOf(ej.getNumeroClientesAsignados());
                     datosExtra2 = ej.getEspecializacion();
-                } else if (e instanceof Gerente) {
+                } else if (e instanceof Gerente g) {
                     tipo = "GERENTE";
-                    Gerente g = (Gerente) e;
                     datosExtra1 = g.getNivelAcceso();
                     datosExtra2 = String.valueOf(g.getAniosExperiencia());
                 }
@@ -63,6 +61,13 @@ public class EmpleadoCSV {
     }
 
     public List<Empleado> cargar(String rutaArchivo) throws IOException {
+        if (bancoController == null) {
+            throw new IllegalStateException("BancoController no ha sido inicializado en EmpleadoCSV.");
+        }
+        return cargar(rutaArchivo, bancoController.obtenerTodasSucursales());
+    }
+
+    public List<Empleado> cargar(String rutaArchivo, List<Sucursal> sucursales) throws IOException {
         List<Empleado> empleados = new ArrayList<>();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(rutaArchivo))) {
@@ -71,8 +76,8 @@ public class EmpleadoCSV {
             String linea;
             while ((linea = reader.readLine()) != null) {
                 String[] datos = parseCSVLine(linea);
-                if (datos.length >= 11) {
-                    Sucursal sucursal = buscarSucursal(datos[9]);
+                if (datos.length >= 12) {
+                    Sucursal sucursal = buscarSucursal(sucursales, datos[9]);
                     if (sucursal == null) continue;
 
                     Empleado empleado = crearEmpleadoSegunTipo(datos, sucursal);
@@ -88,31 +93,40 @@ public class EmpleadoCSV {
     private Empleado crearEmpleadoSegunTipo(String[] datos, Sucursal sucursal) {
         String tipo = datos[8];
 
-        switch (tipo) {
-            case "CAJERO":
-                return new Cajero(
-                        datos[0], datos[1], datos[2], datos[3],
-                        datos[4], Double.parseDouble(datos[5]),
-                        datos[6], datos[7], datos[10],
-                        Integer.parseInt(datos[11]), sucursal
+        try {
+            switch (tipo) {
+                case "CAJERO":
+                    return new Cajero(
+                        datos[0], datos[1], datos[2], datos[3], datos[4],
+                        Double.parseDouble(datos[5]), datos[6], datos[7],
+                        datos[10], Integer.parseInt(datos[11]), sucursal
                 );
-            case "EJECUTIVO":
-                return new Ejecutivo(
-                        datos[0], datos[1], datos[2], datos[3],
-                        datos[4], Double.parseDouble(datos[5]),
-                        datos[6], datos[7], Integer.parseInt(datos[10]),
-                        datos[11], sucursal
+                case "EJECUTIVO":
+                    return new Ejecutivo(
+                        datos[0], datos[1], datos[2], datos[3], datos[4],
+                        Double.parseDouble(datos[5]), datos[6], datos[7],
+                        Integer.parseInt(datos[10]), datos[11], sucursal
                 );
-            case "GERENTE":
-                return new Gerente(
-                        datos[0], datos[1], datos[2], datos[3],
-                        datos[4], Double.parseDouble(datos[5]),
-                        datos[6], datos[7], datos[10],
-                        Integer.parseInt(datos[11]), sucursal
+                case "GERENTE":
+                    return new Gerente(
+                        datos[0], datos[1], datos[2], datos[3], datos[4],
+                        Double.parseDouble(datos[5]), datos[6], datos[7],
+                        datos[10], Integer.parseInt(datos[11]), sucursal
                 );
-            default:
-                return null;
+                default:
+                    throw new IllegalStateException("Tipo de empleado no válido: " + tipo);
+            }
+        } catch (Exception e) {
+            System.err.println("Error creando empleado " + tipo + ": " + e.getMessage());
+            return null;
         }
+    }
+
+    private Sucursal buscarSucursal(List<Sucursal> sucursales, String id) {
+        for (Sucursal s : sucursales) {
+            if (s.getId().equals(id)) return s;
+        }
+        return null;
     }
 
     private String escapeCSV(String value) {
@@ -121,7 +135,6 @@ public class EmpleadoCSV {
     }
 
     private String[] parseCSVLine(String line) {
-        // Lógica para manejar comas dentro de campos entre comillas
         List<String> values = new ArrayList<>();
         boolean inQuotes = false;
         StringBuilder buffer = new StringBuilder();

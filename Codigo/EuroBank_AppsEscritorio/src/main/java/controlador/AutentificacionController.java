@@ -11,13 +11,13 @@ public class AutentificacionController {
     private final ClienteCSV clienteCSV;
     private final EmpleadoCSV empleadoCSV;
 
-    public AutentificacionController() {
+    public AutentificacionController(BancoController bancoController) {
         this.clienteCSV = new ClienteCSV();
-        this.empleadoCSV = new EmpleadoCSV();
+        this.empleadoCSV = new EmpleadoCSV(bancoController);
     }
 
     public Object autenticar(String identificador, String contrasena, boolean esEmpleado)
-            throws AutenticacionFallidaException, EmpleadoNoEncontradoException, IOException {
+            throws AutenticacionFallidaException, EmpleadoNoEncontradoException, IOException, TransaccionFallidaException {
 
         if (esEmpleado) {
             return autenticarEmpleado(identificador, contrasena);
