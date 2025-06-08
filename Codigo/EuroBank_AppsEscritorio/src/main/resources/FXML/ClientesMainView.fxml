@@ -1,33 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.shape.*?>
 
-<VBox xmlns="http://javafx.com/javafx/17"
-      xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="vista.ClientesMainViewController"
-      spacing="10">
+<VBox spacing="10" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="vista.ClientesMainViewController">
 
-    <Rectangle fx:id="blueFringe" arcHeight="5.0" arcWidth="5.0"
-               fill="#326bc9" height="92.0" stroke="BLACK"
-               strokeType="INSIDE" width="800.0"/>
+    <Rectangle fx:id="blueFringe" arcHeight="5.0" arcWidth="5.0" fill="#326bc9" height="92.0" stroke="BLACK" strokeType="INSIDE" width="800.0" />
 
-    <HBox spacing="10" alignment="CENTER_LEFT">
-        <Button text="Agregar" onAction="#handleAgregarCliente"/>
-        <Button text="Editar" onAction="#handleEditarCliente"
-                disable="true" fx:id="editarButton"/>
-        <Button text="Eliminar" onAction="#handleEliminarCliente"
-                disable="true" fx:id="eliminarButton"/>
-        <Button text="Exportar" onAction="#handleExportarClientes"/>
-        <Button text="Volver" onAction="#handleVolver"/>
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Button onAction="#handleAgregar" text="Agregar" />
+        <Button fx:id="editarButton" disable="true" onAction="#handleEditar" text="Editar" />
+        <Button fx:id="eliminarButton" disable="true" onAction="#handleEliminar" text="Eliminar" />
+        <Button onAction="#handleExportar" text="Exportar" />
+        <Button onAction="#handleRegresar" text="Volver" />
     </HBox>
 
-    <TableView fx:id="clientesTable">
+    <TableView fx:id="clientesTable" prefWidth="900">
         <columns>
-            <TableColumn text="RFC/CURP" prefWidth="150" fx:id="rfcColumn"/>
-            <TableColumn text="Nombre" prefWidth="200" fx:id="nombreColumn"/>
-            <TableColumn text="Apellidos" prefWidth="200" fx:id="apellidosColumn"/>
-            <TableColumn text="Correo" prefWidth="200" fx:id="correoColumn"/>
+            <TableColumn fx:id="nombreCompletoCol" prefWidth="140.99999696016312" text="Nombre Completo" />
+            <TableColumn fx:id="usuarioCol" prefWidth="117.59999084472656" text="Usuario" />
+            <TableColumn fx:id="rfcCol" prefWidth="97.4000244140625" text="RFC/CURP" />
+            <TableColumn fx:id="nacionalidadCol" minWidth="4.0" prefWidth="104.20001220703125" text="Nacionalidad" />
+            <TableColumn fx:id="telefonoCol" prefWidth="118.5999755859375" text="Teléfono" />
+            <TableColumn fx:id="correoCol" prefWidth="217.4000244140625" text="Correo" />
         </columns>
     </TableView>
 </VBox>

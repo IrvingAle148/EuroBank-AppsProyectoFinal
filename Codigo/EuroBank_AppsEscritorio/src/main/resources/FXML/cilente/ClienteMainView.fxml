@@ -9,7 +9,7 @@
       spacing="10">
 
     <Rectangle fx:id="header" arcHeight="5.0" arcWidth="5.0"
-               fill="#326bc9" height="92.0" stroke="BLACK"
+               fill="#326bc9" height="45.0" stroke="BLACK"
                strokeType="INSIDE" width="600.0"/>
 
     <Label fx:id="welcomeLabel" text="Bienvenido, [Nombre]"
@@ -29,4 +29,5 @@
 
     <Button text="Cerrar Sesión" onAction="#handleLogout"
             style="-fx-font-weight: bold;"/>
+
 </VBox>

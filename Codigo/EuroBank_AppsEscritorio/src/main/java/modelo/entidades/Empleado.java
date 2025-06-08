@@ -1,21 +1,22 @@
 package modelo.entidades;
 
-import java.io.Serializable;
+import java.time.LocalDate;
 
-public abstract class Empleado implements Serializable {
-    protected String id;
-    protected String nombre;
-    protected String direccion;
-    protected String fechaNacimiento;
-    protected String genero;
-    protected double salario;
-    protected String usuario;
-    protected String contrasenia;
-    protected Sucursal sucursal; // Relación con sucursal
+public abstract class Empleado {
+    private String id;
+    private String nombre;
+    private String direccion;
+    private LocalDate fechaNacimiento;
+    private String genero;
+    private double salario;
+    private String usuario;
+    private String contrasenia;
+    private Sucursal sucursal;
+    public abstract String getTipoEmpleado();
 
-    public Empleado(String id, String nombre, String direccion,
-                    String fechaNacimiento, String genero, double salario,
-                    String usuario, String contrasenia, Sucursal sucursal) {
+    // Constructor completo
+    public Empleado(String id, String nombre, String direccion, LocalDate fechaNacimiento, String genero,
+                    double salario, String usuario, String contrasenia, Sucursal sucursal) {
         this.id = id;
         this.nombre = nombre;
         this.direccion = direccion;
@@ -27,6 +28,9 @@ public abstract class Empleado implements Serializable {
         this.sucursal = sucursal;
     }
 
+    // Constructor vacío
+    public Empleado() {}
+
     // Getters y Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -37,8 +41,8 @@ public abstract class Empleado implements Serializable {
     public String getDireccion() { return direccion; }
     public void setDireccion(String direccion) { this.direccion = direccion; }
 
-    public String getFechaNacimiento() { return fechaNacimiento; }
-    public void setFechaNacimiento(String fechaNacimiento) { this.fechaNacimiento = fechaNacimiento; }
+    public LocalDate getFechaNacimiento() { return fechaNacimiento; }
+    public void setFechaNacimiento(LocalDate fechaNacimiento) { this.fechaNacimiento = fechaNacimiento; }
 
     public String getGenero() { return genero; }
     public void setGenero(String genero) { this.genero = genero; }
@@ -54,9 +58,4 @@ public abstract class Empleado implements Serializable {
 
     public Sucursal getSucursal() { return sucursal; }
     public void setSucursal(Sucursal sucursal) { this.sucursal = sucursal; }
-
-    @Override
-    public String toString() {
-        return nombre + " (" + id + ")";
-    }
 }

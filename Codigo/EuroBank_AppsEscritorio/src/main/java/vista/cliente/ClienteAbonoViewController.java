@@ -1,81 +1,79 @@
 package vista.cliente;
 
-import controlador.TransaccionController;
 import javafx.fxml.FXML;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import modelo.entidades.Cliente;
+import javafx.scene.control.*;
+import javafx.stage.Stage;
 import modelo.entidades.Cuenta;
-import modelo.entidades.Sucursal;
-import modelo.excepciones.TransaccionFallidaException;
+import modelo.persistencia.CuentaCSV;
 
-import java.io.IOException;
-import java.util.List;
+public class ClienteAbonoViewController {
 
-public class ClienteAbonoViewController extends ClienteTransaccionBaseController {
-    @FXML private ComboBox<Cuenta> cuentaCombo;
+    @FXML private Label saldoActualLabel;
     @FXML private TextField montoField;
-    @FXML private Label errorLabel;
+    @FXML private Button abonarButton;
+    @FXML private Button cancelarButton;
+    @FXML private Label mensajeLabel;
 
-    private TransaccionController transaccionController;
+    private Cuenta cuenta;
+    private CuentaCSV cuentaCSV = new CuentaCSV();
+    private ClienteMainViewController mainController;
 
-    @Override
-    public void setBancoController(BancoController bancoController) {
-        super.setBancoController(bancoController);
-        this.transaccionController = new TransaccionController(bancoController);
-        cargarCuentas();
+    public void setCuenta(Cuenta cuenta) {
+        this.cuenta = cuenta;
+        saldoActualLabel.setText("Saldo actual: €" + String.format("%.2f", cuenta.getSaldoActual()));
     }
 
-    private void cargarCuentas() {
-        List<Cuenta> cuentas = bancoController.obtenerCuentasPorCliente(cliente.getRfcCurp());
-        cuentaCombo.getItems().addAll(cuentas);
-        if (!cuentas.isEmpty()) {
-            cuentaCombo.setValue(cuentas.get(0));
-        }
+    public void setMainController(ClienteMainViewController mainController) {
+        this.mainController = mainController;
     }
 
     @FXML
-    private void handleConfirmar() {
-        try {
-            Cuenta cuenta = cuentaCombo.getValue();
-            double monto = Double.parseDouble(montoField.getText());
-            Sucursal sucursal = cuenta.getSucursal();
-
-            if (cuenta == null) {
-                mostrarError("Seleccione una cuenta");
-                return;
-            }
-
-            if (monto <= 0) {
-                mostrarError("Monto debe ser positivo");
-                return;
-            }
-
-            transaccionController.realizarDeposito(cuenta.getNumeroCuenta(), monto, sucursal);
-            cerrarVentana();
-
-        } catch (NumberFormatException e) {
-            mostrarError("Monto inválido");
-        } catch (TransaccionFallidaException e) {
-            mostrarError("Error en transacción: " + e.getMessage());
-        } catch (IOException e) {
-            mostrarError("Error al guardar transacción");
+    private void handleAbonar() {
+        String montoStr = montoField.getText();
+        if (montoStr.isEmpty()) {
+            mensajeLabel.setText("Ingresa un monto válido.");
+            return;
         }
+        double monto;
+        try {
+            monto = Double.parseDouble(montoStr);
+            if (monto <= 0) {
+                mensajeLabel.setText("El monto debe ser positivo.");
+                return;
+            }
+        } catch (NumberFormatException e) {
+            mensajeLabel.setText("Monto inválido.");
+            return;
+        }
+        cuenta.setSaldoActual(cuenta.getSaldoActual() + monto);
+        cuentaCSV.actualizar(cuenta, "src/main/resources/archivos/cuentas.csv");
+        if (mainController != null) {
+            mainController.refrescarCuentas();
+        }
+        Stage stage = (Stage) abonarButton.getScene().getWindow();
+        stage.close();
     }
 
     @FXML
     private void handleCancelar() {
-        cerrarVentana();
-    }
-
-    private void mostrarError(String mensaje) {
-        errorLabel.setText(mensaje);
-        errorLabel.setVisible(true);
-    }
-
-    private void cerrarVentana() {
-        Stage stage = (Stage) cuentaCombo.getScene().getWindow();
+        Stage stage = (Stage) cancelarButton.getScene().getWindow();
         stage.close();
+    }
+
+    public static void mostrarDialogo(Cuenta cuenta, ClienteMainViewController mainController) {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(ClienteAbonoViewController.class.getResource("/FXML/cilente/ClienteAbonoView.fxml"));
+            javafx.scene.Parent root = loader.load();
+            ClienteAbonoViewController controller = loader.getController();
+            controller.setCuenta(cuenta);
+            controller.setMainController(mainController);
+            Stage stage = new Stage();
+            stage.setTitle("Abonar a Cuenta");
+            stage.setScene(new javafx.scene.Scene(root));
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

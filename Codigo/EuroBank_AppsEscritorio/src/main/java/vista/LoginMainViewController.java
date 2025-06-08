@@ -1,106 +1,100 @@
 package vista;
 
-import controlador.AutentificacionController;
-import controlador.BancoController;
 import javafx.fxml.FXML;
+import javafx.scene.control.TextField;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.stage.Stage;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.stage.Stage;
-import modelo.entidades.Cliente;
+import modelo.persistencia.EmpleadoCSV;
+import modelo.persistencia.ClienteCSV;
 import modelo.entidades.Empleado;
-import modelo.excepciones.AutenticacionFallidaException;
-import modelo.excepciones.EmpleadoNoEncontradoException;
-import vista.cliente.ClienteMainViewController;
-
-import java.io.IOException;
+import modelo.entidades.Cliente;
+import modelo.entidades.Gerente;
+import modelo.entidades.Cajero;
+import modelo.entidades.Ejecutivo;
 
 public class LoginMainViewController {
-    @FXML private TextField usernameField;
-    @FXML private PasswordField passwordField;
-    @FXML private ToggleGroup userTypeGroup;
-    @FXML private Label errorLabel;
 
-    private BancoController bancoController;
-    private AutentificacionController authController;
+    @FXML private TextField usuarioField;
+    @FXML private PasswordField contraseniaField;
+    @FXML private Button loginButton;
+    @FXML private Label mensajeLabel;
 
-    public void initialize() {
-        try {
-            bancoController = new BancoController();
-            authController = new AutentificacionController(bancoController);
-        } catch (IOException e) {
-            mostrarError("Error al inicializar el sistema: " + e.getMessage());
-        }
-    }
+    private EmpleadoCSV empleadoCSV = new EmpleadoCSV();
+    private ClienteCSV clienteCSV = new ClienteCSV();
 
     @FXML
     private void handleLogin() {
-        String username = usernameField.getText();
-        String password = passwordField.getText();
-        boolean isEmpleado = ((RadioButton)userTypeGroup.getSelectedToggle()).getText().equals("Empleado");
+        String usuario = usuarioField.getText();
+        String contrasenia = contraseniaField.getText();
 
-        try {
-            Object usuario = authController.autenticar(username, password, isEmpleado);
+        if (usuario.isEmpty() || contrasenia.isEmpty()) {
+            mensajeLabel.setText("Usuario y contraseña obligatorios.");
+            return;
+        }
 
-            if (usuario instanceof Empleado) {
-                redirigirEmpleado((Empleado)usuario);
-            } else if (usuario instanceof Cliente) {
-                redirigirCliente((Cliente)usuario);
+        Empleado empleado = empleadoCSV.buscarPorUsuario(usuario, contrasenia, "src/main/resources/archivos/empleados.csv");
+        if (empleado != null) {
+            if (empleado instanceof Gerente) {
+                cargarVistaEmpleado("/FXML/empleados/GerenteMainView.fxml", (Gerente) empleado);
+            } else if (empleado instanceof Cajero) {
+                cargarVistaEmpleado("/FXML/empleados/CajeroMainView.fxml", (Cajero) empleado);
+            } else if (empleado instanceof Ejecutivo) {
+                cargarVistaEmpleado("/FXML/empleados/EjecutivoMainView.fxml", (Ejecutivo) empleado);
             }
-        } catch (AutenticacionFallidaException | EmpleadoNoEncontradoException e) {
-            mostrarError("Credenciales incorrectas");
+            Stage stage = (Stage) loginButton.getScene().getWindow();
+            stage.close();
+            return;
+        }
+
+        Cliente cliente = clienteCSV.buscarPorUsuario(usuario, contrasenia, "src/main/resources/archivos/clientes.csv");
+        if (cliente != null) {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/cilente/ClienteMainView.fxml"));
+                Parent root = loader.load();
+                vista.cliente.ClienteMainViewController controller = loader.getController();
+                controller.setClienteActual(cliente);
+                Stage stage = new Stage();
+                stage.setTitle("Panel Cliente");
+                stage.setScene(new Scene(root));
+                stage.show();
+                Stage ventanaActual = (Stage) loginButton.getScene().getWindow();
+                ventanaActual.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return;
+        }
+
+        mensajeLabel.setText("Usuario o contraseña incorrectos.");
+    }
+
+    private void cargarVistaEmpleado(String rutaFXML, Empleado empleado) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(rutaFXML));
+            Parent root = loader.load();
+
+            if (empleado instanceof Gerente) {
+                vista.empleados.GerenteMainViewController controller = loader.getController();
+                controller.setGerente((Gerente) empleado);
+            } else if (empleado instanceof Cajero) {
+                vista.empleados.CajeroMainViewController controller = loader.getController();
+                controller.setCajero((Cajero) empleado);
+            } else if (empleado instanceof Ejecutivo) {
+                vista.empleados.EjecutivoMainViewController controller = loader.getController();
+                controller.setEjecutivo((Ejecutivo) empleado);
+            }
+
+            Stage stage = new Stage();
+            stage.setTitle("Panel Empleado");
+            stage.setScene(new Scene(root));
+            stage.show();
         } catch (Exception e) {
-            mostrarError("Error al iniciar sesión: " + e.getMessage());
+            e.printStackTrace();
         }
-    }
-
-    private void redirigirEmpleado(Empleado empleado) throws IOException {
-        String fxmlFile = "";
-        String titulo = "";
-
-        if (authController.esGerente(empleado)) {
-            fxmlFile = "/FXML/empleados/GerenteMainView.fxml";
-            titulo = "Gerente";
-        } else if (authController.esEjecutivo(empleado)) {
-            fxmlFile = "/FXML/empleados/EjecutivoMainView.fxml";
-            titulo = "Ejecutivo";
-        } else if (authController.esCajero(empleado)) {
-            fxmlFile = "/FXML/empleados/CajeroMainView.fxml";
-            titulo = "Cajero";
-        }
-
-        FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlFile));
-        Parent root = loader.load();
-
-        // Pasar datos al controlador de la siguiente ventana
-        Object controller = loader.getController();
-        if (controller instanceof EmpleadoMainController) {
-            ((EmpleadoMainController)controller).setEmpleado(empleado);
-        }
-
-        Stage stage = (Stage) usernameField.getScene().getWindow();
-        stage.setScene(new Scene(root));
-        stage.setTitle("EuroBank - " + titulo);
-        stage.show();
-    }
-
-    private void redirigirCliente(Cliente cliente) throws IOException {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/cliente/ClienteMainView.fxml"));
-        Parent root = loader.load();
-
-        ClienteMainViewController controller = loader.getController();
-        controller.setCliente(cliente);
-        controller.setBancoController(bancoController);
-
-        Stage stage = (Stage) usernameField.getScene().getWindow();
-        stage.setScene(new Scene(root));
-        stage.setTitle("EuroBank - Cliente");
-        stage.show();
-    }
-
-    private void mostrarError(String mensaje) {
-        errorLabel.setText(mensaje);
-        errorLabel.setVisible(true);
     }
 }

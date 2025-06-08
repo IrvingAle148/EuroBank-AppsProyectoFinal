@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?xml version="1.0" encoding="UTF-8"?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="vista.formularioAgregarEditar.EmpleadoFormularioViewController"
+      spacing="10" alignment="CENTER" style="-fx-padding: 25;">
+    <Label fx:id="tituloLabel" style="-fx-font-size: 18; -fx-font-weight: bold;"/>
+
+    <HBox spacing="5">
+        <Label text="ID:" minWidth="120"/>
+        <TextField fx:id="idField" editable="true"/>
+    </HBox>
+    <HBox spacing="5">
+        <Label text="Nombre:" minWidth="120"/>
+        <TextField fx:id="nombreField"/>
+    </HBox>
+    <HBox spacing="5">
+        <Label text="Dirección:" minWidth="120"/>
+        <TextField fx:id="direccionField"/>
+    </HBox>
+    <HBox spacing="5">
+        <Label text="Fecha de Nacimiento:" minWidth="120"/>
+        <DatePicker fx:id="fechaNacimientoPicker"/>
+    </HBox>
+    <HBox spacing="5">
+        <Label text="Género:" minWidth="120"/>
+        <TextField fx:id="generoField"/>
+    </HBox>
+    <HBox spacing="5">
+        <Label text="Salario:" minWidth="120"/>
+        <TextField fx:id="salarioField"/>
+    </HBox>
+    <HBox spacing="5">
+        <Label text="Usuario:" minWidth="120"/>
+        <TextField fx:id="usuarioField"/>
+    </HBox>
+    <HBox spacing="5">
+        <Label text="Contrasenia:" minWidth="120"/>
+        <PasswordField fx:id="contraseniaField"/>
+    </HBox>
+    <HBox spacing="5">
+        <Label text="Sucursal:" minWidth="120"/>
+        <ComboBox fx:id="sucursalCombo"/>
+    </HBox>
+    <HBox spacing="5">
+        <Label text="Tipo de Empleado:" minWidth="120"/>
+        <ComboBox fx:id="tipoEmpleadoCombo"/>
+    </HBox>
+
+    <!-- Panel dinámico para Cajero -->
+    <HBox fx:id="panelCajero" spacing="5" visible="false" managed="false">
+        <Label text="Horario de Trabajo:" minWidth="120"/>
+        <TextField fx:id="horarioTrabajoField"/>
+        <Label text="Número de Ventanilla:" minWidth="120"/>
+        <TextField fx:id="numeroVentanillaField"/>
+    </HBox>
+
+    <!-- Panel dinámico para Ejecutivo -->
+    <HBox fx:id="panelEjecutivo" spacing="5" visible="false" managed="false">
+        <Label text="N° Clientes Asignados:" minWidth="120"/>
+        <TextField fx:id="numClientesAsignadosField"/>
+        <Label text="Especialización:" minWidth="120"/>
+        <TextField fx:id="especializacionField"/>
+    </HBox>
+
+    <!-- Panel dinámico para Gerente -->
+    <HBox fx:id="panelGerente" spacing="5" visible="false" managed="false">
+        <Label text="Nivel de Acceso:" minWidth="120"/>
+        <ComboBox fx:id="nivelAccesoCombo"/>
+        <Label text="Años de Experiencia:" minWidth="120"/>
+        <TextField fx:id="aniosExperienciaField"/>
+    </HBox>
+
+    <HBox spacing="15" alignment="CENTER">
+        <Button text="Guardar" fx:id="guardarBtn" onAction="#onGuardar"/>
+        <Button text="Cancelar" fx:id="cancelarBtn" onAction="#onCancelar"/>
+    </HBox>
+</VBox>
+
+

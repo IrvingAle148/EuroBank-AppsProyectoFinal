@@ -2,76 +2,88 @@ package modelo.persistencia;
 
 import modelo.entidades.Sucursal;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class SucursalCSV {
-    public void guardar(List<Sucursal> sucursales, String rutaArchivo) throws IOException {
-        try (PrintWriter writer = new PrintWriter(new FileWriter(rutaArchivo))) {
-            writer.println("ID,Nombre,Direccion,Telefono,Correo,NombreGerente,PersonaContacto");
 
-            for (Sucursal s : sucursales) {
-                writer.println(String.join(",",
-                        escapeCSV(s.getId()),
-                        escapeCSV(s.getNombre()),
-                        escapeCSV(s.getDireccion()),
-                        escapeCSV(s.getTelefono()),
-                        escapeCSV(s.getCorreo()),
-                        escapeCSV(s.getNombreGerente()),
-                        escapeCSV(s.getPersonaContacto())
-                ));
-            }
-        }
-    }
-
-    public List<Sucursal> cargar(String rutaArchivo) throws IOException {
+    public List<Sucursal> cargar(String rutaArchivo) {
         List<Sucursal> sucursales = new ArrayList<>();
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(rutaArchivo))) {
-            reader.readLine(); // Saltar encabezados
-
+        try (BufferedReader br = new BufferedReader(new FileReader(rutaArchivo))) {
             String linea;
-            while ((linea = reader.readLine()) != null) {
-                String[] datos = parseCSVLine(linea);
-                if (datos.length >= 7) {
+            while ((linea = br.readLine()) != null) {
+                String[] partes = linea.split(",");
+                if (partes.length >= 7) {
                     Sucursal sucursal = new Sucursal(
-                            datos[0], // id
-                            datos[1], // nombre
-                            datos[2], // direccion
-                            datos[3], // telefono
-                            datos[4], // correo
-                            datos[5], // nombreGerente
-                            datos[6]  // personaContacto
+                            partes[0], // numeroIdentificacion
+                            partes[1], // nombre
+                            partes[2], // direccion
+                            partes[3], // telefono
+                            partes[4], // correo
+                            partes[5], // nombreGerente
+                            partes[6]  // personaContacto
                     );
                     sucursales.add(sucursal);
                 }
             }
+        } catch (Exception e) {
+            System.out.println("Error leyendo sucursales: " + e.getMessage());
         }
         return sucursales;
     }
 
-    private String escapeCSV(String value) {
-        if (value == null) return "";
-        return value.contains(",") ? "\"" + value + "\"" : value;
+    public void guardarUno(Sucursal sucursal, String rutaArchivo) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaArchivo, true))) {
+            bw.write(sucursal.getNumeroIdentificacion() + "," +
+                    sucursal.getNombre() + "," +
+                    sucursal.getDireccion() + "," +
+                    sucursal.getTelefono() + "," +
+                    sucursal.getCorreo() + "," +
+                    sucursal.getNombreGerente() + "," +
+                    sucursal.getPersonaContacto());
+            bw.newLine();
+        } catch (Exception e) {
+            System.out.println("Error guardando sucursal: " + e.getMessage());
+        }
     }
 
-    private String[] parseCSVLine(String line) {
-        // Lógica para manejar comas dentro de campos entre comillas
-        List<String> values = new ArrayList<>();
-        boolean inQuotes = false;
-        StringBuilder buffer = new StringBuilder();
-
-        for (char c : line.toCharArray()) {
-            if (c == '"') {
-                inQuotes = !inQuotes;
-            } else if (c == ',' && !inQuotes) {
-                values.add(buffer.toString());
-                buffer = new StringBuilder();
-            } else {
-                buffer.append(c);
+    public void actualizar(Sucursal sucursal, String rutaArchivo) {
+        List<Sucursal> sucursales = cargar(rutaArchivo);
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaArchivo))) {
+            for (Sucursal s : sucursales) {
+                if (s.getNumeroIdentificacion().equals(sucursal.getNumeroIdentificacion())) {
+                    s = sucursal;
+                }
+                bw.write(s.getNumeroIdentificacion() + "," +
+                        s.getNombre() + "," +
+                        s.getDireccion() + "," +
+                        s.getTelefono() + "," +
+                        s.getCorreo() + "," +
+                        s.getNombreGerente() + "," +
+                        s.getPersonaContacto());
+                bw.newLine();
             }
+        } catch (Exception e) {
+            System.out.println("Error actualizando sucursal: " + e.getMessage());
         }
-        values.add(buffer.toString());
-        return values.toArray(new String[0]);
+    }
+
+    public void eliminar(Sucursal sucursal, String rutaArchivo) {
+        List<Sucursal> sucursales = cargar(rutaArchivo);
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaArchivo))) {
+            for (Sucursal s : sucursales) {
+                if (!s.getNumeroIdentificacion().equals(sucursal.getNumeroIdentificacion())) {
+                    bw.write(s.getNumeroIdentificacion() + "," +
+                            s.getNombre() + "," +
+                            s.getDireccion() + "," +
+                            s.getTelefono() + "," +
+                            s.getCorreo() + "," +
+                            s.getNombreGerente() + "," +
+                            s.getPersonaContacto());
+                    bw.newLine();
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error eliminando sucursal: " + e.getMessage());
+        }
     }
 }

@@ -9,19 +9,21 @@
 <Rectangle fx:id="blueFringe" arcHeight="5.0" arcWidth="5.0" fill="#326bc9" height="92.0" stroke="BLACK" strokeType="INSIDE" width="700.0" />
 
 <HBox alignment="CENTER_LEFT" spacing="10">
-    <Button onAction="#handleAgregarEmpleado" text="Agregar" />
-    <Button fx:id="editarButton" disable="true" onAction="#handleEditarEmpleado" text="Editar" />
-    <Button fx:id="eliminarButton" disable="true" onAction="#handleEliminarEmpleado" text="Eliminar" />
-    <Button onAction="#handleExportarEmpleados" text="Exportar" />
-    <Button onAction="#handleVolver" text="Volver" />
+    <Button onAction="#handleAgregar" text="Agregar" />
+    <Button fx:id="editarButton" disable="true" onAction="#handleEditar" text="Editar" />
+    <Button fx:id="eliminarButton" disable="true" onAction="#handleEliminar" text="Eliminar" />
+    <Button onAction="#handleExportar" text="Exportar" />
+    <Button onAction="#handleRegresar" text="Volver" />
 </HBox>
 
-<TableView fx:id="empleadosTable">
-    <columns>
-        <TableColumn fx:id="idColumn" prefWidth="100" text="ID" />
-        <TableColumn fx:id="nombreColumn" prefWidth="137.0" text="Nombre" />
-        <TableColumn fx:id="tipoColumn" prefWidth="114.60000610351562" text="Tipo" />
-        <TableColumn fx:id="sucursalColumn" prefWidth="152.20001220703125" text="Sucursal" />
-    </columns>
-</TableView>
+    <TableView fx:id="empleadosTable" prefWidth="900">
+        <columns>
+            <TableColumn fx:id="nombreCol" text="Nombre"/>
+            <TableColumn fx:id="usuarioCol" text="Usuario"/>
+            <TableColumn fx:id="generoCol" text="Género"/>
+            <TableColumn fx:id="sucursalCol" text="Sucursal"/>
+            <TableColumn fx:id="tipoEmpleadoCol" text="Tipo de Empleado"/>
+        </columns>
+    </TableView>
+
 </VBox>

@@ -13,22 +13,23 @@
                strokeType="INSIDE" width="700.0"/>
 
     <HBox spacing="10" alignment="CENTER_LEFT">
-        <Button text="Agregar" onAction="#handleAgregarCuenta"/>
-        <Button text="Editar" onAction="#handleEditarCuenta"
+        <Button text="Agregar" onAction="#handleAgregar"/>
+        <Button text="Editar" onAction="#handleEditar"
                 disable="true" fx:id="editarButton"/>
-        <Button text="Eliminar" onAction="#handleEliminarCuenta"
+        <Button text="Eliminar" onAction="#handleEliminar"
                 disable="true" fx:id="eliminarButton"/>
-        <Button text="Exportar" onAction="#handleExportarCuentas"/>
-        <Button text="Volver" onAction="#handleVolver"/>
+        <Button text="Exportar" onAction="#handleExportar"/>
+        <Button text="Volver" onAction="#handleRegresar"/>
     </HBox>
 
-    <TableView fx:id="cuentasTable">
+    <TableView fx:id="cuentasTable" prefWidth="900">
         <columns>
-            <TableColumn text="Número" prefWidth="150" fx:id="numeroColumn"/>
-            <TableColumn text="Tipo" prefWidth="100" fx:id="tipoColumn"/>
-            <TableColumn text="Saldo" prefWidth="120" fx:id="saldoColumn"/>
-            <TableColumn text="Límite Crédito" prefWidth="120" fx:id="limiteColumn"/>
-            <TableColumn text="Cliente" prefWidth="200" fx:id="clienteColumn"/>
+            <TableColumn fx:id="clienteCol" text="Cliente"/>
+            <TableColumn fx:id="tipoCol" text="Tipo"/>
+            <TableColumn fx:id="saldoActualCol" text="Saldo Actual"/>
+            <TableColumn fx:id="limiteCreditoCol" text="Límite de Crédito"/>
+            <TableColumn fx:id="sucursalCol" text="Sucursal"/>
         </columns>
     </TableView>
+
 </VBox>

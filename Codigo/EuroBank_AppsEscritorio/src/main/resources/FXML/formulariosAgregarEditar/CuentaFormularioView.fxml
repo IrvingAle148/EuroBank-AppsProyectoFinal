@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox alignment="CENTER" spacing="10" style="-fx-padding: 25;" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/17.0.12" fx:controller="vista.formularioAgregarEditar.CuentaFormularioViewController">
+    <Label style="-fx-font-size: 18; -fx-font-weight: bold;" />
+
+    <HBox spacing="5">
+        <Label minWidth="140" text="Número de Cuenta:" />
+        <TextField fx:id="numeroCuentaField" editable="false" />
+    </HBox>
+    <HBox spacing="5">
+        <Label minWidth="140" text="Tipo de Cuenta:" />
+        <ComboBox fx:id="tipoCombo" />
+    </HBox>
+    <HBox spacing="5">
+        <Label minWidth="140" text="Saldo Actual:" />
+        <TextField fx:id="saldoActualField" promptText="Ingrese saldo inicial" />
+    </HBox>
+    <HBox spacing="5">
+        <Label minWidth="140" text="Límite de Crédito:" />
+        <TextField fx:id="limiteCreditoField" promptText="Ingrese límite de crédito (0 si no aplica)" />
+    </HBox>
+    <HBox spacing="5">
+        <Label minWidth="140" text="Cliente:" />
+        <ComboBox fx:id="clienteCombo" />
+    </HBox>
+    <HBox spacing="5">
+        <Label minWidth="140" text="Sucursal:" />
+        <ComboBox fx:id="sucursalCombo" />
+    </HBox>
+
+    <HBox alignment="CENTER" spacing="15">
+        <Button fx:id="guardarBtn" onAction="#onGuardar" text="Guardar" />
+        <Button fx:id="cancelarBtn" onAction="#onCancelar" text="Cancelar" />
+    </HBox>
+</VBox>

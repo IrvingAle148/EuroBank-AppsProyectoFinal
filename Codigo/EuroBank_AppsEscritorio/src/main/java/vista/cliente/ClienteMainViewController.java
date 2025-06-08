@@ -1,90 +1,106 @@
 package vista.cliente;
 
-import controlador.BancoController;
-import controlador.TransaccionController;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.stage.Stage;
+import javafx.scene.control.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import modelo.entidades.Cliente;
-
-import java.io.IOException;
+import modelo.entidades.Cuenta;
+import modelo.persistencia.ClienteCSV;
+import modelo.persistencia.CuentaCSV;
+import javafx.stage.Stage;
+import javafx.scene.control.cell.PropertyValueFactory;
 
 public class ClienteMainViewController {
-    @FXML private Label welcomeLabel;
-    @FXML private Label balanceLabel;
 
-    private Cliente cliente;
-    private BancoController bancoController;
-    private TransaccionController transaccionController;
+    @FXML private Label nombreClienteLabel;
+    @FXML private Label saldoTotalLabel;
+    @FXML private TableView<Cuenta> cuentasTableView;
+    @FXML private TableColumn<Cuenta, String> numeroCuentaColumn;
+    @FXML private TableColumn<Cuenta, String> tipoCuentaColumn;
+    @FXML private TableColumn<Cuenta, Double> saldoCuentaColumn;
+    @FXML private Button abonoButton;
+    @FXML private Button retiroButton;
+    @FXML private Button transferenciaButton;
+    @FXML private Button cerrarSesionButton;
+    @FXML private Label mensajeLabel;
 
-    public void setCliente(Cliente cliente) {
-        this.cliente = cliente;
-        welcomeLabel.setText("Bienvenido, " + cliente.getNombre());
-        actualizarBalance();
+    private Cliente clienteActual;
+    private ObservableList<Cuenta> cuentasDelCliente = FXCollections.observableArrayList();
+    private CuentaCSV cuentaCSV = new CuentaCSV();
+    private ClienteCSV clienteCSV = new ClienteCSV();
+
+    public void setClienteActual(Cliente cliente) {
+        this.clienteActual = cliente;
+        nombreClienteLabel.setText(cliente.getNombre() + " " + cliente.getApellidos());
+        cargarCuentas();
+        actualizarSaldoTotal();
     }
 
-    public void setBancoController(BancoController bancoController) {
-        this.bancoController = bancoController;
-        this.transaccionController = new TransaccionController(bancoController);
+    private void cargarCuentas() {
+        cuentasDelCliente.setAll(
+                cuentaCSV.cargar("src/main/resources/archivos/cuentas.csv")
+                        .stream()
+                        .filter(c -> c.getCliente().getRfcCurp().equals(clienteActual.getRfcCurp()))
+                        .toList()
+        );
+        cuentasTableView.setItems(cuentasDelCliente);
     }
 
-    private void actualizarBalance() {
-        try {
-            double balance = bancoController.obtenerCuentasPorCliente(cliente.getRfcCurp()).stream()
-                    .mapToDouble(c -> c.getSaldoActual())
-                    .sum();
-            balanceLabel.setText(String.format("Balance total: €%.2f", balance));
-        } catch (Exception e) {
-            balanceLabel.setText("Error al calcular balance");
+    private void actualizarSaldoTotal() {
+        double total = cuentasDelCliente.stream()
+                .mapToDouble(Cuenta::getSaldoActual)
+                .sum();
+        saldoTotalLabel.setText(String.format("Saldo total: €%.2f", total));
+    }
+
+    @FXML
+    private void initialize() {
+        numeroCuentaColumn.setCellValueFactory(new PropertyValueFactory<>("numeroCuenta"));
+        tipoCuentaColumn.setCellValueFactory(new PropertyValueFactory<>("tipo"));
+        saldoCuentaColumn.setCellValueFactory(new PropertyValueFactory<>("saldoActual"));
+        cuentasTableView.setItems(cuentasDelCliente);
+    }
+
+    @FXML
+    private void handleAbono() {
+        Cuenta cuenta = cuentasTableView.getSelectionModel().getSelectedItem();
+        if (cuenta == null) {
+            mensajeLabel.setText("Selecciona una cuenta para abonar.");
+            return;
         }
+        ClienteAbonoViewController.mostrarDialogo(cuenta, this);
     }
 
     @FXML
-    private void handleAbono() throws IOException {
-        cargarVentanaTransaccion("/FXML/cliente/ClienteAbonoView.fxml", "Realizar Abono");
-    }
-
-    @FXML
-    private void handleRetiro() throws IOException {
-        cargarVentanaTransaccion("/FXML/cliente/ClienteRetiroView.fxml", "Realizar Retiro");
-    }
-
-    @FXML
-    private void handleTransferencia() throws IOException {
-        cargarVentanaTransaccion("/FXML/cliente/ClienteTransaccionView.fxml", "Realizar Transferencia");
-    }
-
-    @FXML
-    private void handleLogout() throws IOException {
-        volverALogin();
-    }
-
-    private void cargarVentanaTransaccion(String fxmlFile, String titulo) throws IOException {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlFile));
-        Parent root = loader.load();
-
-        Object controller = loader.getController();
-        if (controller instanceof ClienteTransaccionBaseController) {
-            ((ClienteTransaccionBaseController)controller).setCliente(cliente);
-            ((ClienteTransaccionBaseController)controller).setBancoController(bancoController);
+    private void handleRetiro() {
+        Cuenta cuenta = cuentasTableView.getSelectionModel().getSelectedItem();
+        if (cuenta == null) {
+            mensajeLabel.setText("Selecciona una cuenta para retirar.");
+            return;
         }
-
-        Stage stage = new Stage();
-        stage.setScene(new Scene(root));
-        stage.setTitle(titulo);
-        stage.show();
+        ClienteRetiroViewController.mostrarDialogo(cuenta, this);
     }
 
-    private void volverALogin() throws IOException {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/LoginMainView.fxml"));
-        Parent root = loader.load();
+    @FXML
+    private void handleTransferencia() {
+        Cuenta cuenta = cuentasTableView.getSelectionModel().getSelectedItem();
+        if (cuenta == null) {
+            mensajeLabel.setText("Selecciona una cuenta para transferir.");
+            return;
+        }
+        ClienteTransaccionViewController.mostrarDialogo(cuenta, this);
+    }
 
-        Stage stage = (Stage) welcomeLabel.getScene().getWindow();
-        stage.setScene(new Scene(root));
-        stage.setTitle("EuroBank - Login");
-        stage.show();
+    @FXML
+    private void handleCerrarSesion() {
+        Stage stage = (Stage) cerrarSesionButton.getScene().getWindow();
+        stage.close();
+    }
+
+    public void refrescarCuentas() {
+        cargarCuentas();
+        actualizarSaldoTotal();
+        mensajeLabel.setText("");
     }
 }

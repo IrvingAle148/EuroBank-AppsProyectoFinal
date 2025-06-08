@@ -2,56 +2,71 @@ package controlador;
 
 import modelo.entidades.Cliente;
 import modelo.excepciones.ClienteNoEncontradoException;
+import modelo.excepciones.ElementoDuplicadoException;
+import modelo.excepciones.ValidacionException;
 import modelo.persistencia.ClienteCSV;
-
-import java.io.IOException;
 import java.util.List;
 
 public class ClienteController {
-    private final BancoController bancoController;
+    private ClienteCSV clienteCSV = new ClienteCSV();
+    private String rutaArchivo = "src/main/resources/archivos/clientes.csv";
 
-    public ClienteController(BancoController bancoController) {
-        this.bancoController = bancoController;
+    public List<Cliente> obtenerTodos() {
+        return clienteCSV.cargar(rutaArchivo);
     }
 
-    public void registrarCliente(Cliente cliente) throws ClienteNoEncontradoException, IOException {
-        bancoController.agregarCliente(cliente);
-        bancoController.guardarDatos();
+    public void agregarCliente(Cliente cliente) throws ElementoDuplicadoException, ValidacionException {
+
+        if (cliente.getRfcCurp() == null || cliente.getRfcCurp().isBlank())
+            throw new ValidacionException("El RFC/CURP no puede estar vacío.");
+        if (cliente.getUsuario() == null || cliente.getUsuario().isBlank())
+            throw new ValidacionException("El usuario no puede estar vacío.");
+        if (cliente.getNombre() == null || cliente.getNombre().isBlank())
+            throw new ValidacionException("El nombre no puede estar vacío.");
+        if (cliente.getContrasenia() == null || cliente.getContrasenia().isBlank())
+            throw new ValidacionException("La contraseña no puede estar vacía.");
+
+        if (buscarPorRFC(cliente.getRfcCurp()) != null)
+            throw new ElementoDuplicadoException("Ya existe un cliente con este RFC/CURP.");
+        if (buscarPorUsuario(cliente.getUsuario()) != null)
+            throw new ElementoDuplicadoException("Ya existe un cliente con este usuario.");
+
+        clienteCSV.guardarUno(cliente, rutaArchivo);
     }
 
-    public Cliente buscarCliente(String rfc) {
-        return bancoController.buscarClientePorRFC(rfc);
+    public void editarCliente(Cliente cliente) throws ValidacionException, ClienteNoEncontradoException {
+        if (cliente.getRfcCurp() == null || cliente.getRfcCurp().isBlank())
+            throw new ValidacionException("El RFC/CURP no puede estar vacío.");
+        if (buscarPorRFC(cliente.getRfcCurp()) == null)
+            throw new ClienteNoEncontradoException("No se encontró el cliente con ese RFC/CURP.");
+        clienteCSV.actualizar(cliente, rutaArchivo);
+        clienteCSV.actualizar(cliente, rutaArchivo);
     }
 
-    public List<Cliente> listarClientes() {
-        return bancoController.obtenerTodosClientes();
+    public void eliminarCliente(Cliente cliente) throws ClienteNoEncontradoException {
+        if (buscarPorRFC(cliente.getRfcCurp()) == null)
+            throw new ClienteNoEncontradoException("No se encontró el cliente con ese RFC/CURP.");
+        clienteCSV.eliminar(cliente, rutaArchivo);
     }
 
-    public List<Cliente> buscarClientes(String criterio) {
-        return bancoController.buscarClientes(criterio);
+    public Cliente buscarPorRFC(String rfc) {
+        return obtenerTodos().stream()
+                .filter(c -> c.getRfcCurp().equals(rfc))
+                .findFirst()
+                .orElse(null);
     }
 
-    public boolean actualizarCliente(Cliente cliente) throws IOException {
-        try {
-            bancoController.eliminarCliente(cliente.getRfcCurp());
-            bancoController.agregarCliente(cliente);
-            bancoController.guardarDatos();
-            return true;
-        } catch (ClienteNoEncontradoException e) {
-            return false;
-        }
+    public Cliente buscarPorUsuario(String usuario) {
+        return obtenerTodos().stream()
+                .filter(c -> c.getUsuario().equals(usuario))
+                .findFirst()
+                .orElse(null);
     }
 
-    public boolean eliminarCliente(String rfc) throws IOException {
-        boolean eliminado = bancoController.eliminarCliente(rfc);
-        if (eliminado) {
-            bancoController.guardarDatos();
-        }
-        return eliminado;
-    }
-
-    public void exportarClientesACSV(String rutaDestino) throws IOException {
-        ClienteCSV csv = new ClienteCSV();
-        csv.guardar(bancoController.obtenerTodosClientes(), rutaDestino);
+    public Cliente autenticar(String usuario, String contrasenia) {
+        return obtenerTodos().stream()
+                .filter(c -> c.getUsuario().equals(usuario) && c.getContrasenia().equals(contrasenia))
+                .findFirst()
+                .orElse(null);
     }
 }

@@ -13,19 +13,20 @@
                strokeType="INSIDE" width="925.0"/>
 
     <HBox spacing="10" alignment="CENTER_LEFT">
-        <Button text="Exportar" onAction="#handleExportarTransacciones"/>
-        <Button text="Volver" onAction="#handleVolver"/>
+        <Button text="Exportar" onAction="#handleExportar"/>
+        <Button text="Volver" onAction="#handleRegresar"/>
     </HBox>
 
-    <TableView fx:id="transaccionesTable">
+    <TableView fx:id="transaccionesTable" prefWidth="1100">
         <columns>
-            <TableColumn text="ID" prefWidth="100" fx:id="idColumn"/>
-            <TableColumn text="Fecha" prefWidth="150" fx:id="fechaColumn"/>
-            <TableColumn text="Tipo" prefWidth="100" fx:id="tipoColumn"/>
-            <TableColumn text="Monto" prefWidth="120" fx:id="montoColumn"/>
-            <TableColumn text="Cuenta Origen" prefWidth="150" fx:id="cuentaOrigenColumn"/>
-            <TableColumn text="Cuenta Destino" prefWidth="150" fx:id="cuentaDestinoColumn"/>
-            <TableColumn text="Sucursal" prefWidth="150" fx:id="sucursalColumn"/>
+            <TableColumn fx:id="idCol" text="ID"/>
+            <TableColumn fx:id="montoCol" text="Monto"/>
+            <TableColumn fx:id="fechaHoraCol" text="Fecha/Hora"/>
+            <TableColumn fx:id="tipoCol" text="Tipo"/>
+            <TableColumn fx:id="cuentaOrigenCol" text="Cuenta Origen"/>
+            <TableColumn fx:id="cuentaDestinoCol" text="Cuenta Destino"/>
+            <TableColumn fx:id="sucursalCol" text="Sucursal"/>
         </columns>
     </TableView>
+
 </VBox>

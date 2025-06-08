@@ -2,82 +2,101 @@ package modelo.persistencia;
 
 import modelo.entidades.Cliente;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDate;
+import java.util.*;
 
 public class ClienteCSV {
-    public void guardar(List<Cliente> clientes, String rutaArchivo) throws IOException {
-        try (PrintWriter writer = new PrintWriter(new FileWriter(rutaArchivo))) {
-            // Encabezados
-            writer.println("RFC,Nombre,Apellidos,Nacionalidad,FechaNacimiento,Direccion,Telefono,Correo,Contrasenia");
 
-            for (Cliente c : clientes) {
-                writer.println(String.join(",",
-                        escapeCSV(c.getRfcCurp()),
-                        escapeCSV(c.getNombre()),
-                        escapeCSV(c.getApellidos()),
-                        escapeCSV(c.getNacionalidad()),
-                        escapeCSV(c.getFechaNacimiento()),
-                        escapeCSV(c.getDireccion()),
-                        escapeCSV(c.getTelefono()),
-                        escapeCSV(c.getCorreo()),
-                        escapeCSV(c.getContrasenia())
-                ));
-            }
-        }
-    }
-
-    public List<Cliente> cargar(String rutaArchivo) throws IOException {
+    public List<Cliente> cargar(String rutaArchivo) {
         List<Cliente> clientes = new ArrayList<>();
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(rutaArchivo))) {
-            // Saltar encabezados
-            reader.readLine();
-
+        try (BufferedReader br = new BufferedReader(new FileReader(rutaArchivo))) {
             String linea;
-            while ((linea = reader.readLine()) != null) {
-                String[] datos = parseCSVLine(linea);
-                if (datos.length >= 9) {
+            while ((linea = br.readLine()) != null) {
+                String[] partes = linea.split(",");
+                if (partes.length >= 10) {
                     Cliente cliente = new Cliente(
-                            datos[1], // nombre
-                            datos[2], // apellidos
-                            datos[3], // nacionalidad
-                            datos[4], // fecha nacimiento
-                            datos[0], // rfc
-                            datos[5], // direccion
-                            datos[6], // telefono
-                            datos[7], // correo
-                            datos[8]  // contrasenia
+                            partes[0], // nombre
+                            partes[1], // apellidos
+                            partes[2], // nacionalidad
+                            LocalDate.parse(partes[3]), // fechaNacimiento
+                            partes[4], // rfcCurp
+                            partes[5], // direccion
+                            partes[6], // telefono
+                            partes[7], // correo
+                            partes[8], // usuario
+                            partes[9]  // contrasenia
                     );
                     clientes.add(cliente);
                 }
             }
+        } catch (Exception e) {
+            System.out.println("Error leyendo clientes: " + e.getMessage());
         }
         return clientes;
     }
 
-    private String escapeCSV(String value) {
-        if (value == null) return "";
-        return value.contains(",") ? "\"" + value + "\"" : value;
+    public void guardarUno(Cliente cliente, String rutaArchivo) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaArchivo, true))) {
+            bw.write(cliente.getNombre() + "," +
+                    cliente.getApellidos() + "," +
+                    cliente.getNacionalidad() + "," +
+                    cliente.getFechaNacimiento() + "," +
+                    cliente.getRfcCurp() + "," +
+                    cliente.getDireccion() + "," +
+                    cliente.getTelefono() + "," +
+                    cliente.getCorreo() + "," +
+                    cliente.getUsuario() + "," +
+                    cliente.getContrasenia());
+            bw.newLine();
+        } catch (Exception e) {
+            System.out.println("Error guardando cliente: " + e.getMessage());
+        }
     }
 
-    private String[] parseCSVLine(String line) {
-        // Lógica para manejar comas dentro de campos entre comillas
-        List<String> values = new ArrayList<>();
-        boolean inQuotes = false;
-        StringBuilder buffer = new StringBuilder();
-
-        for (char c : line.toCharArray()) {
-            if (c == '"') {
-                inQuotes = !inQuotes;
-            } else if (c == ',' && !inQuotes) {
-                values.add(buffer.toString());
-                buffer = new StringBuilder();
-            } else {
-                buffer.append(c);
+    public void actualizar(Cliente cliente, String rutaArchivo) {
+        List<Cliente> clientes = cargar(rutaArchivo);
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaArchivo))) {
+            for (Cliente c : clientes) {
+                if (c.getRfcCurp().equals(cliente.getRfcCurp())) {
+                    c = cliente;
+                }
+                bw.write(c.getNombre() + "," +
+                        c.getApellidos() + "," +
+                        c.getNacionalidad() + "," +
+                        c.getFechaNacimiento() + "," +
+                        c.getRfcCurp() + "," +
+                        c.getDireccion() + "," +
+                        c.getTelefono() + "," +
+                        c.getCorreo() + "," +
+                        c.getUsuario() + "," +
+                        c.getContrasenia());
+                bw.newLine();
             }
+        } catch (Exception e) {
+            System.out.println("Error actualizando cliente: " + e.getMessage());
         }
-        values.add(buffer.toString());
-        return values.toArray(new String[0]);
+    }
+
+    public void eliminar(Cliente cliente, String rutaArchivo) {
+        List<Cliente> clientes = cargar(rutaArchivo);
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaArchivo))) {
+            for (Cliente c : clientes) {
+                if (!c.getRfcCurp().equals(cliente.getRfcCurp())) {
+                    bw.write(c.getNombre() + "," +
+                            c.getApellidos() + "," +
+                            c.getNacionalidad() + "," +
+                            c.getFechaNacimiento() + "," +
+                            c.getRfcCurp() + "," +
+                            c.getDireccion() + "," +
+                            c.getTelefono() + "," +
+                            c.getCorreo() + "," +
+                            c.getUsuario() + "," +
+                            c.getContrasenia());
+                    bw.newLine();
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error eliminando cliente: " + e.getMessage());
+        }
     }
 }

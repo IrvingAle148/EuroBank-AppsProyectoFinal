@@ -1,75 +1,68 @@
 package controlador;
 
-import modelo.entidades.*;
-import modelo.excepciones.*;
+import modelo.entidades.Empleado;
+import modelo.entidades.Sucursal;
 import modelo.persistencia.EmpleadoCSV;
+import modelo.excepciones.ElementoDuplicadoException;
+import modelo.excepciones.ValidacionException;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 public class EmpleadoController {
-    private final BancoController bancoController;
+    private EmpleadoCSV empleadoCSV = new EmpleadoCSV();
+    private String rutaArchivo = "src/main/resources/archivos/empleados.csv";
 
-    public EmpleadoController(BancoController bancoController) {
-        this.bancoController = bancoController;
+    public List<Empleado> obtenerTodos(Map<String, Sucursal> sucursales) {
+        return empleadoCSV.cargar(rutaArchivo, sucursales);
     }
 
-    public void registrarEmpleado(Empleado empleado) throws IOException {
-        bancoController.agregarEmpleado(empleado);
-        bancoController.guardarDatos();
+    public void agregarEmpleado(Empleado empleado, Map<String, Sucursal> sucursales)
+            throws ElementoDuplicadoException, ValidacionException {
+        if (empleado.getId() == null || empleado.getId().isBlank())
+            throw new ValidacionException("El ID de empleado no puede estar vacío.");
+        if (buscarPorId(empleado.getId(), sucursales) != null)
+            throw new ElementoDuplicadoException("Ya existe un empleado con este ID.");
+        if (buscarPorUsuario(empleado.getUsuario(), sucursales) != null)
+            throw new ElementoDuplicadoException("Ya existe un empleado con este usuario.");
+        empleadoCSV.guardarUno(empleado, rutaArchivo);
     }
 
-    public Empleado buscarEmpleado(String id) {
-        return bancoController.buscarEmpleadoPorId(id);
+    public void editarEmpleado(Empleado empleado, Map<String, Sucursal> sucursales)
+            throws ValidacionException {
+        if (empleado.getId() == null || empleado.getId().isBlank())
+            throw new ValidacionException("El ID de empleado no puede estar vacío.");
+        empleadoCSV.actualizar(empleado, rutaArchivo, sucursales);
     }
 
-    public List<Empleado> listarEmpleados() {
-        return bancoController.obtenerTodosEmpleados();
+    public void eliminarEmpleado(Empleado empleado, Map<String, Sucursal> sucursales) {
+        empleadoCSV.eliminar(empleado, rutaArchivo, sucursales);
     }
 
-    public List<Empleado> buscarEmpleados(String criterio) {
-        return bancoController.buscarEmpleados(criterio);
+    public Empleado buscarPorId(String id, Map<String, Sucursal> sucursales) {
+        return empleadoCSV.cargar(rutaArchivo, sucursales)
+                .stream()
+                .filter(e -> e.getId().equals(id))
+                .findFirst()
+                .orElse(null);
     }
 
-    public boolean actualizarEmpleado(Empleado empleado) throws IOException {
-        bancoController.eliminarEmpleado(empleado.getId());
-        bancoController.agregarEmpleado(empleado);
-        bancoController.guardarDatos();
-        return true;
+    public Empleado buscarPorUsuario(String usuario, Map<String, Sucursal> sucursales) {
+        return empleadoCSV.cargar(rutaArchivo, sucursales)
+                .stream()
+                .filter(e -> e.getUsuario().equals(usuario))
+                .findFirst()
+                .orElse(null);
     }
 
-    public boolean eliminarEmpleado(String id) throws IOException {
-        boolean eliminado = bancoController.eliminarEmpleado(id);
-        if (eliminado) {
-            bancoController.guardarDatos();
-        }
-        return eliminado;
-    }
-
-    public void exportarEmpleadosACSV(String rutaDestino) throws IOException {
-        EmpleadoCSV csv = new EmpleadoCSV();
-        csv.guardar(bancoController.obtenerTodosEmpleados(), rutaDestino);
-    }
-
-    public List<Cajero> listarCajeros() {
-        return bancoController.obtenerTodosEmpleados().stream()
-                .filter(e -> e instanceof Cajero)
-                .map(e -> (Cajero) e)
-                .collect(Collectors.toList());
-    }
-
-    public List<Ejecutivo> listarEjecutivos() {
-        return bancoController.obtenerTodosEmpleados().stream()
-                .filter(e -> e instanceof Ejecutivo)
-                .map(e -> (Ejecutivo) e)
-                .collect(Collectors.toList());
-    }
-
-    public List<Gerente> listarGerentes() {
-        return bancoController.obtenerTodosEmpleados().stream()
-                .filter(e -> e instanceof Gerente)
-                .map(e -> (Gerente) e)
-                .collect(Collectors.toList());
+    public Empleado autenticar(String usuario, String contrasenia) {
+        return empleadoCSV.cargar(rutaArchivo, null)
+                .stream()
+                .filter(e -> e.getUsuario().equals(usuario) && e.getContrasenia().equals(contrasenia))
+                .findFirst()
+                .orElse(null);
     }
 }
+
+
+

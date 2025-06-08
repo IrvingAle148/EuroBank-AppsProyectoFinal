@@ -1,11 +1,7 @@
 package modelo.entidades;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
-public class Sucursal implements Serializable {
-    private String id;
+public class Sucursal {
+    private String numeroIdentificacion;
     private String nombre;
     private String direccion;
     private String telefono;
@@ -13,24 +9,20 @@ public class Sucursal implements Serializable {
     private String nombreGerente;
     private String personaContacto;
 
-    private ArrayList<Cuenta> cuentas;
-    private ArrayList<Empleado> empleados;
-
-    public Sucursal(String id, String nombre, String direccion, String telefono, String correo,
-                    String nombreGerente, String personaContacto) {
-        this.id = id;
+    public Sucursal(String numeroIdentificacion, String nombre, String direccion, String telefono, String correo, String nombreGerente, String personaContacto) {
+        this.numeroIdentificacion = numeroIdentificacion;
         this.nombre = nombre;
         this.direccion = direccion;
         this.telefono = telefono;
         this.correo = correo;
         this.nombreGerente = nombreGerente;
         this.personaContacto = personaContacto;
-        this.cuentas = new ArrayList<>();
-        this.empleados = new ArrayList<>();
     }
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    public Sucursal() {}
+
+    public String getNumeroIdentificacion() { return numeroIdentificacion; }
+    public void setNumeroIdentificacion(String numeroIdentificacion) { this.numeroIdentificacion = numeroIdentificacion; }
 
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }
@@ -50,14 +42,16 @@ public class Sucursal implements Serializable {
     public String getPersonaContacto() { return personaContacto; }
     public void setPersonaContacto(String personaContacto) { this.personaContacto = personaContacto; }
 
-    public List<Cuenta> getCuentas() { return new ArrayList<>(cuentas); }
-    public void setCuenta(Cuenta cuenta) { this.cuentas.add(cuenta); }
-
-    public List<Empleado> getEmpleados() { return new ArrayList<>(empleados); }
-    public void setEmpleado(Empleado empleado) { this.empleados.add(empleado); }
-
-    @Override
+@Override
     public String toString() {
-        return nombre + " (ID: " + id + ")";
+        return "Sucursal{" +
+                "numeroIdentificacion='" + numeroIdentificacion + '\'' +
+                ", nombre='" + nombre + '\'' +
+                ", direccion='" + direccion + '\'' +
+                ", telefono='" + telefono + '\'' +
+                ", correo='" + correo + '\'' +
+                ", nombreGerente='" + nombreGerente + '\'' +
+                ", personaContacto='" + personaContacto + '\'' +
+                '}';
     }
 }

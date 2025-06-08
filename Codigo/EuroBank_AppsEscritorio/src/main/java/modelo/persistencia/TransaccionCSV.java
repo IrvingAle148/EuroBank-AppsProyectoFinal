@@ -1,122 +1,102 @@
 package modelo.persistencia;
 
-import modelo.entidades.*;
+import modelo.entidades.Transaccion;
+import modelo.entidades.Cuenta;
+import modelo.entidades.Sucursal;
 
 import java.io.*;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class TransaccionCSV {
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
-    public void guardar(List<Transaccion> transacciones, String rutaArchivo) throws IOException {
-        try (PrintWriter writer = new PrintWriter(new FileWriter(rutaArchivo))) {
-            writer.println("ID,Monto,FechaHora,Tipo,CuentaOrigen,CuentaDestino,Sucursal");
-
-            for (Transaccion t : transacciones) {
-                writer.println(String.join(",",
-                        escapeCSV(t.getId()),
-                        String.valueOf(t.getMonto()),
-                        escapeCSV(t.getFechaHora().format(formatter)),
-                        escapeCSV(t.getTipo()),
-                        escapeCSV(t.getCuentaOrigen().getNumeroCuenta()),
-                        t.getCuentaDestino() != null ?
-                                escapeCSV(t.getCuentaDestino().getNumeroCuenta()) : "",
-                        escapeCSV(t.getSucursal().getId())
-                ));
-            }
-        }
-    }
-
-    public List<Transaccion> cargar(String rutaArchivo, List<Cuenta> cuentas, List<Sucursal> sucursales) throws IOException {
+    // Cargar todas las transacciones (requiere mapas de cuentas y sucursales para relaciones)
+    public List<Transaccion> cargar(String rutaArchivo, Map<String, Cuenta> cuentas, Map<String, Sucursal> sucursales) {
         List<Transaccion> transacciones = new ArrayList<>();
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(rutaArchivo))) {
-            reader.readLine();
-
+        try (BufferedReader br = new BufferedReader(new FileReader(rutaArchivo))) {
             String linea;
-            while ((linea = reader.readLine()) != null) {
-                String[] datos = parseCSVLine(linea);
+            while ((linea = br.readLine()) != null) {
+                String[] partes = linea.split(",");
+                if (partes.length >= 7) {
+                    String id = partes[0];
+                    double monto = Double.parseDouble(partes[1]);
+                    LocalDateTime fechaHora = LocalDateTime.parse(partes[2]);
+                    String tipo = partes[3];
+                    String numCuentaOrigen = partes[4];
+                    String numCuentaDestino = partes[5];
+                    String numSucursal = partes[6];
 
-                if (datos.length < 7) continue;
+                    Cuenta cuentaOrigen = cuentas != null ? cuentas.get(numCuentaOrigen) : null;
+                    Cuenta cuentaDestino = (numCuentaDestino != null && !numCuentaDestino.isEmpty() && cuentas != null)
+                            ? cuentas.get(numCuentaDestino) : null;
+                    Sucursal sucursal = sucursales != null ? sucursales.get(numSucursal) : null;
 
-                String id = datos[0];
-                String montoStr = datos[1];
-                String fechaStr = datos[2];
-                String tipo = datos[3];
-                String cuentaOrigenId = datos[4];
-                String cuentaDestinoId = datos[5];
-                String sucursalId = datos[6];
-
-                try {
-                    if (id.isEmpty() || montoStr.isEmpty() || fechaStr.isEmpty() ||
-                            tipo.isEmpty() || cuentaOrigenId.isEmpty() || sucursalId.isEmpty()) {
-                        continue; // Datos obligatorios faltantes
-                    }
-
-                    double monto = Double.parseDouble(montoStr);
-                    LocalDateTime fecha = LocalDateTime.parse(fechaStr, formatter);
-                    Cuenta cuentaOrigen = buscarCuenta(cuentas, cuentaOrigenId);
-                    Cuenta cuentaDestino = cuentaDestinoId.isEmpty() ? null : buscarCuenta(cuentas, cuentaDestinoId);
-                    Sucursal sucursal = buscarSucursal(sucursales, sucursalId);
-
-                    if (cuentaOrigen == null || sucursal == null) continue;
-
-                    Transaccion transaccion = new Transaccion(
-                            id, monto, fecha, tipo, cuentaOrigen, cuentaDestino, sucursal
-                    );
-
-                    transacciones.add(transaccion);
-                } catch (RuntimeException e) {
-                    System.err.println("Error al cargar línea: " + linea + " → " + e.getMessage());
+                    Transaccion t = new Transaccion(id, monto, fechaHora, tipo, cuentaOrigen, cuentaDestino, sucursal);
+                    transacciones.add(t);
                 }
             }
+        } catch (Exception e) {
+            System.out.println("Error leyendo transacciones: " + e.getMessage());
         }
-
         return transacciones;
     }
 
-    private String escapeCSV(String value) {
-        if (value == null) return "";
-        return value.contains(",") ? "\"" + value + "\"" : value;
+    // Guardar una transacción
+    public void guardarUno(Transaccion t, String rutaArchivo) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaArchivo, true))) {
+            bw.write(t.getId() + "," +
+                    t.getMonto() + "," +
+                    t.getFechaHora() + "," +
+                    t.getTipo() + "," +
+                    (t.getCuentaOrigen() != null ? t.getCuentaOrigen().getNumeroCuenta() : "") + "," +
+                    (t.getCuentaDestino() != null ? t.getCuentaDestino().getNumeroCuenta() : "") + "," +
+                    (t.getSucursal() != null ? t.getSucursal().getNumeroIdentificacion() : ""));
+            bw.newLine();
+        } catch (Exception e) {
+            System.out.println("Error guardando transacción: " + e.getMessage());
+        }
     }
 
-    private String[] parseCSVLine(String line) {
-        List<String> values = new ArrayList<>();
-        boolean inQuotes = false;
-        StringBuilder buffer = new StringBuilder();
-
-        for (char c : line.toCharArray()) {
-            if (c == '"') {
-                inQuotes = !inQuotes;
-            } else if (c == ',' && !inQuotes) {
-                values.add(buffer.toString());
-                buffer = new StringBuilder();
-            } else {
-                buffer.append(c);
+    // Actualizar una transacción (por ID)
+    public void actualizar(Transaccion transaccion, String rutaArchivo, Map<String, Cuenta> cuentas, Map<String, Sucursal> sucursales) {
+        List<Transaccion> transacciones = cargar(rutaArchivo, cuentas, sucursales);
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaArchivo))) {
+            for (Transaccion t : transacciones) {
+                if (t.getId().equals(transaccion.getId())) {
+                    t = transaccion;
+                }
+                bw.write(t.getId() + "," +
+                        t.getMonto() + "," +
+                        t.getFechaHora() + "," +
+                        t.getTipo() + "," +
+                        (t.getCuentaOrigen() != null ? t.getCuentaOrigen().getNumeroCuenta() : "") + "," +
+                        (t.getCuentaDestino() != null ? t.getCuentaDestino().getNumeroCuenta() : "") + "," +
+                        (t.getSucursal() != null ? t.getSucursal().getNumeroIdentificacion() : ""));
+                bw.newLine();
             }
+        } catch (Exception e) {
+            System.out.println("Error actualizando transacción: " + e.getMessage());
         }
-        values.add(buffer.toString());
-        return values.toArray(new String[0]);
     }
 
-    private Cuenta buscarCuenta(List<Cuenta> cuentas, String numero) {
-        for (Cuenta c : cuentas) {
-            if (c.getNumeroCuenta().equals(numero)) {
-                return c;
+    // Eliminar una transacción (por ID)
+    public void eliminar(Transaccion transaccion, String rutaArchivo, Map<String, Cuenta> cuentas, Map<String, Sucursal> sucursales) {
+        List<Transaccion> transacciones = cargar(rutaArchivo, cuentas, sucursales);
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaArchivo))) {
+            for (Transaccion t : transacciones) {
+                if (!t.getId().equals(transaccion.getId())) {
+                    bw.write(t.getId() + "," +
+                            t.getMonto() + "," +
+                            t.getFechaHora() + "," +
+                            t.getTipo() + "," +
+                            (t.getCuentaOrigen() != null ? t.getCuentaOrigen().getNumeroCuenta() : "") + "," +
+                            (t.getCuentaDestino() != null ? t.getCuentaDestino().getNumeroCuenta() : "") + "," +
+                            (t.getSucursal() != null ? t.getSucursal().getNumeroIdentificacion() : ""));
+                    bw.newLine();
+                }
             }
+        } catch (Exception e) {
+            System.out.println("Error eliminando transacción: " + e.getMessage());
         }
-        return null;
-    }
-
-    private Sucursal buscarSucursal(List<Sucursal> sucursales, String id) {
-        for (Sucursal s : sucursales) {
-            if (s.getId().equals(id)) {
-                return s;
-            }
-        }
-        return null;
     }
 }

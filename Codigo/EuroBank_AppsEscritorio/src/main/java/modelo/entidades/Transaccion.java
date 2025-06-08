@@ -1,20 +1,18 @@
 package modelo.entidades;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public class Transaccion implements Serializable {
+public class Transaccion {
     private String id;
     private double monto;
     private LocalDateTime fechaHora;
-    private String tipo; // DEPOSITO, RETIRO, TRANSFERENCIA
+    private String tipo; // deposito, retiro, transferencia
     private Cuenta cuentaOrigen;
-    private Cuenta cuentaDestino; // Null si no es transferencia
-    private Sucursal sucursal; // Sucursal donde se realizó
+    private Cuenta cuentaDestino; // null si no aplica
+    private Sucursal sucursal;
 
-    public Transaccion(String id, double monto, LocalDateTime fechaHora,
-                       String tipo, Cuenta cuentaOrigen,
-                       Cuenta cuentaDestino, Sucursal sucursal) {
+    public Transaccion(String id, double monto, LocalDateTime fechaHora, String tipo,
+                       Cuenta cuentaOrigen, Cuenta cuentaDestino, Sucursal sucursal) {
         this.id = id;
         this.monto = monto;
         this.fechaHora = fechaHora;
@@ -24,7 +22,8 @@ public class Transaccion implements Serializable {
         this.sucursal = sucursal;
     }
 
-    // Getters y Setters
+    public Transaccion() {}
+
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
@@ -46,16 +45,16 @@ public class Transaccion implements Serializable {
     public Sucursal getSucursal() { return sucursal; }
     public void setSucursal(Sucursal sucursal) { this.sucursal = sucursal; }
 
-    @Override
+@Override
     public String toString() {
-        String descripcion = tipo.toUpperCase() + " - $" + monto + " - " + fechaHora;
-        if (tipo.equalsIgnoreCase("transferencia")) {
-            descripcion += " (De " + cuentaOrigen.getNumeroCuenta() +
-                    " a " + cuentaDestino.getNumeroCuenta() + ")";
-        } else {
-            descripcion += " (Cuenta: " + cuentaOrigen.getNumeroCuenta() + ")";
-        }
-        return descripcion;
+        return "Transaccion{" +
+                "id='" + id + '\'' +
+                ", monto=" + monto +
+                ", fechaHora=" + fechaHora +
+                ", tipo='" + tipo + '\'' +
+                ", cuentaOrigen=" + (cuentaOrigen != null ? cuentaOrigen.getNumeroCuenta() : "null") +
+                ", cuentaDestino=" + (cuentaDestino != null ? cuentaDestino.getNumeroCuenta() : "null") +
+                ", sucursal=" + (sucursal != null ? sucursal.getNumeroIdentificacion() : "null") +
+                '}';
     }
 }
-

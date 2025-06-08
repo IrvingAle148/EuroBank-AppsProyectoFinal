@@ -1,119 +1,100 @@
 package controlador;
 
-import modelo.entidades.*;
-import modelo.excepciones.*;
+import modelo.entidades.Transaccion;
+import modelo.entidades.Cuenta;
+import modelo.entidades.Sucursal;
 import modelo.persistencia.TransaccionCSV;
+import modelo.excepciones.ElementoDuplicadoException;
+import modelo.excepciones.ValidacionException;
+import modelo.excepciones.TransaccionFallidaException;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 public class TransaccionController {
-    private final BancoController bancoController;
+    private TransaccionCSV transaccionCSV = new TransaccionCSV();
+    private String rutaArchivo = "src/main/resources/archivos/transacciones.csv";
 
-    public TransaccionController(BancoController bancoController) {
-        this.bancoController = bancoController;
+    // Carga todas las transacciones, relacionando cuentas y sucursales
+    public List<Transaccion> obtenerTodas(Map<String, Cuenta> cuentas, Map<String, Sucursal> sucursales) throws IOException {
+        // IOException: por error de lectura de archivo
+        return transaccionCSV.cargar(rutaArchivo, cuentas, sucursales);
     }
 
-    public void realizarDeposito(String numeroCuenta, double monto, Sucursal sucursal)
+    // Agrega una nueva transacción (de cualquier tipo)
+    public void agregarTransaccion(Transaccion transaccion, Map<String, Cuenta> cuentas, Map<String, Sucursal> sucursales)
+            throws ElementoDuplicadoException, ValidacionException, IOException {
+        // Validación
+        if (transaccion.getId() == null || transaccion.getId().isBlank())
+            throw new ValidacionException("El ID de transacción no puede estar vacío.");
+        if (buscarPorId(transaccion.getId(), cuentas, sucursales) != null)
+            throw new ElementoDuplicadoException("Ya existe una transacción con este ID.");
+        if (transaccion.getMonto() <= 0)
+            throw new ValidacionException("El monto debe ser positivo.");
+        if (transaccion.getTipo() == null || transaccion.getTipo().isBlank())
+            throw new ValidacionException("El tipo de transacción no puede estar vacío.");
+        if (transaccion.getCuentaOrigen() == null)
+            throw new ValidacionException("La cuenta origen no puede estar vacía.");
+        // Guardar (puede lanzar IOException)
+        transaccionCSV.guardarUno(transaccion, rutaArchivo);
+    }
+
+    // Editar una transacción (opcional)
+    public void editarTransaccion(Transaccion transaccion, Map<String, Cuenta> cuentas, Map<String, Sucursal> sucursales)
+            throws ValidacionException, IOException {
+        if (transaccion.getId() == null || transaccion.getId().isBlank())
+            throw new ValidacionException("El ID de transacción no puede estar vacío.");
+        transaccionCSV.actualizar(transaccion, rutaArchivo, cuentas, sucursales);
+    }
+
+    // Eliminar una transacción (por ID)
+    public void eliminarTransaccion(Transaccion transaccion, Map<String, Cuenta> cuentas, Map<String, Sucursal> sucursales)
+            throws IOException {
+        transaccionCSV.eliminar(transaccion, rutaArchivo, cuentas, sucursales);
+    }
+
+    // Buscar una transacción por ID
+    public Transaccion buscarPorId(String id, Map<String, Cuenta> cuentas, Map<String, Sucursal> sucursales) throws IOException {
+        return transaccionCSV.cargar(rutaArchivo, cuentas, sucursales)
+                .stream()
+                .filter(t -> t.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+
+    // Buscar transacciones por número de cuenta (origen o destino)
+    public List<Transaccion> buscarPorNumeroCuenta(String numeroCuenta, Map<String, Cuenta> cuentas, Map<String, Sucursal> sucursales) throws IOException {
+        return transaccionCSV.cargar(rutaArchivo, cuentas, sucursales)
+                .stream()
+                .filter(t -> (t.getCuentaOrigen() != null && t.getCuentaOrigen().getNumeroCuenta().equals(numeroCuenta))
+                        || (t.getCuentaDestino() != null && t.getCuentaDestino().getNumeroCuenta().equals(numeroCuenta)))
+                .toList();
+    }
+
+    // Buscar por tipo (depósito, retiro, transferencia)
+    public List<Transaccion> buscarPorTipo(String tipo, Map<String, Cuenta> cuentas, Map<String, Sucursal> sucursales) throws IOException {
+        return transaccionCSV.cargar(rutaArchivo, cuentas, sucursales)
+                .stream()
+                .filter(t -> t.getTipo().equalsIgnoreCase(tipo))
+                .toList();
+    }
+
+    // Buscar por sucursal
+    public List<Transaccion> buscarPorSucursal(String numeroIdentificacion, Map<String, Cuenta> cuentas, Map<String, Sucursal> sucursales) throws IOException {
+        return transaccionCSV.cargar(rutaArchivo, cuentas, sucursales)
+                .stream()
+                .filter(t -> t.getSucursal() != null && t.getSucursal().getNumeroIdentificacion().equals(numeroIdentificacion))
+                .toList();
+    }
+
+    // Puedes agregar lógica para operaciones complejas y lanzar TransaccionFallidaException cuando sea necesario
+    public void realizarTransferencia(Transaccion transaccion, Map<String, Cuenta> cuentas, Map<String, Sucursal> sucursales)
             throws TransaccionFallidaException, IOException {
-        Cuenta cuenta = bancoController.buscarCuentaPorNumero(numeroCuenta);
-        if (cuenta == null) {
-            throw new TransaccionFallidaException("Cuenta no encontrada para depósito");
+        try {
+            agregarTransaccion(transaccion, cuentas, sucursales);
+        } catch (Exception e) {
+            throw new TransaccionFallidaException("No se pudo realizar la transferencia: " + e.getMessage());
         }
-
-        cuenta.setSaldoActual(cuenta.getSaldoActual() + monto);
-
-        Transaccion transaccion = new Transaccion(
-                generarIdTransaccion(),
-                monto,
-                LocalDateTime.now(),
-                "depósito",
-                cuenta,
-                null,
-                sucursal
-        );
-
-        bancoController.agregarTransaccion(transaccion);
-        bancoController.guardarDatos();
-    }
-
-    public void realizarRetiro(String numeroCuenta, double monto, Sucursal sucursal)
-            throws SaldoInsuficienteException, TransaccionFallidaException, IOException {
-        Cuenta cuenta = bancoController.buscarCuentaPorNumero(numeroCuenta);
-        if (cuenta == null) {
-            throw new TransaccionFallidaException("Cuenta no encontrada para retiro");
-        }
-
-        if (cuenta.getSaldoActual() + cuenta.getLimiteCredito() < monto) {
-            throw new SaldoInsuficienteException("Saldo insuficiente para retiro");
-        }
-
-        cuenta.setSaldoActual(cuenta.getSaldoActual() - monto);
-
-        Transaccion transaccion = new Transaccion(
-                generarIdTransaccion(),
-                monto,
-                LocalDateTime.now(),
-                "retiro",
-                cuenta,
-                null,
-                sucursal
-        );
-
-        bancoController.agregarTransaccion(transaccion);
-        bancoController.guardarDatos();
-    }
-
-    public void realizarTransferencia(String cuentaOrigenNum, String cuentaDestinoNum,
-                                      double monto, Sucursal sucursal)
-            throws SaldoInsuficienteException, TransaccionFallidaException, IOException {
-        Cuenta cuentaOrigen = bancoController.buscarCuentaPorNumero(cuentaOrigenNum);
-        Cuenta cuentaDestino = bancoController.buscarCuentaPorNumero(cuentaDestinoNum);
-
-        if (cuentaOrigen == null || cuentaDestino == null) {
-            throw new TransaccionFallidaException("Cuenta origen o destino no encontrada");
-        }
-
-        if (cuentaOrigen.getSaldoActual() + cuentaOrigen.getLimiteCredito() < monto) {
-            throw new SaldoInsuficienteException("Saldo insuficiente para transferencia");
-        }
-
-        cuentaOrigen.setSaldoActual(cuentaOrigen.getSaldoActual() - monto);
-        cuentaDestino.setSaldoActual(cuentaDestino.getSaldoActual() + monto);
-
-        Transaccion transaccion = new Transaccion(
-                generarIdTransaccion(),
-                monto,
-                LocalDateTime.now(),
-                "transferencia",
-                cuentaOrigen,
-                cuentaDestino,
-                sucursal
-        );
-
-        bancoController.agregarTransaccion(transaccion);
-        bancoController.guardarDatos();
-    }
-
-    private String generarIdTransaccion() {
-        return "T" + (bancoController.obtenerTodasTransacciones().size() + 1);
-    }
-
-    public List<Transaccion> obtenerTransaccionesCuenta(String numeroCuenta) {
-        return bancoController.obtenerTransaccionesPorCuenta(numeroCuenta);
-    }
-
-    public List<Transaccion> obtenerTransaccionesCliente(String rfcCliente) {
-        return bancoController.obtenerTransaccionesPorCliente(rfcCliente);
-    }
-
-    public List<Transaccion> obtenerTransaccionesSucursal(String idSucursal) {
-        return bancoController.obtenerTransaccionesPorSucursal(idSucursal);
-    }
-
-    public void exportarTransaccionesACSV(String rutaDestino) throws IOException {
-        TransaccionCSV csv = new TransaccionCSV();
-        csv.guardar(bancoController.obtenerTodasTransacciones(), rutaDestino);
     }
 }

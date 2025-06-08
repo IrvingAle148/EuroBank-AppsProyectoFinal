@@ -1,75 +1,30 @@
 package controlador;
 
-import modelo.entidades.*;
-import modelo.excepciones.*;
-import modelo.persistencia.*;
-
+import modelo.entidades.Cliente;
+import modelo.entidades.Empleado;
+import modelo.excepciones.ValidacionException;
 import java.io.IOException;
-import java.util.List;
 
 public class AutentificacionController {
-    private final ClienteCSV clienteCSV;
-    private final EmpleadoCSV empleadoCSV;
+    private ClienteController clienteController = new ClienteController();
+    private EmpleadoController empleadoController = new EmpleadoController();
 
-    public AutentificacionController(BancoController bancoController) {
-        this.clienteCSV = new ClienteCSV();
-        this.empleadoCSV = new EmpleadoCSV(bancoController);
+    public Cliente autenticarCliente(String usuario, String contrasenia) throws ValidacionException, IOException {
+        if (usuario == null || usuario.isBlank() || contrasenia == null || contrasenia.isBlank())
+            throw new ValidacionException("Usuario y/o contraseña vacíos.");
+        Cliente c = clienteController.buscarPorUsuario(usuario);
+        if (c == null || !c.getContrasenia().equals(contrasenia))
+            throw new ValidacionException("Usuario o contraseña incorrectos.");
+        return c;
     }
 
-    public Object autenticar(String identificador, String contrasena, boolean esEmpleado)
-            throws AutenticacionFallidaException, EmpleadoNoEncontradoException, IOException, TransaccionFallidaException {
-
-        if (esEmpleado) {
-            return autenticarEmpleado(identificador, contrasena);
-        } else {
-            return autenticarCliente(identificador, contrasena);
-        }
-    }
-
-    private Empleado autenticarEmpleado(String usuario, String contrasena)
-            throws EmpleadoNoEncontradoException, IOException, TransaccionFallidaException {
-        List<Empleado> empleados = empleadoCSV.cargar("archivos/empleados.csv");
-
-        for (Empleado emp : empleados) {
-            if (emp.getUsuario().equals(usuario) && emp.getContrasenia().equals(contrasena)) {
-                return emp;
-            }
-        }
-        throw new EmpleadoNoEncontradoException("Credenciales incorrectas o empleado no encontrado");
-    }
-
-    private Cliente autenticarCliente(String correo, String contrasena)
-            throws AutenticacionFallidaException, IOException {
-        List<Cliente> clientes = clienteCSV.cargar("archivos/clientes.csv");
-
-        for (Cliente cli : clientes) {
-            if (cli.getCorreo().equals(correo) && cli.getContrasenia().equals(contrasena)) {
-                return cli;
-            }
-        }
-        throw new AutenticacionFallidaException("Credenciales incorrectas");
-    }
-
-    public String obtenerTipoEmpleado(Empleado empleado) {
-        if (empleado instanceof Cajero) {
-            return "CAJERO";
-        } else if (empleado instanceof Ejecutivo) {
-            return "EJECUTIVO";
-        } else if (empleado instanceof Gerente) {
-            return "GERENTE";
-        }
-        return "EMPLEADO";
-    }
-
-    public boolean esGerente(Empleado empleado) {
-        return empleado instanceof Gerente;
-    }
-
-    public boolean esEjecutivo(Empleado empleado) {
-        return empleado instanceof Ejecutivo;
-    }
-
-    public boolean esCajero(Empleado empleado) {
-        return empleado instanceof Cajero;
+    public Empleado autenticarEmpleado(String usuario, String contrasenia, java.util.Map<String, modelo.entidades.Sucursal> sucursales)
+            throws ValidacionException, IOException {
+        if (usuario == null || usuario.isBlank() || contrasenia == null || contrasenia.isBlank())
+            throw new ValidacionException("Usuario y/o contraseña vacíos.");
+        Empleado e = empleadoController.buscarPorUsuario(usuario, sucursales);
+        if (e == null || !e.getContrasenia().equals(contrasenia))
+            throw new ValidacionException("Usuario o contraseña incorrectos.");
+        return e;
     }
 }

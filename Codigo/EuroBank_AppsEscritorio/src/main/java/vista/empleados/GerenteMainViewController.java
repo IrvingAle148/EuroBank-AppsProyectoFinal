@@ -1,85 +1,112 @@
 package vista.empleados;
 
-import controlador.BancoController;
 import javafx.fxml.FXML;
+import javafx.scene.control.Label;
+import javafx.scene.control.Button;
+import javafx.stage.Stage;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.stage.Stage;
-import modelo.entidades.Empleado;
+import modelo.entidades.Gerente;
 
-import java.io.IOException;
+public class GerenteMainViewController {
 
-public class GerenteMainViewController implements EmpleadoMainController {
-    @FXML private Label welcomeLabel;
+    @FXML private Label nombreLabel;
+    @FXML private Label idLabel;
+    @FXML private Label nivelAccesoLabel;
+    @FXML private Label aniosExpLabel;
+    @FXML private Label sucursalLabel;
+    @FXML private Button verClientesButton;
+    @FXML private Button verEmpleadosButton;
+    @FXML private Button verSucursalesButton;
+    @FXML private Button verCuentasButton;
+    @FXML private Button verTransaccionesButton;
+    @FXML private Button cerrarSesionButton;
 
-    private Empleado empleado;
-    private BancoController bancoController;
+    private Gerente gerente;
 
-    @Override
-    public void setEmpleado(Empleado empleado) {
-        this.empleado = empleado;
-        welcomeLabel.setText("Bienvenido Gerente " + empleado.getNombre());
-    }
-
-    public void setBancoController(BancoController bancoController) {
-        this.bancoController = bancoController;
-    }
-
-    @FXML
-    private void handleVerClientes() throws IOException {
-        cargarVista("/FXML/ClientesMainView.fxml", "Gestión de Clientes");
-    }
-
-    @FXML
-    private void handleVerEmpleados() throws IOException {
-        cargarVista("/FXML/EmpleadosMainView.fxml", "Gestión de Empleados");
+    public void setGerente(Gerente gerente) {
+        this.gerente = gerente;
+        nombreLabel.setText(gerente.getNombre());
+        idLabel.setText(gerente.getId());
+        nivelAccesoLabel.setText(gerente.getNivelAcceso());
+        aniosExpLabel.setText(String.valueOf(gerente.getAniosExperiencia()));
+        sucursalLabel.setText(gerente.getSucursal().getNombre());
     }
 
     @FXML
-    private void handleVerSucursales() throws IOException {
-        cargarVista("/FXML/SucursalesMainView.fxml", "Gestión de Sucursales");
-    }
-
-    @FXML
-    private void handleVerCuentas() throws IOException {
-        cargarVista("/FXML/CuentasMainView.fxml", "Gestión de Cuentas");
-    }
-
-    @FXML
-    private void handleVerTransacciones() throws IOException {
-        cargarVista("/FXML/TransaccionesMainView.fxml", "Historial de Transacciones");
-    }
-
-    @FXML
-    private void handleLogout() throws IOException {
-        volverALogin();
-    }
-
-    private void cargarVista(String fxmlFile, String titulo) throws IOException {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlFile));
-        Parent root = loader.load();
-
-        // Configurar controlador si es necesario
-        Object controller = loader.getController();
-        if (controller instanceof BancoControllerAware) {
-            ((BancoControllerAware)controller).setBancoController(bancoController);
+    private void handleVerClientes() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/ClientesMainView.fxml"));
+            Parent root = loader.load();
+            Stage stage = new Stage();
+            stage.setTitle("Clientes");
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        Stage stage = (Stage) welcomeLabel.getScene().getWindow();
-        stage.setScene(new Scene(root));
-        stage.setTitle(titulo);
-        stage.show();
     }
 
-    private void volverALogin() throws IOException {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/LoginMainView.fxml"));
-        Parent root = loader.load();
+    @FXML
+    private void handleVerEmpleados() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/EmpleadosMainView.fxml"));
+            Parent root = loader.load();
+            Stage stage = new Stage();
+            stage.setTitle("Empleados");
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-        Stage stage = (Stage) welcomeLabel.getScene().getWindow();
-        stage.setScene(new Scene(root));
-        stage.setTitle("EuroBank - Login");
-        stage.show();
+    @FXML
+    private void handleVerSucursales() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/SucursalesMainView.fxml"));
+            Parent root = loader.load();
+            Stage stage = new Stage();
+            stage.setTitle("Sucursales");
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleVerCuentas() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/CuentasMainVIew.fxml"));
+            Parent root = loader.load();
+            Stage stage = new Stage();
+            stage.setTitle("Cuentas");
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleVerTransacciones() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/TransaccionesMainView.fxml"));
+            Parent root = loader.load();
+            Stage stage = new Stage();
+            stage.setTitle("Transacciones");
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleCerrarSesion() {
+        Stage stage = (Stage) cerrarSesionButton.getScene().getWindow();
+        stage.close();
     }
 }

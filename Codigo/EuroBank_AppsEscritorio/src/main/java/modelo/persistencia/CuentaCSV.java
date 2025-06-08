@@ -1,93 +1,90 @@
 package modelo.persistencia;
 
-import modelo.entidades.*;
+import modelo.entidades.Cuenta;
+import modelo.entidades.Cliente;
+import modelo.entidades.Sucursal;
+
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class CuentaCSV {
-    public void guardar(List<Cuenta> cuentas, String rutaArchivo) throws IOException {
-        try (PrintWriter writer = new PrintWriter(new FileWriter(rutaArchivo))) {
-            writer.println("NumeroCuenta,Tipo,SaldoActual,LimiteCredito,RFCCliente,IdSucursal");
 
-            for (Cuenta c : cuentas) {
-                writer.println(String.join(",",
-                        escapeCSV(c.getNumeroCuenta()),
-                        escapeCSV(c.getTipo()),
-                        String.valueOf(c.getSaldoActual()),
-                        String.valueOf(c.getLimiteCredito()),
-                        escapeCSV(c.getClienteAsociado().getRfcCurp()),
-                        escapeCSV(c.getSucursal().getId())
-                ));
-            }
-        }
-    }
-
-    public List<Cuenta> cargar(String rutaArchivo, List<Cliente> clientes, List<Sucursal> sucursales) throws IOException {
+    // Puedes pasar aquí mapas de clientes y sucursales para ligar relaciones al cargar (si lo necesitas)
+    public List<Cuenta> cargar(String rutaArchivo, Map<String, Cliente> clientes, Map<String, Sucursal> sucursales) {
         List<Cuenta> cuentas = new ArrayList<>();
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(rutaArchivo))) {
-            reader.readLine(); // Saltar encabezados
-
+        try (BufferedReader br = new BufferedReader(new FileReader(rutaArchivo))) {
             String linea;
-            while ((linea = reader.readLine()) != null) {
-                String[] datos = parseCSVLine(linea);
-                if (datos.length >= 6) {
-                    Cliente cliente = buscarCliente(clientes, datos[4]);
-                    Sucursal sucursal = buscarSucursal(sucursales, datos[5]);
-
-                    if (cliente != null && sucursal != null) {
-                        Cuenta cuenta = new Cuenta(
-                                datos[0], // numeroCuenta
-                                datos[1], // tipo
-                                Double.parseDouble(datos[2]), // saldoActual
-                                Double.parseDouble(datos[3]), // limiteCredito
-                                cliente,
-                                sucursal
-                        );
-                        cuentas.add(cuenta);
-                    }
+            while ((linea = br.readLine()) != null) {
+                String[] partes = linea.split(",");
+                if (partes.length >= 6) {
+                    String numeroCuenta = partes[0];
+                    String tipo = partes[1];
+                    double saldoActual = Double.parseDouble(partes[2]);
+                    double limiteCredito = Double.parseDouble(partes[3]);
+                    String rfcCurpCliente = partes[4];
+                    String idSucursal = partes[5];
+                    Cliente cliente = clientes != null ? clientes.get(rfcCurpCliente) : null;
+                    Sucursal sucursal = sucursales != null ? sucursales.get(idSucursal) : null;
+                    Cuenta cuenta = new Cuenta(numeroCuenta, tipo, saldoActual, limiteCredito, cliente, sucursal);
+                    cuentas.add(cuenta);
                 }
             }
+        } catch (Exception e) {
+            System.out.println("Error leyendo cuentas: " + e.getMessage());
         }
         return cuentas;
     }
 
-    private Cliente buscarCliente(List<Cliente> clientes, String rfc) {
-        return clientes.stream()
-                .filter(c -> c.getRfcCurp().equals(rfc))
-                .findFirst()
-                .orElse(null);
-    }
-
-    private Sucursal buscarSucursal(List<Sucursal> sucursales, String id) {
-        return sucursales.stream()
-                .filter(s -> s.getId().equals(id))
-                .findFirst()
-                .orElse(null);
-    }
-
-    private String escapeCSV(String value) {
-        if (value == null) return "";
-        return value.contains(",") ? "\"" + value + "\"" : value;
-    }
-
-    private String[] parseCSVLine(String line) {
-        List<String> values = new ArrayList<>();
-        boolean inQuotes = false;
-        StringBuilder buffer = new StringBuilder();
-
-        for (char c : line.toCharArray()) {
-            if (c == '"') {
-                inQuotes = !inQuotes;
-            } else if (c == ',' && !inQuotes) {
-                values.add(buffer.toString());
-                buffer = new StringBuilder();
-            } else {
-                buffer.append(c);
-            }
+    public void guardarUno(Cuenta cuenta, String rutaArchivo) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaArchivo, true))) {
+            bw.write(cuenta.getNumeroCuenta() + "," +
+                    cuenta.getTipo() + "," +
+                    cuenta.getSaldoActual() + "," +
+                    cuenta.getLimiteCredito() + "," +
+                    (cuenta.getCliente() != null ? cuenta.getCliente().getRfcCurp() : "") + "," +
+                    (cuenta.getSucursal() != null ? cuenta.getSucursal().getNumeroIdentificacion() : ""));
+            bw.newLine();
+        } catch (Exception e) {
+            System.out.println("Error guardando cuenta: " + e.getMessage());
         }
-        values.add(buffer.toString());
-        return values.toArray(new String[0]);
+    }
+
+    public void actualizar(Cuenta cuenta, String rutaArchivo, Map<String, Cliente> clientes, Map<String, Sucursal> sucursales) {
+        List<Cuenta> cuentas = cargar(rutaArchivo, clientes, sucursales);
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaArchivo))) {
+            for (Cuenta c : cuentas) {
+                if (c.getNumeroCuenta().equals(cuenta.getNumeroCuenta())) {
+                    c = cuenta;
+                }
+                bw.write(c.getNumeroCuenta() + "," +
+                        c.getTipo() + "," +
+                        c.getSaldoActual() + "," +
+                        c.getLimiteCredito() + "," +
+                        (c.getCliente() != null ? c.getCliente().getRfcCurp() : "") + "," +
+                        (c.getSucursal() != null ? c.getSucursal().getNumeroIdentificacion() : ""));
+                bw.newLine();
+            }
+        } catch (Exception e) {
+            System.out.println("Error actualizando cuenta: " + e.getMessage());
+        }
+    }
+
+    public void eliminar(Cuenta cuenta, String rutaArchivo, Map<String, Cliente> clientes, Map<String, Sucursal> sucursales) {
+        List<Cuenta> cuentas = cargar(rutaArchivo, clientes, sucursales);
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaArchivo))) {
+            for (Cuenta c : cuentas) {
+                if (!c.getNumeroCuenta().equals(cuenta.getNumeroCuenta())) {
+                    bw.write(c.getNumeroCuenta() + "," +
+                            c.getTipo() + "," +
+                            c.getSaldoActual() + "," +
+                            c.getLimiteCredito() + "," +
+                            (c.getCliente() != null ? c.getCliente().getRfcCurp() : "") + "," +
+                            (c.getSucursal() != null ? c.getSucursal().getNumeroIdentificacion() : ""));
+                    bw.newLine();
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error eliminando cuenta: " + e.getMessage());
+        }
     }
 }

@@ -1,26 +1,24 @@
 package modelo.entidades;
 
-import java.io.Serializable;
-
-public class Cuenta implements Serializable {
+public class Cuenta {
     private String numeroCuenta;
     private String tipo;
     private double saldoActual;
     private double limiteCredito;
-    private Cliente clienteAsociado;
+    private Cliente cliente;
     private Sucursal sucursal;
 
-    public Cuenta(String numeroCuenta, String tipo, double saldoActual,
-                  double limiteCredito, Cliente clienteAsociado, Sucursal sucursal) {
+    public Cuenta(String numeroCuenta, String tipo, double saldoActual, double limiteCredito, Cliente cliente, Sucursal sucursal) {
         this.numeroCuenta = numeroCuenta;
         this.tipo = tipo;
         this.saldoActual = saldoActual;
         this.limiteCredito = limiteCredito;
-        this.clienteAsociado = clienteAsociado;
+        this.cliente = cliente;
         this.sucursal = sucursal;
     }
 
-    // Getters y Setters
+    public Cuenta() {}
+
     public String getNumeroCuenta() { return numeroCuenta; }
     public void setNumeroCuenta(String numeroCuenta) { this.numeroCuenta = numeroCuenta; }
 
@@ -33,14 +31,21 @@ public class Cuenta implements Serializable {
     public double getLimiteCredito() { return limiteCredito; }
     public void setLimiteCredito(double limiteCredito) { this.limiteCredito = limiteCredito; }
 
-    public Cliente getClienteAsociado() { return clienteAsociado; }
-    public void setClienteAsociado(Cliente clienteAsociado) { this.clienteAsociado = clienteAsociado; }
+    public Cliente getCliente() { return cliente; }
+    public void setCliente(Cliente cliente) { this.cliente = cliente; }
 
     public Sucursal getSucursal() { return sucursal; }
     public void setSucursal(Sucursal sucursal) { this.sucursal = sucursal; }
 
-    @Override
+@Override
     public String toString() {
-        return "Cuenta " + numeroCuenta + " (" + tipo + ") - Saldo: $" + saldoActual;
+        return "Cuenta{" +
+                "numeroCuenta='" + numeroCuenta + '\'' +
+                ", tipo='" + tipo + '\'' +
+                ", saldoActual=" + saldoActual +
+                ", limiteCredito=" + limiteCredito +
+                ", cliente=" + (cliente != null ? cliente.getRfcCurp() : "null") +
+                ", sucursal=" + (sucursal != null ? sucursal.getNumeroIdentificacion() : "null") +
+                '}';
     }
 }

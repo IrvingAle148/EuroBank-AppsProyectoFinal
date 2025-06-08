@@ -1,16 +1,20 @@
 package modelo.entidades;
 
+import java.time.LocalDate;
+
 public class Cajero extends Empleado {
     private String horarioTrabajo;
     private int numeroVentanilla;
 
-    public Cajero(String id, String nombre, String direccion, String fechaNacimiento,
-                  String genero, double salario, String usuario, String contrasena,
-                  String horarioTrabajo, int numeroVentanilla, Sucursal sucursal) {
-        super(id, nombre, direccion, fechaNacimiento, genero, salario, usuario, contrasena, sucursal);
+    public Cajero(String id, String nombre, String direccion, LocalDate fechaNacimiento, String genero,
+                  double salario, String usuario, String contrasenia, Sucursal sucursal,
+                  String horarioTrabajo, int numeroVentanilla) {
+        super(id, nombre, direccion, fechaNacimiento, genero, salario, usuario, contrasenia, sucursal);
         this.horarioTrabajo = horarioTrabajo;
         this.numeroVentanilla = numeroVentanilla;
     }
+
+    public Cajero() {}
 
     public String getHorarioTrabajo() { return horarioTrabajo; }
     public void setHorarioTrabajo(String horarioTrabajo) { this.horarioTrabajo = horarioTrabajo; }
@@ -19,7 +23,21 @@ public class Cajero extends Empleado {
     public void setNumeroVentanilla(int numeroVentanilla) { this.numeroVentanilla = numeroVentanilla; }
 
     @Override
+    public String getTipoEmpleado() { return "Cajero"; }
+
+@Override
     public String toString() {
-        return "Cajero: " + super.toString() + ", Ventanilla: " + numeroVentanilla;
+        return "Cajero{" +
+                "id='" + getId() + '\'' +
+                ", nombre='" + getNombre() + '\'' +
+                ", direccion='" + getDireccion() + '\'' +
+                ", fechaNacimiento=" + getFechaNacimiento() +
+                ", genero='" + getGenero() + '\'' +
+                ", salario=" + getSalario() +
+                ", usuario='" + getUsuario() + '\'' +
+                ", sucursal=" + (getSucursal() != null ? getSucursal().getNumeroIdentificacion() : "null") +
+                ", horarioTrabajo='" + horarioTrabajo + '\'' +
+                ", numeroVentanilla=" + numeroVentanilla +
+                '}';
     }
 }

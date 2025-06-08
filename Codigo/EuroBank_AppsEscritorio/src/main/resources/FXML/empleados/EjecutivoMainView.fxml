@@ -1,25 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
 
-<VBox xmlns="http://javafx.com/javafx/17"
-      xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="vista.empleados.EjecutivoMainViewController"
-      spacing="20" alignment="CENTER"
-      style="-fx-padding: 20;">
+<VBox alignment="CENTER" spacing="20" style="-fx-padding: 20;" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="vista.empleados.EjecutivoMainViewController">
 
-    <Label fx:id="welcomeLabel" text="Bienvenido Ejecutivo [Nombre]"
-           style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+    <Rectangle fx:id="blueFringe" arcHeight="5.0" arcWidth="5.0" fill="#326bc9" height="38.0" stroke="BLACK" strokeType="INSIDE" width="314.0" />
 
-    <VBox spacing="10" alignment="CENTER">
-        <Button text="Ver Clientes" onAction="#handleVerClientes"
-                style="-fx-font-weight: bold; -fx-min-width: 200;"/>
-        <Button text="Ver Empleados" onAction="#handleVerEmpleados"
-                style="-fx-font-weight: bold; -fx-min-width: 200;"/>
-        <Button text="Ver Cuentas" onAction="#handleVerCuentas"
-                style="-fx-font-weight: bold; -fx-min-width: 200;"/>
+    <Label fx:id="welcomeLabel" style="-fx-font-size: 20px; -fx-font-weight: bold;" text="Bienvenido Ejecutivo [Nombre]" />
+
+    <VBox alignment="CENTER" spacing="10">
+        <Button onAction="#handleVerClientes" style="-fx-font-weight: bold; -fx-min-width: 200;" text="Ver Clientes" />
+        <Button onAction="#handleVerEmpleados" style="-fx-font-weight: bold; -fx-min-width: 200;" text="Ver Empleados" />
+        <Button onAction="#handleVerCuentas" style="-fx-font-weight: bold; -fx-min-width: 200;" text="Ver Cuentas" />
     </VBox>
 
-    <Button text="Cerrar Sesión" onAction="#handleLogout"
-            style="-fx-font-weight: bold;"/>
+    <VBox alignment="BOTTOM_RIGHT" spacing="10">
+        <Rectangle fx:id="blFringe" arcHeight="5.0" arcWidth="5.0" fill="#326bc9" height="314.0" stroke="BLACK" strokeType="INSIDE" width="31.0" />
+    </VBox>
+
+    <Button onAction="#handleLogout" style="-fx-font-weight: bold;" text="Cerrar Sesión" />
+
+    <Rectangle fx:id="bluFringe" arcHeight="5.0" arcWidth="5.0" fill="#326bc9" height="38.0" stroke="BLACK" strokeType="INSIDE" width="314.0" />
 </VBox>
