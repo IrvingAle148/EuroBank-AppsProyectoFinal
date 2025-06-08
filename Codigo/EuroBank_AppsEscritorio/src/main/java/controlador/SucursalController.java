@@ -1,50 +1,65 @@
 package controlador;
 
 import modelo.entidades.Sucursal;
-import modelo.persistencia.SucursalCSV;
+import modelo.entidades.Empleado;
 import modelo.excepciones.ElementoDuplicadoException;
 import modelo.excepciones.ValidacionException;
-import java.io.IOException;
+import modelo.persistencia.SucursalCSV;
+
 import java.util.List;
 
 public class SucursalController {
     private SucursalCSV sucursalCSV = new SucursalCSV();
     private String rutaArchivo = "src/main/resources/archivos/sucursales.csv";
 
-    public List<Sucursal> obtenerTodas() throws IOException {
+    // Listar todas las sucursales
+    public List<Sucursal> obtenerTodasLasSucursales() {
         return sucursalCSV.cargar(rutaArchivo);
     }
 
-    public void agregarSucursal(Sucursal sucursal) throws ElementoDuplicadoException, ValidacionException, IOException {
+    // Exportar sucursales a CSV
+    public void exportarSucursales(String ruta) {
+        sucursalCSV.exportarSucursalesCSV(ruta);
+    }
+
+    // Agregar sucursal nueva
+    public void agregarSucursal(Sucursal sucursal) throws ElementoDuplicadoException, ValidacionException {
         if (sucursal.getNumeroIdentificacion() == null || sucursal.getNumeroIdentificacion().isBlank())
-            throw new ValidacionException("El número de identificación no puede estar vacío.");
+            throw new ValidacionException("El número de identificación de la sucursal no puede estar vacío.");
         if (buscarPorNumeroIdentificacion(sucursal.getNumeroIdentificacion()) != null)
             throw new ElementoDuplicadoException("Ya existe una sucursal con este número de identificación.");
-        if (sucursal.getNombre() == null || sucursal.getNombre().isBlank())
-            throw new ValidacionException("El nombre de la sucursal no puede estar vacío.");
-        if (sucursal.getGerente() == null)
-            throw new ValidacionException("Debes seleccionar un gerente para la sucursal.");
         sucursalCSV.guardarUno(sucursal, rutaArchivo);
     }
 
-    public void editarSucursal(Sucursal sucursal) throws ValidacionException, IOException {
-        if (sucursal == null)
-            throw new NullPointerException("El objeto sucursal no puede ser null.");
+    // Actualizar/Editar sucursal existente
+    public void actualizarSucursal(Sucursal sucursal) throws ValidacionException {
         if (sucursal.getNumeroIdentificacion() == null || sucursal.getNumeroIdentificacion().isBlank())
-            throw new ValidacionException("El número de identificación no puede estar vacío.");
+            throw new ValidacionException("El número de identificación de la sucursal no puede estar vacío.");
         sucursalCSV.actualizar(sucursal, rutaArchivo);
     }
 
-    public void eliminarSucursal(Sucursal sucursal) throws IOException {
-        if (sucursal == null)
-            throw new NullPointerException("El objeto sucursal no puede ser null.");
+    // Eliminar sucursal
+    public void eliminarSucursal(Sucursal sucursal) {
         sucursalCSV.eliminar(sucursal, rutaArchivo);
     }
 
-    public Sucursal buscarPorNumeroIdentificacion(String numeroIdentificacion) throws IOException {
-        return obtenerTodas().stream()
-                .filter(s -> s.getNumeroIdentificacion().equals(numeroIdentificacion))
+    // Buscar por número de identificación
+    public Sucursal buscarPorNumeroIdentificacion(String numero) {
+        return obtenerTodasLasSucursales().stream()
+                .filter(s -> s.getNumeroIdentificacion().equals(numero))
                 .findFirst()
                 .orElse(null);
+    }
+
+    // Generar nuevo número incremental de sucursal
+    public String generarNuevoNumeroIdentificacion() {
+        List<Sucursal> sucursales = obtenerTodasLasSucursales();
+        int max = sucursales.stream()
+                .mapToInt(s -> {
+                    try { return Integer.parseInt(s.getNumeroIdentificacion()); }
+                    catch (NumberFormatException e) { return 0; }
+                })
+                .max().orElse(0);
+        return String.valueOf(max + 1);
     }
 }

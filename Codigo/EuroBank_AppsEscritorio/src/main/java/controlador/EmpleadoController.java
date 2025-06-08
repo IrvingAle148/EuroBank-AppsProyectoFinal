@@ -2,67 +2,80 @@ package controlador;
 
 import modelo.entidades.Empleado;
 import modelo.entidades.Sucursal;
-import modelo.persistencia.EmpleadoCSV;
+import modelo.excepciones.ClienteNoEncontradoException;
 import modelo.excepciones.ElementoDuplicadoException;
 import modelo.excepciones.ValidacionException;
+import modelo.persistencia.EmpleadoCSV;
 
 import java.util.List;
-import java.util.Map;
 
 public class EmpleadoController {
     private EmpleadoCSV empleadoCSV = new EmpleadoCSV();
     private String rutaArchivo = "src/main/resources/archivos/empleados.csv";
 
-    public List<Empleado> obtenerTodos(Map<String, Sucursal> sucursales) {
-        return empleadoCSV.cargar(rutaArchivo, sucursales);
+    // Listar todos los empleados
+    public List<Empleado> obtenerTodosLosEmpleados() {
+        return empleadoCSV.cargar(rutaArchivo);
     }
 
-    public void agregarEmpleado(Empleado empleado, Map<String, Sucursal> sucursales)
+    // Exportar empleados a CSV
+    public void exportarEmpleados(String ruta) {
+        empleadoCSV.exportarEmpleadosCSV(ruta);
+    }
+
+    // Agregar un empleado nuevo
+    public void agregarEmpleado(Empleado empleado, List<Sucursal> sucursales)
             throws ElementoDuplicadoException, ValidacionException {
         if (empleado.getId() == null || empleado.getId().isBlank())
-            throw new ValidacionException("El ID de empleado no puede estar vacío.");
-        if (buscarPorId(empleado.getId(), sucursales) != null)
+            throw new ValidacionException("El ID del empleado no puede estar vacío.");
+        if (empleado.getUsuario() == null || empleado.getUsuario().isBlank())
+            throw new ValidacionException("El usuario no puede estar vacío.");
+        if (empleado.getContrasenia() == null || empleado.getContrasenia().isBlank())
+            throw new ValidacionException("La contraseña no puede estar vacía.");
+        if (buscarPorId(empleado.getId()) != null)
             throw new ElementoDuplicadoException("Ya existe un empleado con este ID.");
-        if (buscarPorUsuario(empleado.getUsuario(), sucursales) != null)
+        if (buscarPorUsuario(empleado.getUsuario()) != null)
             throw new ElementoDuplicadoException("Ya existe un empleado con este usuario.");
         empleadoCSV.guardarUno(empleado, rutaArchivo);
     }
 
-    public void editarEmpleado(Empleado empleado, Map<String, Sucursal> sucursales)
-            throws ValidacionException {
+    // Editar/Actualizar un empleado existente
+    public void actualizarEmpleado(Empleado empleado) throws ValidacionException, ClienteNoEncontradoException {
         if (empleado.getId() == null || empleado.getId().isBlank())
-            throw new ValidacionException("El ID de empleado no puede estar vacío.");
-        empleadoCSV.actualizar(empleado, rutaArchivo, sucursales);
+            throw new ValidacionException("El ID del empleado no puede estar vacío.");
+        if (buscarPorId(empleado.getId()) == null)
+            throw new ClienteNoEncontradoException("No se encontró el empleado con ese ID.");
+        empleadoCSV.actualizar(empleado, rutaArchivo);
     }
 
-    public void eliminarEmpleado(Empleado empleado, Map<String, Sucursal> sucursales) {
-        empleadoCSV.eliminar(empleado, rutaArchivo, sucursales);
+    // Eliminar empleado por objeto
+    public void eliminarEmpleado(Empleado empleado) throws ClienteNoEncontradoException {
+        if (buscarPorId(empleado.getId()) == null)
+            throw new ClienteNoEncontradoException("No se encontró el empleado con ese ID.");
+        empleadoCSV.eliminar(empleado, rutaArchivo);
     }
 
-    public Empleado buscarPorId(String id, Map<String, Sucursal> sucursales) {
-        return empleadoCSV.cargar(rutaArchivo, sucursales)
-                .stream()
+    // Buscar empleado por ID (para editar/eliminar)
+    public Empleado buscarPorId(String id) {
+        return obtenerTodosLosEmpleados().stream()
                 .filter(e -> e.getId().equals(id))
                 .findFirst()
                 .orElse(null);
     }
 
-    public Empleado buscarPorUsuario(String usuario, Map<String, Sucursal> sucursales) {
-        return empleadoCSV.cargar(rutaArchivo, sucursales)
-                .stream()
+    // Buscar empleado por usuario (para login y validación)
+    public Empleado buscarPorUsuario(String usuario) {
+        return obtenerTodosLosEmpleados().stream()
                 .filter(e -> e.getUsuario().equals(usuario))
                 .findFirst()
                 .orElse(null);
     }
 
+    // Autenticación de empleados
     public Empleado autenticar(String usuario, String contrasenia) {
-        return empleadoCSV.cargar(rutaArchivo, null)
-                .stream()
+        return obtenerTodosLosEmpleados().stream()
                 .filter(e -> e.getUsuario().equals(usuario) && e.getContrasenia().equals(contrasenia))
                 .findFirst()
                 .orElse(null);
     }
 }
-
-
-

@@ -67,7 +67,7 @@ public class ClientesMainViewController {
 
     private void cargarClientes() {
         clientesList.clear();
-        clientesList.addAll(clienteController.obtenerTodosLosClientes());
+        clientesList.addAll(clienteController.obtenerTodos());
         clientesTable.setItems(clientesList);
     }
 

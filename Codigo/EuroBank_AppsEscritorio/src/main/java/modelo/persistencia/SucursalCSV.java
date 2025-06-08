@@ -6,6 +6,7 @@ import java.util.*;
 
 public class SucursalCSV {
 
+    // Cargar todas las sucursales
     public List<Sucursal> cargar(String rutaArchivo) {
         List<Sucursal> sucursales = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(rutaArchivo))) {
@@ -31,35 +32,23 @@ public class SucursalCSV {
         return sucursales;
     }
 
+    // Guardar una nueva sucursal
     public void guardarUno(Sucursal sucursal, String rutaArchivo) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaArchivo, true))) {
-            bw.write(sucursal.getNumeroIdentificacion() + "," +
-                    sucursal.getNombre() + "," +
-                    sucursal.getDireccion() + "," +
-                    sucursal.getTelefono() + "," +
-                    sucursal.getCorreo() + "," +
-                    sucursal.getNombreGerente() + "," +
-                    sucursal.getPersonaContacto());
+            bw.write(formatoCSV(sucursal));
             bw.newLine();
         } catch (Exception e) {
             System.out.println("Error guardando sucursal: " + e.getMessage());
         }
     }
 
+    // Actualizar una sucursal existente (por número de identificación)
     public void actualizar(Sucursal sucursal, String rutaArchivo) {
         List<Sucursal> sucursales = cargar(rutaArchivo);
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaArchivo))) {
             for (Sucursal s : sucursales) {
-                if (s.getNumeroIdentificacion().equals(sucursal.getNumeroIdentificacion())) {
-                    s = sucursal;
-                }
-                bw.write(s.getNumeroIdentificacion() + "," +
-                        s.getNombre() + "," +
-                        s.getDireccion() + "," +
-                        s.getTelefono() + "," +
-                        s.getCorreo() + "," +
-                        s.getNombreGerente() + "," +
-                        s.getPersonaContacto());
+                Sucursal suc = s.getNumeroIdentificacion().equals(sucursal.getNumeroIdentificacion()) ? sucursal : s;
+                bw.write(formatoCSV(suc));
                 bw.newLine();
             }
         } catch (Exception e) {
@@ -67,23 +56,42 @@ public class SucursalCSV {
         }
     }
 
+    // Eliminar una sucursal (por número de identificación)
     public void eliminar(Sucursal sucursal, String rutaArchivo) {
         List<Sucursal> sucursales = cargar(rutaArchivo);
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaArchivo))) {
             for (Sucursal s : sucursales) {
                 if (!s.getNumeroIdentificacion().equals(sucursal.getNumeroIdentificacion())) {
-                    bw.write(s.getNumeroIdentificacion() + "," +
-                            s.getNombre() + "," +
-                            s.getDireccion() + "," +
-                            s.getTelefono() + "," +
-                            s.getCorreo() + "," +
-                            s.getNombreGerente() + "," +
-                            s.getPersonaContacto());
+                    bw.write(formatoCSV(s));
                     bw.newLine();
                 }
             }
         } catch (Exception e) {
             System.out.println("Error eliminando sucursal: " + e.getMessage());
         }
+    }
+
+    // Exportar todas las sucursales a un archivo dado
+    public void exportarSucursalesCSV(String rutaExportacion, String rutaOriginal) {
+        List<Sucursal> sucursales = cargar(rutaOriginal);
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaExportacion))) {
+            for (Sucursal s : sucursales) {
+                bw.write(formatoCSV(s));
+                bw.newLine();
+            }
+        } catch (Exception e) {
+            System.out.println("Error exportando sucursales: " + e.getMessage());
+        }
+    }
+
+    // Utilidad para convertir una sucursal a una línea de CSV
+    private String formatoCSV(Sucursal sucursal) {
+        return sucursal.getNumeroIdentificacion() + "," +
+                sucursal.getNombre() + "," +
+                sucursal.getDireccion() + "," +
+                sucursal.getTelefono() + "," +
+                sucursal.getCorreo() + "," +
+                sucursal.getNombreGerente() + "," +
+                sucursal.getPersonaContacto();
     }
 }

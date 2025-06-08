@@ -1,102 +1,105 @@
 package modelo.persistencia;
 
 import modelo.entidades.Cliente;
+
 import java.io.*;
+import java.nio.file.*;
 import java.time.LocalDate;
 import java.util.*;
 
 public class ClienteCSV {
 
-    public List<Cliente> cargar(String rutaArchivo) {
+    // Leer todos los clientes desde el archivo CSV
+    public List<Cliente> cargar(String ruta) {
         List<Cliente> clientes = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(rutaArchivo))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(ruta))) {
             String linea;
             while ((linea = br.readLine()) != null) {
-                String[] partes = linea.split(",");
-                if (partes.length >= 10) {
+                String[] datos = linea.split(",");
+                // Asegúrate de que tu constructor de Cliente tenga el orden correcto:
+                // rfcCurp, nombre, apellidos, nacionalidad, fechaNacimiento, direccion, telefono, correo, usuario, contrasenia
+                if (datos.length >= 10) {
                     Cliente cliente = new Cliente(
-                            partes[0], // nombre
-                            partes[1], // apellidos
-                            partes[2], // nacionalidad
-                            LocalDate.parse(partes[3]), // fechaNacimiento
-                            partes[4], // rfcCurp
-                            partes[5], // direccion
-                            partes[6], // telefono
-                            partes[7], // correo
-                            partes[8], // usuario
-                            partes[9]  // contrasenia
+                            datos[0],
+                            datos[1],
+                            datos[2],
+                            datos[3],
+                            LocalDate.parse(datos[4]),
+                            datos[5],
+                            datos[6],
+                            datos[7],
+                            datos[8],
+                            datos[9]
                     );
                     clientes.add(cliente);
                 }
             }
-        } catch (Exception e) {
-            System.out.println("Error leyendo clientes: " + e.getMessage());
+        } catch (IOException e) {
+            // Si el archivo no existe, simplemente retorna la lista vacía
         }
         return clientes;
     }
 
-    public void guardarUno(Cliente cliente, String rutaArchivo) {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaArchivo, true))) {
-            bw.write(cliente.getNombre() + "," +
-                    cliente.getApellidos() + "," +
-                    cliente.getNacionalidad() + "," +
-                    cliente.getFechaNacimiento() + "," +
-                    cliente.getRfcCurp() + "," +
-                    cliente.getDireccion() + "," +
-                    cliente.getTelefono() + "," +
-                    cliente.getCorreo() + "," +
-                    cliente.getUsuario() + "," +
-                    cliente.getContrasenia());
+    // Guardar un nuevo cliente (lo agrega al final del archivo)
+    public void guardarUno(Cliente cliente, String ruta) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(ruta, true))) {
+            bw.write(formatoCSV(cliente));
             bw.newLine();
-        } catch (Exception e) {
-            System.out.println("Error guardando cliente: " + e.getMessage());
+        } catch (IOException e) {
+            throw new RuntimeException("No se pudo guardar el cliente: " + e.getMessage());
         }
     }
 
-    public void actualizar(Cliente cliente, String rutaArchivo) {
-        List<Cliente> clientes = cargar(rutaArchivo);
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaArchivo))) {
-            for (Cliente c : clientes) {
-                if (c.getRfcCurp().equals(cliente.getRfcCurp())) {
-                    c = cliente;
-                }
-                bw.write(c.getNombre() + "," +
-                        c.getApellidos() + "," +
-                        c.getNacionalidad() + "," +
-                        c.getFechaNacimiento() + "," +
-                        c.getRfcCurp() + "," +
-                        c.getDireccion() + "," +
-                        c.getTelefono() + "," +
-                        c.getCorreo() + "," +
-                        c.getUsuario() + "," +
-                        c.getContrasenia());
+    // Actualizar un cliente existente (por RFC/CURP)
+    public void actualizar(Cliente cliente, String ruta) {
+        List<Cliente> clientes = cargar(ruta);
+        for (int i = 0; i < clientes.size(); i++) {
+            if (clientes.get(i).getRfcCurp().equals(cliente.getRfcCurp())) {
+                clientes.set(i, cliente);
+                break;
+            }
+        }
+        guardarTodos(clientes, ruta);
+    }
+
+    // Eliminar un cliente existente
+    public void eliminar(Cliente cliente, String ruta) {
+        List<Cliente> clientes = cargar(ruta);
+        clientes.removeIf(c -> c.getRfcCurp().equals(cliente.getRfcCurp()));
+        guardarTodos(clientes, ruta);
+    }
+
+    // Exportar todos los clientes a una ruta dada
+    public void exportarClientesCSV(String rutaExportacion) {
+        List<Cliente> clientes = cargar("src/main/resources/archivos/clientes.csv");
+        guardarTodos(clientes, rutaExportacion);
+    }
+
+    // Guardar todos los clientes en el archivo (sobrescribe)
+    private void guardarTodos(List<Cliente> clientes, String ruta) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(ruta))) {
+            for (Cliente cliente : clientes) {
+                bw.write(formatoCSV(cliente));
                 bw.newLine();
             }
-        } catch (Exception e) {
-            System.out.println("Error actualizando cliente: " + e.getMessage());
+        } catch (IOException e) {
+            throw new RuntimeException("No se pudo guardar el archivo de clientes: " + e.getMessage());
         }
     }
 
-    public void eliminar(Cliente cliente, String rutaArchivo) {
-        List<Cliente> clientes = cargar(rutaArchivo);
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaArchivo))) {
-            for (Cliente c : clientes) {
-                if (!c.getRfcCurp().equals(cliente.getRfcCurp())) {
-                    bw.write(c.getNombre() + "," +
-                            c.getApellidos() + "," +
-                            c.getNacionalidad() + "," +
-                            c.getFechaNacimiento() + "," +
-                            c.getRfcCurp() + "," +
-                            c.getDireccion() + "," +
-                            c.getTelefono() + "," +
-                            c.getCorreo() + "," +
-                            c.getUsuario() + "," +
-                            c.getContrasenia());
-                    bw.newLine();
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("Error eliminando cliente: " + e.getMessage());
-        }
+    // Formato CSV para un cliente (mismo orden que el constructor)
+    private String formatoCSV(Cliente cliente) {
+        return String.join(",",
+                cliente.getRfcCurp(),
+                cliente.getNombre(),
+                cliente.getApellidos(),
+                cliente.getNacionalidad(),
+                cliente.getFechaNacimiento().toString(),
+                cliente.getDireccion(),
+                cliente.getTelefono(),
+                cliente.getCorreo(),
+                cliente.getUsuario(),
+                cliente.getContrasenia()
+        );
     }
 }

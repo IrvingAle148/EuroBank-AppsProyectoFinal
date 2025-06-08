@@ -14,7 +14,7 @@ public class EmpleadoCSV {
             String linea;
             while ((linea = br.readLine()) != null) {
                 String[] partes = linea.split(",");
-                if (partes.length >= 13) {
+                if (partes.length >= 12) {
                     String tipoEmpleado = partes[0];
                     String id = partes[1];
                     String nombre = partes[2];
@@ -27,15 +27,15 @@ public class EmpleadoCSV {
                     String idSucursal = partes[9];
                     Sucursal sucursal = sucursales != null ? sucursales.get(idSucursal) : null;
 
-                    if ("Cajero".equalsIgnoreCase(tipoEmpleado) && partes.length >= 12) {
+                    if ("Cajero".equalsIgnoreCase(tipoEmpleado)) {
                         String horarioTrabajo = partes[10];
                         int numeroVentanilla = Integer.parseInt(partes[11]);
                         empleados.add(new Cajero(id, nombre, direccion, fechaNacimiento, genero, salario, usuario, contrasenia, sucursal, horarioTrabajo, numeroVentanilla));
-                    } else if ("Ejecutivo".equalsIgnoreCase(tipoEmpleado) && partes.length >= 12) {
+                    } else if ("Ejecutivo".equalsIgnoreCase(tipoEmpleado)) {
                         int numeroClientesAsignados = Integer.parseInt(partes[10]);
                         String especializacion = partes[11];
                         empleados.add(new Ejecutivo(id, nombre, direccion, fechaNacimiento, genero, salario, usuario, contrasenia, sucursal, numeroClientesAsignados, especializacion));
-                    } else if ("Gerente".equalsIgnoreCase(tipoEmpleado) && partes.length >= 12) {
+                    } else if ("Gerente".equalsIgnoreCase(tipoEmpleado)) {
                         String nivelAcceso = partes[10];
                         int aniosExperiencia = Integer.parseInt(partes[11]);
                         empleados.add(new Gerente(id, nombre, direccion, fechaNacimiento, genero, salario, usuario, contrasenia, sucursal, nivelAcceso, aniosExperiencia));
@@ -51,48 +51,7 @@ public class EmpleadoCSV {
     // Guardar un empleado
     public void guardarUno(Empleado empleado, String rutaArchivo) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaArchivo, true))) {
-            StringBuilder sb = new StringBuilder();
-            if (empleado instanceof Cajero) {
-                Cajero cajero = (Cajero) empleado;
-                sb.append("Cajero,").append(cajero.getId()).append(",")
-                        .append(cajero.getNombre()).append(",")
-                        .append(cajero.getDireccion()).append(",")
-                        .append(cajero.getFechaNacimiento()).append(",")
-                        .append(cajero.getGenero()).append(",")
-                        .append(cajero.getSalario()).append(",")
-                        .append(cajero.getUsuario()).append(",")
-                        .append(cajero.getContrasenia()).append(",")
-                        .append(cajero.getSucursal() != null ? cajero.getSucursal().getNumeroIdentificacion() : "").append(",")
-                        .append(cajero.getHorarioTrabajo()).append(",")
-                        .append(cajero.getNumeroVentanilla());
-            } else if (empleado instanceof Ejecutivo) {
-                Ejecutivo ejecutivo = (Ejecutivo) empleado;
-                sb.append("Ejecutivo,").append(ejecutivo.getId()).append(",")
-                        .append(ejecutivo.getNombre()).append(",")
-                        .append(ejecutivo.getDireccion()).append(",")
-                        .append(ejecutivo.getFechaNacimiento()).append(",")
-                        .append(ejecutivo.getGenero()).append(",")
-                        .append(ejecutivo.getSalario()).append(",")
-                        .append(ejecutivo.getUsuario()).append(",")
-                        .append(ejecutivo.getContrasenia()).append(",")
-                        .append(ejecutivo.getSucursal() != null ? ejecutivo.getSucursal().getNumeroIdentificacion() : "").append(",")
-                        .append(ejecutivo.getNumeroClientesAsignados()).append(",")
-                        .append(ejecutivo.getEspecializacion());
-            } else if (empleado instanceof Gerente) {
-                Gerente gerente = (Gerente) empleado;
-                sb.append("Gerente,").append(gerente.getId()).append(",")
-                        .append(gerente.getNombre()).append(",")
-                        .append(gerente.getDireccion()).append(",")
-                        .append(gerente.getFechaNacimiento()).append(",")
-                        .append(gerente.getGenero()).append(",")
-                        .append(gerente.getSalario()).append(",")
-                        .append(gerente.getUsuario()).append(",")
-                        .append(gerente.getContrasenia()).append(",")
-                        .append(gerente.getSucursal() != null ? gerente.getSucursal().getNumeroIdentificacion() : "").append(",")
-                        .append(gerente.getNivelAcceso()).append(",")
-                        .append(gerente.getAniosExperiencia());
-            }
-            bw.write(sb.toString());
+            bw.write(formatoCSV(empleado));
             bw.newLine();
         } catch (Exception e) {
             System.out.println("Error guardando empleado: " + e.getMessage());
@@ -102,29 +61,77 @@ public class EmpleadoCSV {
     // Actualizar empleado (por ID)
     public void actualizar(Empleado empleado, String rutaArchivo, Map<String, Sucursal> sucursales) {
         List<Empleado> empleados = cargar(rutaArchivo, sucursales);
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaArchivo))) {
-            for (Empleado e : empleados) {
-                if (e.getId().equals(empleado.getId())) {
-                    e = empleado;
-                }
-                guardarUno(e, rutaArchivo); // Para no duplicar el formato
+        for (int i = 0; i < empleados.size(); i++) {
+            if (empleados.get(i).getId().equals(empleado.getId())) {
+                empleados.set(i, empleado);
+                break;
             }
-        } catch (Exception e) {
-            System.out.println("Error actualizando empleado: " + e.getMessage());
         }
+        guardarTodos(empleados, rutaArchivo);
     }
 
     // Eliminar empleado (por ID)
     public void eliminar(Empleado empleado, String rutaArchivo, Map<String, Sucursal> sucursales) {
         List<Empleado> empleados = cargar(rutaArchivo, sucursales);
+        empleados.removeIf(e -> e.getId().equals(empleado.getId()));
+        guardarTodos(empleados, rutaArchivo);
+    }
+
+    // Guardar todos los empleados (sobrescribe todo el archivo)
+    private void guardarTodos(List<Empleado> empleados, String rutaArchivo) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaArchivo))) {
-            for (Empleado e : empleados) {
-                if (!e.getId().equals(empleado.getId())) {
-                    guardarUno(e, rutaArchivo);
-                }
+            for (Empleado empleado : empleados) {
+                bw.write(formatoCSV(empleado));
+                bw.newLine();
             }
         } catch (Exception e) {
-            System.out.println("Error eliminando empleado: " + e.getMessage());
+            System.out.println("Error guardando todos los empleados: " + e.getMessage());
         }
+    }
+
+    // Formato CSV único para cada empleado
+    private String formatoCSV(Empleado empleado) {
+        StringBuilder sb = new StringBuilder();
+        if (empleado instanceof Cajero) {
+            Cajero cajero = (Cajero) empleado;
+            sb.append("Cajero,").append(cajero.getId()).append(",")
+                    .append(cajero.getNombre()).append(",")
+                    .append(cajero.getDireccion()).append(",")
+                    .append(cajero.getFechaNacimiento()).append(",")
+                    .append(cajero.getGenero()).append(",")
+                    .append(cajero.getSalario()).append(",")
+                    .append(cajero.getUsuario()).append(",")
+                    .append(cajero.getContrasenia()).append(",")
+                    .append(cajero.getSucursal() != null ? cajero.getSucursal().getNumeroIdentificacion() : "").append(",")
+                    .append(cajero.getHorarioTrabajo()).append(",")
+                    .append(cajero.getNumVentanilla());
+        } else if (empleado instanceof Ejecutivo) {
+            Ejecutivo ejecutivo = (Ejecutivo) empleado;
+            sb.append("Ejecutivo,").append(ejecutivo.getId()).append(",")
+                    .append(ejecutivo.getNombre()).append(",")
+                    .append(ejecutivo.getDireccion()).append(",")
+                    .append(ejecutivo.getFechaNacimiento()).append(",")
+                    .append(ejecutivo.getGenero()).append(",")
+                    .append(ejecutivo.getSalario()).append(",")
+                    .append(ejecutivo.getUsuario()).append(",")
+                    .append(ejecutivo.getContrasenia()).append(",")
+                    .append(ejecutivo.getSucursal() != null ? ejecutivo.getSucursal().getNumeroIdentificacion() : "").append(",")
+                    .append(ejecutivo.getNumClientesAsignados()).append(",")
+                    .append(ejecutivo.getEspecializacion());
+        } else if (empleado instanceof Gerente) {
+            Gerente gerente = (Gerente) empleado;
+            sb.append("Gerente,").append(gerente.getId()).append(",")
+                    .append(gerente.getNombre()).append(",")
+                    .append(gerente.getDireccion()).append(",")
+                    .append(gerente.getFechaNacimiento()).append(",")
+                    .append(gerente.getGenero()).append(",")
+                    .append(gerente.getSalario()).append(",")
+                    .append(gerente.getUsuario()).append(",")
+                    .append(gerente.getContrasenia()).append(",")
+                    .append(gerente.getSucursal() != null ? gerente.getSucursal().getNumeroIdentificacion() : "").append(",")
+                    .append(gerente.getNivelAcceso()).append(",")
+                    .append(gerente.getAniosExperiencia());
+        }
+        return sb.toString();
     }
 }
