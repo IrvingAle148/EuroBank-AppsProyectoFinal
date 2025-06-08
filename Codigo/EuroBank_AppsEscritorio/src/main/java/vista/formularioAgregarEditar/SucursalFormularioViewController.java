@@ -1,101 +1,147 @@
 package vista.formularioAgregarEditar;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.TextField;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.Button;
+import javafx.event.ActionEvent;
 import javafx.stage.Stage;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.Node;
+import javafx.fxml.FXMLLoader;
 import modelo.entidades.Sucursal;
-import modelo.persistencia.SucursalCSV;
-import java.util.List;
+import modelo.entidades.Empleado;
+import controlador.SucursalController;
+import controlador.EmpleadoController;
+import vista.SucursalesMainViewController;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 public class SucursalFormularioViewController {
 
-    @FXML private Label tituloLabel;
-    @FXML private Label idLabel;
-    @FXML private TextField nombreField, direccionField, telefonoField, correoField, nombreGerenteField, personaContactoField;
-    @FXML private Button guardarButton;
-    @FXML private Label errorLabel;
+    @FXML
+    private Label tituloLabel;
 
-    private Stage dialogStage;
-    private Sucursal sucursal;
-    private boolean modoEdicion;
-    private SucursalCSV sucursalCSV = new SucursalCSV();
+    @FXML
+    private TextField numeroIdentificacionField;
 
-    private Runnable onGuardarSuccess;
+    @FXML
+    private TextField nombreField;
 
-    public void setDialogStage(Stage dialogStage) { this.dialogStage = dialogStage; }
+    @FXML
+    private TextField direccionField;
 
-    public void setSucursal(Sucursal sucursal, boolean edicion) {
-        this.sucursal = sucursal;
-        this.modoEdicion = edicion;
-        if (edicion && sucursal != null) {
-            tituloLabel.setText("Editar Sucursal");
-            idLabel.setText(sucursal.getId());
-            llenarCampos(sucursal);
+    @FXML
+    private TextField telefonoField;
+
+    @FXML
+    private TextField correoField;
+
+    @FXML
+    private ComboBox<Empleado> gerenteCombo;
+
+    @FXML
+    private ComboBox<Empleado> contactoCombo;
+
+    @FXML
+    private Button guardarBtn;
+
+    @FXML
+    private Button cancelarBtn;
+
+    private boolean modoEditar = false;
+    private Sucursal sucursalEditar;
+    private SucursalesMainViewController origenController;
+    private SucursalController sucursalController = new SucursalController();
+    private EmpleadoController empleadoController = new EmpleadoController();
+
+    public void setModoAgregar(SucursalesMainViewController origenController) {
+        this.origenController = origenController;
+        modoEditar = false;
+        tituloLabel.setText("Añadir sucursal");
+        numeroIdentificacionField.setEditable(false);
+        cargarCombos();
+        limpiarCampos();
+    }
+
+    public void setModoEditar(SucursalesMainViewController origenController, Sucursal sucursal) {
+        this.origenController = origenController;
+        modoEditar = true;
+        this.sucursalEditar = sucursal;
+        tituloLabel.setText("Editar sucursal");
+        cargarCombos();
+        cargarDatos(sucursal);
+        numeroIdentificacionField.setEditable(false);
+    }
+
+    private void cargarCombos() {
+        ObservableList<Empleado> empleados = FXCollections.observableArrayList(empleadoController.obtenerTodosLosEmpleados());
+        gerenteCombo.setItems(empleados);
+        contactoCombo.setItems(empleados);
+    }
+
+    private void limpiarCampos() {
+        numeroIdentificacionField.clear();
+        nombreField.clear();
+        direccionField.clear();
+        telefonoField.clear();
+        correoField.clear();
+        gerenteCombo.getSelectionModel().clearSelection();
+        contactoCombo.getSelectionModel().clearSelection();
+    }
+
+    private void cargarDatos(Sucursal sucursal) {
+        numeroIdentificacionField.setText(sucursal.getNumeroIdentificacion());
+        nombreField.setText(sucursal.getNombre());
+        direccionField.setText(sucursal.getDireccion());
+        telefonoField.setText(sucursal.getTelefono());
+        correoField.setText(sucursal.getCorreo());
+        gerenteCombo.getSelectionModel().select(sucursal.getGerente());
+        contactoCombo.getSelectionModel().select(sucursal.getContacto());
+    }
+
+    @FXML
+    private void handleGuardar(ActionEvent event) {
+        String numero = numeroIdentificacionField.getText();
+        String nombre = nombreField.getText();
+        String direccion = direccionField.getText();
+        String telefono = telefonoField.getText();
+        String correo = correoField.getText();
+        Empleado gerente = gerenteCombo.getValue();
+        Empleado contacto = contactoCombo.getValue();
+
+        if (modoEditar) {
+            sucursalEditar.setNombre(nombre);
+            sucursalEditar.setDireccion(direccion);
+            sucursalEditar.setTelefono(telefono);
+            sucursalEditar.setCorreo(correo);
+            sucursalEditar.setGerente(gerente);
+            sucursalEditar.setContacto(contacto);
+            sucursalController.actualizarSucursal(sucursalEditar);
         } else {
-            tituloLabel.setText("Agregar Sucursal");
-            String nuevoId = generarNuevoId();
-            idLabel.setText(nuevoId);
+            String nuevoNumero = sucursalController.generarNuevoNumeroIdentificacion();
+            Sucursal nueva = new Sucursal(nuevoNumero, nombre, direccion, telefono, correo, gerente, contacto);
+            sucursalController.agregarSucursal(nueva);
         }
-    }
-
-    private void llenarCampos(Sucursal s) {
-        nombreField.setText(s.getNombre());
-        direccionField.setText(s.getDireccion());
-        telefonoField.setText(s.getTelefono());
-        correoField.setText(s.getCorreo());
-        nombreGerenteField.setText(s.getNombreGerente());
-        personaContactoField.setText(s.getPersonaContacto());
-    }
-
-    private String generarNuevoId() {
-        try {
-            List<Sucursal> lista = sucursalCSV.cargar("ruta/Sucursales.csv");
-            int max = lista.stream().mapToInt(s -> {
-                try { return Integer.parseInt(s.getId().replaceAll("[^0-9]", "")); }
-                catch (Exception e) { return 0; }
-            }).max().orElse(0);
-            return String.valueOf(max + 1);
-        } catch (Exception e) { return "1"; }
-    }
-
-    public void setOnGuardarSuccess(Runnable r) { this.onGuardarSuccess = r; }
-
-    @FXML
-    private void handleGuardar() {
-        if (!validarCampos()) return;
-        try {
-            if (!modoEdicion) {
-                Sucursal nuevo = new Sucursal(idLabel.getText(), nombreField.getText(), direccionField.getText(), telefonoField.getText(),
-                        correoField.getText(), nombreGerenteField.getText(), personaContactoField.getText());
-                sucursalCSV.guardarUno(nuevo, "ruta/Sucursales.csv");
-            } else {
-                sucursal.setNombre(nombreField.getText());
-                sucursal.setDireccion(direccionField.getText());
-                sucursal.setTelefono(telefonoField.getText());
-                sucursal.setCorreo(correoField.getText());
-                sucursal.setNombreGerente(nombreGerenteField.getText());
-                sucursal.setPersonaContacto(personaContactoField.getText());
-                sucursalCSV.actualizar(sucursal, "ruta/Sucursales.csv");
-            }
-            if (onGuardarSuccess != null) onGuardarSuccess.run();
-            dialogStage.close();
-        } catch (Exception e) { errorLabel.setText("Error: " + e.getMessage()); }
+        origenController.recargarTabla();
+        regresarSucursalesMain(event);
     }
 
     @FXML
-    private void handleCancelar() { dialogStage.close(); }
+    private void handleCancelar(ActionEvent event) {
+        regresarSucursalesMain(event);
+    }
 
-    private boolean validarCampos() {
-        if (nombreField.getText().isEmpty() ||
-                direccionField.getText().isEmpty() ||
-                telefonoField.getText().isEmpty() ||
-                correoField.getText().isEmpty() ||
-                nombreGerenteField.getText().isEmpty() ||
-                personaContactoField.getText().isEmpty()) {
-            errorLabel.setText("Todos los campos son obligatorios.");
-            return false;
-        }
-        errorLabel.setText("");
-        return true;
+    private void regresarSucursalesMain(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/SucursalesMainView.fxml"));
+            Parent root = loader.load();
+            SucursalesMainViewController controller = loader.getController();
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (Exception e) {}
     }
 }

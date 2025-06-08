@@ -27,7 +27,7 @@
                 style="-fx-font-weight: bold;"/>
     </HBox>
 
-    <Button text="Cerrar Sesión" onAction="#handleLogout"
+    <Button text="Cerrar Sesión" onAction="#handleCerrarSesion"
             style="-fx-font-weight: bold;"/>
 
 </VBox>

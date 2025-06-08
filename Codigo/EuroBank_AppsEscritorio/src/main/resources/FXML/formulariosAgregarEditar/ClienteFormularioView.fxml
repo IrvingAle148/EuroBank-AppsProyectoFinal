@@ -49,7 +49,7 @@
     </HBox>
 
     <HBox spacing="15" alignment="CENTER">
-        <Button text="Guardar" fx:id="guardarBtn" onAction="#onGuardar"/>
-        <Button text="Cancelar" fx:id="cancelarBtn" onAction="#onCancelar"/>
+        <Button text="Guardar" fx:id="guardarBtn" onAction="#handleGuardar"/>
+        <Button text="Cancelar" fx:id="cancelarBtn" onAction="#handleCancelar"/>
     </HBox>
 </VBox>

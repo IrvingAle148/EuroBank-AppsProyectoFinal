@@ -1,101 +1,134 @@
 package vista;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import modelo.entidades.Empleado;
-import modelo.persistencia.EmpleadoCSV;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.Button;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Stage;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.Node;
+import javafx.fxml.FXMLLoader;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import modelo.entidades.Empleado;
+import controlador.EmpleadoController;
 
 public class EmpleadosMainViewController {
 
-    @FXML private TableView<Empleado> empleadosTable;
-    @FXML private TableColumn<Empleado, String> idColumn;
-    @FXML private TableColumn<Empleado, String> nombreColumn;
-    @FXML private TableColumn<Empleado, String> tipoColumn;
-    @FXML private TableColumn<Empleado, String> sucursalColumn;
-    @FXML private Button agregarButton;
-    @FXML private Button editarButton;
-    @FXML private Button eliminarButton;
-    @FXML private Button exportarButton;
-    @FXML private Button regresarButton;
-    @FXML private Label mensajeLabel;
+    @FXML
+    private TableView<Empleado> empleadosTable;
 
-    private ObservableList<Empleado> empleados = FXCollections.observableArrayList();
-    private EmpleadoCSV empleadoCSV = new EmpleadoCSV();
+    @FXML
+    private TableColumn<Empleado, String> nombreCol;
+
+    @FXML
+    private TableColumn<Empleado, String> usuarioCol;
+
+    @FXML
+    private TableColumn<Empleado, String> generoCol;
+
+    @FXML
+    private TableColumn<Empleado, String> sucursalCol;
+
+    @FXML
+    private TableColumn<Empleado, String> tipoEmpleadoCol;
+
+    @FXML
+    private Button editarButton;
+
+    @FXML
+    private Button eliminarButton;
+
+    private EmpleadoController empleadoController = new EmpleadoController();
+    private ObservableList<Empleado> empleadosList = FXCollections.observableArrayList();
 
     @FXML
     private void initialize() {
-        idColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getId()));
-        nombreColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getNombre()));
-        tipoColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getTipo()));
-        sucursalColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(
-                data.getValue().getSucursal() != null ? data.getValue().getSucursal().getNombre() : ""));
-        empleados.setAll(empleadoCSV.cargar("src/main/resources/archivos/empleados.csv"));
-        empleadosTable.setItems(empleados);
+        nombreCol.setCellValueFactory(data -> data.getValue().nombreProperty());
+        usuarioCol.setCellValueFactory(data -> data.getValue().usuarioProperty());
+        generoCol.setCellValueFactory(data -> data.getValue().generoProperty());
+        sucursalCol.setCellValueFactory(data -> data.getValue().sucursalNombreProperty());
+        tipoEmpleadoCol.setCellValueFactory(data -> data.getValue().tipoEmpleadoProperty());
+        empleadosTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
+            boolean selected = newSel != null;
+            editarButton.setDisable(!selected);
+            eliminarButton.setDisable(!selected);
+        });
+        cargarEmpleados();
+    }
+
+    private void cargarEmpleados() {
+        empleadosList.clear();
+        empleadosList.addAll(empleadoController.obtenerTodosLosEmpleados());
+        empleadosTable.setItems(empleadosList);
     }
 
     @FXML
-    private void handleAgregar() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/formulariosAgregarEditar/EmpleadoFormularioView.fxml"));
-            Parent root = loader.load();
-            Stage stage = new Stage();
-            stage.setTitle("Agregar Empleado");
-            stage.setScene(new Scene(root));
-            stage.showAndWait();
-            empleados.setAll(empleadoCSV.cargar("src/main/resources/archivos/empleados.csv"));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @FXML
-    private void handleEditar() {
-        Empleado seleccionado = empleadosTable.getSelectionModel().getSelectedItem();
-        if (seleccionado == null) {
-            mensajeLabel.setText("Selecciona un empleado para editar.");
-            return;
-        }
+    private void handleAgregar(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/formulariosAgregarEditar/EmpleadoFormularioView.fxml"));
             Parent root = loader.load();
             vista.formularioAgregarEditar.EmpleadoFormularioViewController controller = loader.getController();
-            controller.setEmpleado(seleccionado, true);
-            Stage stage = new Stage();
-            stage.setTitle("Editar Empleado");
+            controller.setModoAgregar(this);
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
-            stage.showAndWait();
-            empleados.setAll(empleadoCSV.cargar("src/main/resources/archivos/empleados.csv"));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            stage.show();
+        } catch (Exception e) {}
     }
 
     @FXML
-    private void handleEliminar() {
+    private void handleEditar(ActionEvent event) {
         Empleado seleccionado = empleadosTable.getSelectionModel().getSelectedItem();
-        if (seleccionado == null) {
-            mensajeLabel.setText("Selecciona un empleado para eliminar.");
-            return;
-        }
-        empleadoCSV.eliminar(seleccionado, "src/main/resources/archivos/empleados.csv");
-        empleados.setAll(empleadoCSV.cargar("src/main/resources/archivos/empleados.csv"));
-        mensajeLabel.setText("Empleado eliminado correctamente.");
+        if (seleccionado == null) return;
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/formulariosAgregarEditar/EmpleadoFormularioView.fxml"));
+            Parent root = loader.load();
+            vista.formularioAgregarEditar.EmpleadoFormularioViewController controller = loader.getController();
+            controller.setModoEditar(this, seleccionado);
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (Exception e) {}
     }
 
     @FXML
-    private void handleExportar() {
-        mensajeLabel.setText("Exportación no implementada.");
+    private void handleEliminar(ActionEvent event) {
+        Empleado seleccionado = empleadosTable.getSelectionModel().getSelectedItem();
+        if (seleccionado == null) return;
+        Alert confirm = new Alert(AlertType.CONFIRMATION, "¿Eliminar empleado " + seleccionado.getNombre() + "?");
+        confirm.setHeaderText(null);
+        confirm.showAndWait().ifPresent(response -> {
+            if (response == javafx.scene.control.ButtonType.OK) {
+                empleadoController.eliminarEmpleado(seleccionado);
+                cargarEmpleados();
+                Alert info = new Alert(AlertType.INFORMATION, "Empleado eliminado.");
+                info.setHeaderText(null);
+                info.showAndWait();
+            }
+        });
     }
 
     @FXML
-    private void handleRegresar() {
-        Stage stage = (Stage) regresarButton.getScene().getWindow();
-        stage.close();
+    private void handleExportar(ActionEvent event) {
+        empleadoController.exportarEmpleados();
+    }
+
+    @FXML
+    private void handleRegresar(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/LoginMainView.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (Exception e) {}
+    }
+
+    public void recargarTabla() {
+        cargarEmpleados();
     }
 }

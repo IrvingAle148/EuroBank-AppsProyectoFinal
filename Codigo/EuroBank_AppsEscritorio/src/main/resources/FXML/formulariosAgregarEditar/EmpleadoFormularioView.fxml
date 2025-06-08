@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?xml version="1.0" encoding="UTF-8"?>
 
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="vista.formularioAgregarEditar.EmpleadoFormularioViewController"
@@ -27,7 +25,7 @@
     </HBox>
     <HBox spacing="5">
         <Label text="Género:" minWidth="120"/>
-        <TextField fx:id="generoField"/>
+        <ComboBox fx:id="generoCombo"/>
     </HBox>
     <HBox spacing="5">
         <Label text="Salario:" minWidth="120"/>
@@ -38,7 +36,7 @@
         <TextField fx:id="usuarioField"/>
     </HBox>
     <HBox spacing="5">
-        <Label text="Contrasenia:" minWidth="120"/>
+        <Label text="Contraseña:" minWidth="120"/>
         <PasswordField fx:id="contraseniaField"/>
     </HBox>
     <HBox spacing="5">
@@ -51,23 +49,23 @@
     </HBox>
 
     <!-- Panel dinámico para Cajero -->
-    <HBox fx:id="panelCajero" spacing="5" visible="false" managed="false">
+    <HBox fx:id="cajeroPane" spacing="5" visible="false" managed="false">
         <Label text="Horario de Trabajo:" minWidth="120"/>
         <TextField fx:id="horarioTrabajoField"/>
         <Label text="Número de Ventanilla:" minWidth="120"/>
-        <TextField fx:id="numeroVentanillaField"/>
+        <TextField fx:id="numVentanillaField"/>
     </HBox>
 
     <!-- Panel dinámico para Ejecutivo -->
-    <HBox fx:id="panelEjecutivo" spacing="5" visible="false" managed="false">
+    <HBox fx:id="ejecutivoPane" spacing="5" visible="false" managed="false">
         <Label text="N° Clientes Asignados:" minWidth="120"/>
         <TextField fx:id="numClientesAsignadosField"/>
         <Label text="Especialización:" minWidth="120"/>
-        <TextField fx:id="especializacionField"/>
+        <ComboBox fx:id="especializacionCombo"/>
     </HBox>
 
     <!-- Panel dinámico para Gerente -->
-    <HBox fx:id="panelGerente" spacing="5" visible="false" managed="false">
+    <HBox fx:id="gerentePane" spacing="5" visible="false" managed="false">
         <Label text="Nivel de Acceso:" minWidth="120"/>
         <ComboBox fx:id="nivelAccesoCombo"/>
         <Label text="Años de Experiencia:" minWidth="120"/>
@@ -75,9 +73,7 @@
     </HBox>
 
     <HBox spacing="15" alignment="CENTER">
-        <Button text="Guardar" fx:id="guardarBtn" onAction="#onGuardar"/>
-        <Button text="Cancelar" fx:id="cancelarBtn" onAction="#onCancelar"/>
+        <Button text="Guardar" fx:id="guardarBtn" onAction="#handleGuardar"/>
+        <Button text="Cancelar" fx:id="cancelarBtn" onAction="#handleCancelar"/>
     </HBox>
 </VBox>
-
-

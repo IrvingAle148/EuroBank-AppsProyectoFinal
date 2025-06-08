@@ -24,6 +24,6 @@
                 style="-fx-font-weight: bold; -fx-min-width: 200;"/>
     </VBox>
 
-    <Button text="Cerrar Sesión" onAction="#handleLogout"
+    <Button text="Cerrar Sesión" onAction="#handleCerrarSesion"
             style="-fx-font-weight: bold;"/>
 </VBox>

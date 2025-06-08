@@ -2,111 +2,89 @@ package vista.empleados;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-import javafx.scene.control.Button;
+import javafx.event.ActionEvent;
 import javafx.stage.Stage;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.Node;
+import javafx.fxml.FXMLLoader;
 import modelo.entidades.Gerente;
 
 public class GerenteMainViewController {
 
-    @FXML private Label nombreLabel;
-    @FXML private Label idLabel;
-    @FXML private Label nivelAccesoLabel;
-    @FXML private Label aniosExpLabel;
-    @FXML private Label sucursalLabel;
-    @FXML private Button verClientesButton;
-    @FXML private Button verEmpleadosButton;
-    @FXML private Button verSucursalesButton;
-    @FXML private Button verCuentasButton;
-    @FXML private Button verTransaccionesButton;
-    @FXML private Button cerrarSesionButton;
+    @FXML
+    private Label welcomeLabel;
 
     private Gerente gerente;
 
     public void setGerente(Gerente gerente) {
         this.gerente = gerente;
-        nombreLabel.setText(gerente.getNombre());
-        idLabel.setText(gerente.getId());
-        nivelAccesoLabel.setText(gerente.getNivelAcceso());
-        aniosExpLabel.setText(String.valueOf(gerente.getAniosExperiencia()));
-        sucursalLabel.setText(gerente.getSucursal().getNombre());
+        welcomeLabel.setText("Bienvenido Gerente " + gerente.getNombre());
     }
 
     @FXML
-    private void handleVerClientes() {
+    private void handleVerClientes(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/ClientesMainView.fxml"));
             Parent root = loader.load();
-            Stage stage = new Stage();
-            stage.setTitle("Clientes");
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) {}
     }
 
     @FXML
-    private void handleVerEmpleados() {
+    private void handleVerEmpleados(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/EmpleadosMainView.fxml"));
             Parent root = loader.load();
-            Stage stage = new Stage();
-            stage.setTitle("Empleados");
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) {}
     }
 
     @FXML
-    private void handleVerSucursales() {
+    private void handleVerSucursales(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/SucursalesMainView.fxml"));
             Parent root = loader.load();
-            Stage stage = new Stage();
-            stage.setTitle("Sucursales");
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) {}
     }
 
     @FXML
-    private void handleVerCuentas() {
+    private void handleVerCuentas(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/CuentasMainVIew.fxml"));
             Parent root = loader.load();
-            Stage stage = new Stage();
-            stage.setTitle("Cuentas");
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) {}
     }
 
     @FXML
-    private void handleVerTransacciones() {
+    private void handleVerTransacciones(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/TransaccionesMainView.fxml"));
             Parent root = loader.load();
-            Stage stage = new Stage();
-            stage.setTitle("Transacciones");
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) {}
     }
 
     @FXML
-    private void handleCerrarSesion() {
-        Stage stage = (Stage) cerrarSesionButton.getScene().getWindow();
-        stage.close();
+    private void handleCerrarSesion(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/LoginMainView.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (Exception e) {}
     }
 }

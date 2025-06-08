@@ -1,100 +1,97 @@
 package vista;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.TextField;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
+import javafx.event.ActionEvent;
 import javafx.stage.Stage;
+import javafx.scene.Node;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import modelo.persistencia.EmpleadoCSV;
-import modelo.persistencia.ClienteCSV;
-import modelo.entidades.Empleado;
+import controlador.AutentificacionController;
 import modelo.entidades.Cliente;
-import modelo.entidades.Gerente;
+import modelo.entidades.Empleado;
 import modelo.entidades.Cajero;
+import modelo.entidades.Gerente;
 import modelo.entidades.Ejecutivo;
+import modelo.excepciones.ValidacionException;
+import controlador.SucursalController;
+import modelo.entidades.Sucursal;
+import java.io.IOException;
+import java.util.Map;
 
 public class LoginMainViewController {
 
-    @FXML private TextField usuarioField;
-    @FXML private PasswordField contraseniaField;
-    @FXML private Button loginButton;
-    @FXML private Label mensajeLabel;
-
-    private EmpleadoCSV empleadoCSV = new EmpleadoCSV();
-    private ClienteCSV clienteCSV = new ClienteCSV();
+    @FXML
+    private TextField usernameField;
 
     @FXML
-    private void handleLogin() {
-        String usuario = usuarioField.getText();
-        String contrasenia = contraseniaField.getText();
+    private PasswordField passwordField;
 
-        if (usuario.isEmpty() || contrasenia.isEmpty()) {
-            mensajeLabel.setText("Usuario y contraseña obligatorios.");
-            return;
-        }
+    @FXML
+    private Label errorLabel;
 
-        Empleado empleado = empleadoCSV.buscarPorUsuario(usuario, contrasenia, "src/main/resources/archivos/empleados.csv");
-        if (empleado != null) {
-            if (empleado instanceof Gerente) {
-                cargarVistaEmpleado("/FXML/empleados/GerenteMainView.fxml", (Gerente) empleado);
-            } else if (empleado instanceof Cajero) {
-                cargarVistaEmpleado("/FXML/empleados/CajeroMainView.fxml", (Cajero) empleado);
-            } else if (empleado instanceof Ejecutivo) {
-                cargarVistaEmpleado("/FXML/empleados/EjecutivoMainView.fxml", (Ejecutivo) empleado);
+    @FXML
+    private RadioButton empleadoRadio;
+
+    @FXML
+    private RadioButton clienteRadio;
+
+    private AutentificacionController authController = new AutentificacionController();
+    private SucursalController sucursalController = new SucursalController();
+
+    @FXML
+    private void handleLogin(ActionEvent event) {
+        String usuario = usernameField.getText();
+        String contrasenia = passwordField.getText();
+        errorLabel.setVisible(false);
+
+        try {
+            if (empleadoRadio.isSelected()) {
+                Map<String, Sucursal> sucursales = (Map<String, Sucursal>) sucursalController.obtenerTodas();
+                Empleado empleado = authController.autenticarEmpleado(usuario, contrasenia, sucursales);
+                if (empleado instanceof Gerente) {
+                    cargarVentana("/FXML/empleados/GerenteMainView.fxml", event, empleado);
+                } else if (empleado instanceof Ejecutivo) {
+                    cargarVentana("/FXML/empleados/EjecutivoMainView.fxml", event, empleado);
+                } else if (empleado instanceof Cajero) {
+                    cargarVentana("/FXML/empleados/CajeroMainView.fxml", event, empleado);
+                }
+            } else if (clienteRadio.isSelected()) {
+                Cliente cliente = authController.autenticarCliente(usuario, contrasenia);
+                cargarVentana("/FXML/cilente/ClienteMainView.fxml", event, cliente);
             }
-            Stage stage = (Stage) loginButton.getScene().getWindow();
-            stage.close();
-            return;
+        } catch (ValidacionException | IOException ex) {
+            errorLabel.setText(ex.getMessage());
+            errorLabel.setVisible(true);
         }
-
-        Cliente cliente = clienteCSV.buscarPorUsuario(usuario, contrasenia, "src/main/resources/archivos/clientes.csv");
-        if (cliente != null) {
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/cilente/ClienteMainView.fxml"));
-                Parent root = loader.load();
-                vista.cliente.ClienteMainViewController controller = loader.getController();
-                controller.setClienteActual(cliente);
-                Stage stage = new Stage();
-                stage.setTitle("Panel Cliente");
-                stage.setScene(new Scene(root));
-                stage.show();
-                Stage ventanaActual = (Stage) loginButton.getScene().getWindow();
-                ventanaActual.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return;
-        }
-
-        mensajeLabel.setText("Usuario o contraseña incorrectos.");
     }
 
-    private void cargarVistaEmpleado(String rutaFXML, Empleado empleado) {
+    private void cargarVentana(String fxmlPath, ActionEvent event, Object usuario) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(rutaFXML));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();
 
-            if (empleado instanceof Gerente) {
+            if (fxmlPath.contains("ClienteMainView")) {
+                vista.cliente.ClienteMainViewController controller = loader.getController();
+                controller.setCliente((Cliente) usuario);
+            } else if (fxmlPath.contains("GerenteMainView")) {
                 vista.empleados.GerenteMainViewController controller = loader.getController();
-                controller.setGerente((Gerente) empleado);
-            } else if (empleado instanceof Cajero) {
-                vista.empleados.CajeroMainViewController controller = loader.getController();
-                controller.setCajero((Cajero) empleado);
-            } else if (empleado instanceof Ejecutivo) {
+                controller.setGerente((Gerente) usuario);
+            } else if (fxmlPath.contains("EjecutivoMainView")) {
                 vista.empleados.EjecutivoMainViewController controller = loader.getController();
-                controller.setEjecutivo((Ejecutivo) empleado);
+                controller.setEjecutivo((Ejecutivo) usuario);
+            } else if (fxmlPath.contains("CajeroMainView")) {
+                vista.empleados.CajeroMainViewController controller = loader.getController();
+                controller.setCajero((Cajero) usuario);
             }
 
-            Stage stage = new Stage();
-            stage.setTitle("Panel Empleado");
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
         } catch (Exception e) {
-            e.printStackTrace();
+            errorLabel.setText("No se pudo cargar la interfaz principal.");
+            errorLabel.setVisible(true);
         }
     }
 }

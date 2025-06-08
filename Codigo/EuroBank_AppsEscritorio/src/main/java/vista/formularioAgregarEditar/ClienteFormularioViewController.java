@@ -1,127 +1,156 @@
 package vista.formularioAgregarEditar;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.TextField;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
+import javafx.scene.control.Button;
+import javafx.event.ActionEvent;
 import javafx.stage.Stage;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.Node;
+import javafx.fxml.FXMLLoader;
 import modelo.entidades.Cliente;
-import modelo.persistencia.ClienteCSV;
-
-import java.util.List;
+import controlador.ClienteController;
+import vista.ClientesMainViewController;
+import java.time.LocalDate;
 
 public class ClienteFormularioViewController {
 
-    @FXML private Label tituloLabel;
-    @FXML private Label idLabel;
-    @FXML private TextField nombreField, apellidosField, nacionalidadField, rfcCurpField, direccionField, telefonoField, correoField;
-    @FXML private DatePicker fechaNacimientoPicker;
-    @FXML private PasswordField contraseniaField;
-    @FXML private Button guardarButton;
-    @FXML private Label errorLabel;
+    @FXML
+    private Label tituloLabel;
 
-    private Stage dialogStage;
-    private Cliente cliente;
-    private boolean modoEdicion;
-    private ClienteCSV clienteCSV = new ClienteCSV(); // Tu clase de persistencia
+    @FXML
+    private TextField rfcCurpField;
 
-    // Para refrescar la tabla principal después de guardar
-    private Runnable onGuardarSuccess;
+    @FXML
+    private TextField nombreField;
 
-    public void setDialogStage(Stage dialogStage) {
-        this.dialogStage = dialogStage;
+    @FXML
+    private TextField apellidosField;
+
+    @FXML
+    private TextField nacionalidadField;
+
+    @FXML
+    private DatePicker fechaNacimientoPicker;
+
+    @FXML
+    private TextField direccionField;
+
+    @FXML
+    private TextField telefonoField;
+
+    @FXML
+    private TextField correoField;
+
+    @FXML
+    private TextField usuarioField;
+
+    @FXML
+    private PasswordField contraseniaField;
+
+    @FXML
+    private Button guardarBtn;
+
+    @FXML
+    private Button cancelarBtn;
+
+    private boolean modoEditar = false;
+    private Cliente clienteEditar;
+    private vista.ClientesMainViewController origenController;
+    private ClienteController clienteController = new ClienteController();
+
+    public void setModoAgregar(ClientesMainViewController origenController) {
+        this.origenController = origenController;
+        modoEditar = false;
+        tituloLabel.setText("Añadir cliente");
+        rfcCurpField.setEditable(true);
+        limpiarCampos();
     }
 
-    // Llama esto desde la ventana padre para inicializar el formulario
-    public void setCliente(Cliente cliente, boolean edicion) {
-        this.cliente = cliente;
-        this.modoEdicion = edicion;
-        if (edicion && cliente != null) {
-            tituloLabel.setText("Editar Cliente");
-            idLabel.setText(cliente.getRfcCurp());
-            llenarCampos(cliente);
-            rfcCurpField.setDisable(true);
+    public void setModoEditar(ClientesMainViewController origenController, Cliente cliente) {
+        this.origenController = origenController;
+        modoEditar = true;
+        this.clienteEditar = cliente;
+        tituloLabel.setText("Editar cliente");
+        cargarDatos(cliente);
+        rfcCurpField.setEditable(false);
+    }
+
+    private void limpiarCampos() {
+        rfcCurpField.clear();
+        nombreField.clear();
+        apellidosField.clear();
+        nacionalidadField.clear();
+        fechaNacimientoPicker.setValue(null);
+        direccionField.clear();
+        telefonoField.clear();
+        correoField.clear();
+        usuarioField.clear();
+        contraseniaField.clear();
+    }
+
+    private void cargarDatos(Cliente cliente) {
+        rfcCurpField.setText(cliente.getRfcCurp());
+        nombreField.setText(cliente.getNombre());
+        apellidosField.setText(cliente.getApellidos());
+        nacionalidadField.setText(cliente.getNacionalidad());
+        fechaNacimientoPicker.setValue(cliente.getFechaNacimiento());
+        direccionField.setText(cliente.getDireccion());
+        telefonoField.setText(cliente.getTelefono());
+        correoField.setText(cliente.getCorreo());
+        usuarioField.setText(cliente.getUsuario());
+        contraseniaField.setText(cliente.getContrasenia());
+    }
+
+    @FXML
+    private void handleGuardar(ActionEvent event) {
+        String rfc = rfcCurpField.getText();
+        String nombre = nombreField.getText();
+        String apellidos = apellidosField.getText();
+        String nacionalidad = nacionalidadField.getText();
+        LocalDate fechaNac = fechaNacimientoPicker.getValue();
+        String direccion = direccionField.getText();
+        String telefono = telefonoField.getText();
+        String correo = correoField.getText();
+        String usuario = usuarioField.getText();
+        String contrasenia = contraseniaField.getText();
+
+        if (modoEditar) {
+            clienteEditar.setNombre(nombre);
+            clienteEditar.setApellidos(apellidos);
+            clienteEditar.setNacionalidad(nacionalidad);
+            clienteEditar.setFechaNacimiento(fechaNac);
+            clienteEditar.setDireccion(direccion);
+            clienteEditar.setTelefono(telefono);
+            clienteEditar.setCorreo(correo);
+            clienteEditar.setUsuario(usuario);
+            clienteEditar.setContrasenia(contrasenia);
+            clienteController.actualizarCliente(clienteEditar);
         } else {
-            tituloLabel.setText("Agregar Cliente");
-            String nuevoId = generarNuevoId();
-            idLabel.setText(nuevoId);
-            rfcCurpField.setText(nuevoId);
-            rfcCurpField.setDisable(false);
+            Cliente nuevo = new Cliente(rfc, nombre, apellidos, nacionalidad, fechaNac, direccion, telefono, correo, usuario, contrasenia);
+            clienteController.agregarCliente(nuevo);
         }
-    }
-
-    private void llenarCampos(Cliente c) {
-        nombreField.setText(c.getNombre());
-        apellidosField.setText(c.getApellidos());
-        nacionalidadField.setText(c.getNacionalidad());
-        fechaNacimientoPicker.setValue(java.time.LocalDate.parse(c.getFechaNacimiento()));
-        rfcCurpField.setText(c.getRfcCurp());
-        direccionField.setText(c.getDireccion());
-        telefonoField.setText(c.getTelefono());
-        correoField.setText(c.getCorreo());
-        contraseniaField.setText(c.getContrasenia());
-    }
-
-    private String generarNuevoId() {
-        try {
-            List<Cliente> lista = clienteCSV.cargar("ruta/Clientes.csv");
-            int max = lista.stream().mapToInt(c -> {
-                try { return Integer.parseInt(c.getRfcCurp().replaceAll("[^0-9]", "")); }
-                catch (Exception e) { return 0; }
-            }).max().orElse(0);
-            return String.valueOf(max + 1);
-        } catch (Exception e) {
-            return "1";
-        }
-    }
-
-    public void setOnGuardarSuccess(Runnable r) { this.onGuardarSuccess = r; }
-
-    @FXML
-    private void handleGuardar() {
-        if (!validarCampos()) return;
-        try {
-            if (!modoEdicion) {
-                Cliente nuevo = new Cliente(
-                        nombreField.getText(), apellidosField.getText(), nacionalidadField.getText(),
-                        fechaNacimientoPicker.getValue().toString(), rfcCurpField.getText(), direccionField.getText(),
-                        telefonoField.getText(), correoField.getText(), contraseniaField.getText()
-                );
-                clienteCSV.guardarUno(nuevo, "ruta/Clientes.csv"); // Implementa guardarUno
-            } else {
-                cliente.setNombre(nombreField.getText());
-                cliente.setApellidos(apellidosField.getText());
-                cliente.setNacionalidad(nacionalidadField.getText());
-                cliente.setFechaNacimiento(fechaNacimientoPicker.getValue().toString());
-                cliente.setDireccion(direccionField.getText());
-                cliente.setTelefono(telefonoField.getText());
-                cliente.setCorreo(correoField.getText());
-                cliente.setContrasenia(contraseniaField.getText());
-                clienteCSV.actualizar(cliente, "ruta/Clientes.csv"); // Implementa actualizar
-            }
-            if (onGuardarSuccess != null) onGuardarSuccess.run();
-            dialogStage.close();
-        } catch (Exception e) {
-            errorLabel.setText("Error: " + e.getMessage());
-        }
+        origenController.recargarTabla();
+        regresarClientesMain(event);
     }
 
     @FXML
-    private void handleCancelar() { dialogStage.close(); }
+    private void handleCancelar(ActionEvent event) {
+        regresarClientesMain(event);
+    }
 
-    private boolean validarCampos() {
-        // Valida todos los campos, muestra mensajes si falta algo
-        if (nombreField.getText().isEmpty() ||
-                apellidosField.getText().isEmpty() ||
-                nacionalidadField.getText().isEmpty() ||
-                fechaNacimientoPicker.getValue() == null ||
-                rfcCurpField.getText().isEmpty() ||
-                direccionField.getText().isEmpty() ||
-                telefonoField.getText().isEmpty() ||
-                correoField.getText().isEmpty() ||
-                contraseniaField.getText().isEmpty()) {
-            errorLabel.setText("Todos los campos son obligatorios.");
-            return false;
-        }
-        errorLabel.setText("");
-        return true;
+    private void regresarClientesMain(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/ClientesMainView.fxml"));
+            Parent root = loader.load();
+            ClientesMainViewController controller = loader.getController();
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (Exception e) {}
     }
 }

@@ -1,57 +1,71 @@
 package modelo.entidades;
 
+import javafx.beans.property.*;
+import java.util.List;
+
 public class Sucursal {
-    private String numeroIdentificacion;
-    private String nombre;
-    private String direccion;
-    private String telefono;
-    private String correo;
-    private String nombreGerente;
-    private String personaContacto;
+    private StringProperty numeroIdentificacion;
+    private StringProperty nombre;
+    private StringProperty direccion;
+    private StringProperty telefono;
+    private StringProperty correo;
+    private ObjectProperty<Empleado> gerente;
+    private ObjectProperty<Empleado> contacto;
 
-    public Sucursal(String numeroIdentificacion, String nombre, String direccion, String telefono, String correo, String nombreGerente, String personaContacto) {
-        this.numeroIdentificacion = numeroIdentificacion;
-        this.nombre = nombre;
-        this.direccion = direccion;
-        this.telefono = telefono;
-        this.correo = correo;
-        this.nombreGerente = nombreGerente;
-        this.personaContacto = personaContacto;
+    // Si quieres manejar empleados/cuentas de la sucursal
+    private List<Empleado> empleados;
+    private List<Cuenta> cuentas;
+
+    public Sucursal(String numeroIdentificacion, String nombre, String direccion, String telefono, String correo, Empleado gerente, Empleado contacto) {
+        this.numeroIdentificacion = new SimpleStringProperty(numeroIdentificacion);
+        this.nombre = new SimpleStringProperty(nombre);
+        this.direccion = new SimpleStringProperty(direccion);
+        this.telefono = new SimpleStringProperty(telefono);
+        this.correo = new SimpleStringProperty(correo);
+        this.gerente = new SimpleObjectProperty<>(gerente);
+        this.contacto = new SimpleObjectProperty<>(contacto);
     }
 
-    public Sucursal() {}
+    // Properties para JavaFX TableView
+    public StringProperty numeroIdentificacionProperty() { return numeroIdentificacion; }
+    public StringProperty nombreProperty() { return nombre; }
+    public StringProperty direccionProperty() { return direccion; }
+    public StringProperty telefonoProperty() { return telefono; }
+    public StringProperty correoProperty() { return correo; }
+    public ObjectProperty<Empleado> gerenteProperty() { return gerente; }
+    public ObjectProperty<Empleado> contactoProperty() { return contacto; }
 
-    public String getNumeroIdentificacion() { return numeroIdentificacion; }
-    public void setNumeroIdentificacion(String numeroIdentificacion) { this.numeroIdentificacion = numeroIdentificacion; }
+    // Getters y setters normales
+    public String getNumeroIdentificacion() { return numeroIdentificacion.get(); }
+    public void setNumeroIdentificacion(String id) { this.numeroIdentificacion.set(id); }
 
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
+    public String getNombre() { return nombre.get(); }
+    public void setNombre(String nombre) { this.nombre.set(nombre); }
 
-    public String getDireccion() { return direccion; }
-    public void setDireccion(String direccion) { this.direccion = direccion; }
+    public String getDireccion() { return direccion.get(); }
+    public void setDireccion(String direccion) { this.direccion.set(direccion); }
 
-    public String getTelefono() { return telefono; }
-    public void setTelefono(String telefono) { this.telefono = telefono; }
+    public String getTelefono() { return telefono.get(); }
+    public void setTelefono(String telefono) { this.telefono.set(telefono); }
 
-    public String getCorreo() { return correo; }
-    public void setCorreo(String correo) { this.correo = correo; }
+    public String getCorreo() { return correo.get(); }
+    public void setCorreo(String correo) { this.correo.set(correo); }
 
-    public String getNombreGerente() { return nombreGerente; }
-    public void setNombreGerente(String nombreGerente) { this.nombreGerente = nombreGerente; }
+    public Empleado getGerente() { return gerente.get(); }
+    public void setGerente(Empleado gerente) { this.gerente.set(gerente); }
 
-    public String getPersonaContacto() { return personaContacto; }
-    public void setPersonaContacto(String personaContacto) { this.personaContacto = personaContacto; }
+    public Empleado getContacto() { return contacto.get(); }
+    public void setContacto(Empleado contacto) { this.contacto.set(contacto); }
 
-@Override
-    public String toString() {
-        return "Sucursal{" +
-                "numeroIdentificacion='" + numeroIdentificacion + '\'' +
-                ", nombre='" + nombre + '\'' +
-                ", direccion='" + direccion + '\'' +
-                ", telefono='" + telefono + '\'' +
-                ", correo='" + correo + '\'' +
-                ", nombreGerente='" + nombreGerente + '\'' +
-                ", personaContacto='" + personaContacto + '\'' +
-                '}';
+    // Si quieres mostrar el nombre del gerente en la tabla
+    public StringProperty gerenteNombreProperty() {
+        return new SimpleStringProperty(getGerente() != null ? getGerente().getNombre() : "");
     }
+
+    // Listas (opcional)
+    public List<Empleado> getEmpleados() { return empleados; }
+    public void setEmpleados(List<Empleado> empleados) { this.empleados = empleados; }
+
+    public List<Cuenta> getCuentas() { return cuentas; }
+    public void setCuentas(List<Cuenta> cuentas) { this.cuentas = cuentas; }
 }

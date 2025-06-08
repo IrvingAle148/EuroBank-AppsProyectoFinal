@@ -1,100 +1,134 @@
 package vista;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import modelo.entidades.Cuenta;
-import modelo.persistencia.CuentaCSV;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.Button;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Stage;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.Node;
+import javafx.fxml.FXMLLoader;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import modelo.entidades.Cuenta;
+import controlador.CuentaController;
 
 public class CuentasMainViewController {
 
-    @FXML private TableView<Cuenta> cuentasTable;
-    @FXML private TableColumn<Cuenta, String> numeroCuentaColumn;
-    @FXML private TableColumn<Cuenta, String> tipoColumn;
-    @FXML private TableColumn<Cuenta, String> clienteColumn;
-    @FXML private TableColumn<Cuenta, Double> saldoColumn;
-    @FXML private Button agregarButton;
-    @FXML private Button editarButton;
-    @FXML private Button eliminarButton;
-    @FXML private Button exportarButton;
-    @FXML private Button regresarButton;
-    @FXML private Label mensajeLabel;
+    @FXML
+    private TableView<Cuenta> cuentasTable;
 
-    private ObservableList<Cuenta> cuentas = FXCollections.observableArrayList();
-    private CuentaCSV cuentaCSV = new CuentaCSV();
+    @FXML
+    private TableColumn<Cuenta, String> clienteCol;
+
+    @FXML
+    private TableColumn<Cuenta, String> tipoCol;
+
+    @FXML
+    private TableColumn<Cuenta, Double> saldoActualCol;
+
+    @FXML
+    private TableColumn<Cuenta, Double> limiteCreditoCol;
+
+    @FXML
+    private TableColumn<Cuenta, String> sucursalCol;
+
+    @FXML
+    private Button editarButton;
+
+    @FXML
+    private Button eliminarButton;
+
+    private CuentaController cuentaController = new CuentaController();
+    private ObservableList<Cuenta> cuentasList = FXCollections.observableArrayList();
 
     @FXML
     private void initialize() {
-        numeroCuentaColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getNumeroCuenta()));
-        tipoColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getTipo()));
-        clienteColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getCliente().getNombre()));
-        saldoColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getSaldoActual()));
-        cuentas.setAll(cuentaCSV.cargar("src/main/resources/archivos/cuentas.csv"));
-        cuentasTable.setItems(cuentas);
+        clienteCol.setCellValueFactory(data -> data.getValue().clienteNombreProperty());
+        tipoCol.setCellValueFactory(data -> data.getValue().tipoProperty());
+        saldoActualCol.setCellValueFactory(data -> data.getValue().saldoActualProperty().asObject());
+        limiteCreditoCol.setCellValueFactory(data -> data.getValue().limiteCreditoProperty().asObject());
+        sucursalCol.setCellValueFactory(data -> data.getValue().sucursalNombreProperty());
+        cuentasTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
+            boolean selected = newSel != null;
+            editarButton.setDisable(!selected);
+            eliminarButton.setDisable(!selected);
+        });
+        cargarCuentas();
+    }
+
+    private void cargarCuentas() {
+        cuentasList.clear();
+        cuentasList.addAll(cuentaController.obtenerTodasLasCuentas());
+        cuentasTable.setItems(cuentasList);
     }
 
     @FXML
-    private void handleAgregar() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/formulariosAgregarEditar/CuentaFormularioView.fxml"));
-            Parent root = loader.load();
-            Stage stage = new Stage();
-            stage.setTitle("Agregar Cuenta");
-            stage.setScene(new Scene(root));
-            stage.showAndWait();
-            cuentas.setAll(cuentaCSV.cargar("src/main/resources/archivos/cuentas.csv"));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @FXML
-    private void handleEditar() {
-        Cuenta seleccionada = cuentasTable.getSelectionModel().getSelectedItem();
-        if (seleccionada == null) {
-            mensajeLabel.setText("Selecciona una cuenta para editar.");
-            return;
-        }
+    private void handleAgregar(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/formulariosAgregarEditar/CuentaFormularioView.fxml"));
             Parent root = loader.load();
             vista.formularioAgregarEditar.CuentaFormularioViewController controller = loader.getController();
-            controller.setCuenta(seleccionada, true);
-            Stage stage = new Stage();
-            stage.setTitle("Editar Cuenta");
+            controller.setModoAgregar(this);
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
-            stage.showAndWait();
-            cuentas.setAll(cuentaCSV.cargar("src/main/resources/archivos/cuentas.csv"));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            stage.show();
+        } catch (Exception e) {}
     }
 
     @FXML
-    private void handleEliminar() {
+    private void handleEditar(ActionEvent event) {
         Cuenta seleccionada = cuentasTable.getSelectionModel().getSelectedItem();
-        if (seleccionada == null) {
-            mensajeLabel.setText("Selecciona una cuenta para eliminar.");
-            return;
-        }
-        cuentaCSV.eliminar(seleccionada, "src/main/resources/archivos/cuentas.csv");
-        cuentas.setAll(cuentaCSV.cargar("src/main/resources/archivos/cuentas.csv"));
-        mensajeLabel.setText("Cuenta eliminada correctamente.");
+        if (seleccionada == null) return;
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/formulariosAgregarEditar/CuentaFormularioView.fxml"));
+            Parent root = loader.load();
+            vista.formularioAgregarEditar.CuentaFormularioViewController controller = loader.getController();
+            controller.setModoEditar(this, seleccionada);
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (Exception e) {}
     }
 
     @FXML
-    private void handleExportar() {
-        mensajeLabel.setText("Exportación no implementada.");
+    private void handleEliminar(ActionEvent event) {
+        Cuenta seleccionada = cuentasTable.getSelectionModel().getSelectedItem();
+        if (seleccionada == null) return;
+        Alert confirm = new Alert(AlertType.CONFIRMATION, "¿Eliminar cuenta de " + seleccionada.getClienteNombre() + "?");
+        confirm.setHeaderText(null);
+        confirm.showAndWait().ifPresent(response -> {
+            if (response == javafx.scene.control.ButtonType.OK) {
+                cuentaController.eliminarCuenta(seleccionada);
+                cargarCuentas();
+                Alert info = new Alert(AlertType.INFORMATION, "Cuenta eliminada.");
+                info.setHeaderText(null);
+                info.showAndWait();
+            }
+        });
     }
 
     @FXML
-    private void handleRegresar() {
-        Stage stage = (Stage) regresarButton.getScene().getWindow();
-        stage.close();
+    private void handleExportar(ActionEvent event) {
+        cuentaController.exportarCuentas();
+    }
+
+    @FXML
+    private void handleRegresar(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/LoginMainView.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (Exception e) {}
+    }
+
+    public void recargarTabla() {
+        cargarCuentas();
     }
 }

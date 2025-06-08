@@ -1,100 +1,130 @@
 package vista;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import modelo.entidades.Sucursal;
-import modelo.persistencia.SucursalCSV;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.Button;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Stage;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.Node;
+import javafx.fxml.FXMLLoader;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import modelo.entidades.Sucursal;
+import controlador.SucursalController;
 
 public class SucursalesMainViewController {
 
-    @FXML private TableView<Sucursal> sucursalesTable;
-    @FXML private TableColumn<Sucursal, String> idColumn;
-    @FXML private TableColumn<Sucursal, String> nombreColumn;
-    @FXML private TableColumn<Sucursal, String> direccionColumn;
-    @FXML private TableColumn<Sucursal, String> gerenteColumn;
-    @FXML private Button agregarButton;
-    @FXML private Button editarButton;
-    @FXML private Button eliminarButton;
-    @FXML private Button exportarButton;
-    @FXML private Button regresarButton;
-    @FXML private Label mensajeLabel;
+    @FXML
+    private TableView<Sucursal> sucursalesTable;
 
-    private ObservableList<Sucursal> sucursales = FXCollections.observableArrayList();
-    private SucursalCSV sucursalCSV = new SucursalCSV();
+    @FXML
+    private TableColumn<Sucursal, String> idColumn;
+
+    @FXML
+    private TableColumn<Sucursal, String> nombreColumn;
+
+    @FXML
+    private TableColumn<Sucursal, String> direccionColumn;
+
+    @FXML
+    private TableColumn<Sucursal, String> gerenteColumn;
+
+    @FXML
+    private Button editarButton;
+
+    @FXML
+    private Button eliminarButton;
+
+    private SucursalController sucursalController = new SucursalController();
+    private ObservableList<Sucursal> sucursalesList = FXCollections.observableArrayList();
 
     @FXML
     private void initialize() {
-        idColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getId()));
-        nombreColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getNombre()));
-        direccionColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getDireccion()));
-        gerenteColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getNombreGerente()));
-        sucursales.setAll(sucursalCSV.cargar("src/main/resources/archivos/sucursales.csv"));
-        sucursalesTable.setItems(sucursales);
+        idColumn.setCellValueFactory(data -> data.getValue().idProperty());
+        nombreColumn.setCellValueFactory(data -> data.getValue().nombreProperty());
+        direccionColumn.setCellValueFactory(data -> data.getValue().direccionProperty());
+        gerenteColumn.setCellValueFactory(data -> data.getValue().gerenteNombreProperty());
+        sucursalesTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
+            boolean selected = newSel != null;
+            editarButton.setDisable(!selected);
+            eliminarButton.setDisable(!selected);
+        });
+        cargarSucursales();
+    }
+
+    private void cargarSucursales() {
+        sucursalesList.clear();
+        sucursalesList.addAll(sucursalController.obtenerTodasLasSucursales());
+        sucursalesTable.setItems(sucursalesList);
     }
 
     @FXML
-    private void handleAgregar() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/formulariosAgregarEditar/SucursalFormularioView.fxml"));
-            Parent root = loader.load();
-            Stage stage = new Stage();
-            stage.setTitle("Agregar Sucursal");
-            stage.setScene(new Scene(root));
-            stage.showAndWait();
-            sucursales.setAll(sucursalCSV.cargar("src/main/resources/archivos/sucursales.csv"));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @FXML
-    private void handleEditar() {
-        Sucursal seleccionada = sucursalesTable.getSelectionModel().getSelectedItem();
-        if (seleccionada == null) {
-            mensajeLabel.setText("Selecciona una sucursal para editar.");
-            return;
-        }
+    private void handleAgregar(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/formulariosAgregarEditar/SucursalFormularioView.fxml"));
             Parent root = loader.load();
             vista.formularioAgregarEditar.SucursalFormularioViewController controller = loader.getController();
-            controller.setSucursal(seleccionada, true);
-            Stage stage = new Stage();
-            stage.setTitle("Editar Sucursal");
+            controller.setModoAgregar(this);
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
-            stage.showAndWait();
-            sucursales.setAll(sucursalCSV.cargar("src/main/resources/archivos/sucursales.csv"));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            stage.show();
+        } catch (Exception e) {}
     }
 
     @FXML
-    private void handleEliminar() {
+    private void handleEditar(ActionEvent event) {
         Sucursal seleccionada = sucursalesTable.getSelectionModel().getSelectedItem();
-        if (seleccionada == null) {
-            mensajeLabel.setText("Selecciona una sucursal para eliminar.");
-            return;
-        }
-        sucursalCSV.eliminar(seleccionada, "src/main/resources/archivos/sucursales.csv");
-        sucursales.setAll(sucursalCSV.cargar("src/main/resources/archivos/sucursales.csv"));
-        mensajeLabel.setText("Sucursal eliminada correctamente.");
+        if (seleccionada == null) return;
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/formulariosAgregarEditar/SucursalFormularioView.fxml"));
+            Parent root = loader.load();
+            vista.formularioAgregarEditar.SucursalFormularioViewController controller = loader.getController();
+            controller.setModoEditar(this, seleccionada);
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (Exception e) {}
     }
 
     @FXML
-    private void handleExportar() {
-        mensajeLabel.setText("Exportación no implementada.");
+    private void handleEliminar(ActionEvent event) {
+        Sucursal seleccionada = sucursalesTable.getSelectionModel().getSelectedItem();
+        if (seleccionada == null) return;
+        Alert confirm = new Alert(AlertType.CONFIRMATION, "¿Eliminar sucursal " + seleccionada.getNombre() + "?");
+        confirm.setHeaderText(null);
+        confirm.showAndWait().ifPresent(response -> {
+            if (response == javafx.scene.control.ButtonType.OK) {
+                sucursalController.eliminarSucursal(seleccionada);
+                cargarSucursales();
+                Alert info = new Alert(AlertType.INFORMATION, "Sucursal eliminada.");
+                info.setHeaderText(null);
+                info.showAndWait();
+            }
+        });
     }
 
     @FXML
-    private void handleRegresar() {
-        Stage stage = (Stage) regresarButton.getScene().getWindow();
-        stage.close();
+    private void handleExportar(ActionEvent event) {
+        sucursalController.exportarSucursales();
+    }
+
+    @FXML
+    private void handleRegresar(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/LoginMainView.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (Exception e) {}
+    }
+
+    public void recargarTabla() {
+        cargarSucursales();
     }
 }

@@ -1,84 +1,94 @@
 package vista.cliente;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
+import javafx.scene.control.Label;
+import javafx.event.ActionEvent;
 import javafx.stage.Stage;
+import javafx.scene.Scene;
+import javafx.scene.Parent;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import modelo.entidades.Cliente;
 import modelo.entidades.Cuenta;
-import modelo.persistencia.CuentaCSV;
+import controlador.CuentaController;
 import modelo.excepciones.SaldoInsuficienteException;
+import java.util.List;
 
 public class ClienteRetiroViewController {
 
-    @FXML private Label saldoActualLabel;
-    @FXML private TextField montoField;
-    @FXML private Button retirarButton;
-    @FXML private Button cancelarButton;
-    @FXML private Label mensajeLabel;
+    @FXML
+    private ComboBox<Cuenta> cuentaCombo;
 
-    private Cuenta cuenta;
-    private CuentaCSV cuentaCSV = new CuentaCSV();
-    private ClienteMainViewController mainController;
+    @FXML
+    private TextField montoField;
 
-    public void setCuenta(Cuenta cuenta) {
-        this.cuenta = cuenta;
-        saldoActualLabel.setText("Saldo actual: €" + String.format("%.2f", cuenta.getSaldoActual()));
+    @FXML
+    private Label errorLabel;
+
+    private Cliente cliente;
+    private CuentaController cuentaController = new CuentaController();
+
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
+        cargarCuentasCliente();
     }
 
-    public void setMainController(ClienteMainViewController mainController) {
-        this.mainController = mainController;
+    private void cargarCuentasCliente() {
+        cuentaCombo.getItems().clear();
+        List<Cuenta> cuentas = cliente.getCuentas();
+        cuentaCombo.getItems().addAll(cuentas);
+        if (!cuentas.isEmpty()) {
+            cuentaCombo.getSelectionModel().selectFirst();
+        }
     }
 
     @FXML
-    private void handleRetirar() {
-        String montoStr = montoField.getText();
-        if (montoStr.isEmpty()) {
-            mensajeLabel.setText("Ingresa un monto válido.");
-            return;
-        }
-        double monto;
+    private void handleConfirmar(ActionEvent event) {
+        errorLabel.setVisible(false);
+        Cuenta cuentaSeleccionada = cuentaCombo.getValue();
+        String montoTexto = montoField.getText();
         try {
-            monto = Double.parseDouble(montoStr);
-            if (monto <= 0) {
-                mensajeLabel.setText("El monto debe ser positivo.");
+            if (cuentaSeleccionada == null) {
+                mostrarError("Seleccione una cuenta.");
                 return;
             }
+            double monto = Double.parseDouble(montoTexto);
+            if (monto <= 0) {
+                mostrarError("Monto debe ser positivo.");
+                return;
+            }
+            cuentaController.retirar(cuentaSeleccionada, monto);
+            regresarClienteMain(event);
         } catch (NumberFormatException e) {
-            mensajeLabel.setText("Monto inválido.");
-            return;
+            mostrarError("Monto inválido.");
+        } catch (SaldoInsuficienteException e) {
+            mostrarError("Saldo insuficiente.");
+        } catch (Exception e) {
+            mostrarError(e.getMessage());
         }
-        if (cuenta.getSaldoActual() < monto) {
-            mensajeLabel.setText("Saldo insuficiente.");
-            return;
-        }
-        cuenta.setSaldoActual(cuenta.getSaldoActual() - monto);
-        cuentaCSV.actualizar(cuenta, "src/main/resources/archivos/cuentas.csv");
-        if (mainController != null) {
-            mainController.refrescarCuentas();
-        }
-        Stage stage = (Stage) retirarButton.getScene().getWindow();
-        stage.close();
     }
 
     @FXML
-    private void handleCancelar() {
-        Stage stage = (Stage) cancelarButton.getScene().getWindow();
-        stage.close();
+    private void handleCancelar(ActionEvent event) {
+        regresarClienteMain(event);
     }
 
-    public static void mostrarDialogo(Cuenta cuenta, ClienteMainViewController mainController) {
+    private void mostrarError(String mensaje) {
+        errorLabel.setText(mensaje);
+        errorLabel.setVisible(true);
+    }
+
+    private void regresarClienteMain(ActionEvent event) {
         try {
-            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(ClienteRetiroViewController.class.getResource("/FXML/cilente/ClienteRetiroView.fxml"));
-            javafx.scene.Parent root = loader.load();
-            ClienteRetiroViewController controller = loader.getController();
-            controller.setCuenta(cuenta);
-            controller.setMainController(mainController);
-            Stage stage = new Stage();
-            stage.setTitle("Retirar de Cuenta");
-            stage.setScene(new javafx.scene.Scene(root));
-            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
-            stage.showAndWait();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/cilente/ClienteMainView.fxml"));
+            Parent root = loader.load();
+            ClienteMainViewController controller = loader.getController();
+            controller.setCliente(cliente);
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (Exception e) {}
     }
 }

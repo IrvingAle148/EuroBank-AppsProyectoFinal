@@ -20,7 +20,7 @@
         <Rectangle fx:id="blFringe" arcHeight="5.0" arcWidth="5.0" fill="#326bc9" height="314.0" stroke="BLACK" strokeType="INSIDE" width="31.0" />
     </VBox>
 
-    <Button onAction="#handleLogout" style="-fx-font-weight: bold;" text="Cerrar Sesión" />
+    <Button onAction="#handleCerrarSesion" style="-fx-font-weight: bold;" text="Cerrar Sesión" />
 
     <Rectangle fx:id="bluFringe" arcHeight="5.0" arcWidth="5.0" fill="#326bc9" height="38.0" stroke="BLACK" strokeType="INSIDE" width="314.0" />
 </VBox>

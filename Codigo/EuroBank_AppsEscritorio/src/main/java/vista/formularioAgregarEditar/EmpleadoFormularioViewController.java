@@ -1,192 +1,251 @@
 package vista.formularioAgregarEditar;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.TextField;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Button;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.event.ActionEvent;
 import javafx.stage.Stage;
-import modelo.entidades.*;
-import modelo.persistencia.EmpleadoCSV;
-import modelo.persistencia.SucursalCSV;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.Node;
+import javafx.fxml.FXMLLoader;
+import modelo.entidades.Empleado;
+import modelo.entidades.Cajero;
+import modelo.entidades.Ejecutivo;
+import modelo.entidades.Gerente;
+import controlador.EmpleadoController;
+import vista.EmpleadosMainViewController;
+import javafx.collections.FXCollections;
 import java.time.LocalDate;
-import java.util.List;
 
 public class EmpleadoFormularioViewController {
 
-    @FXML private Label tituloLabel;
-    @FXML private Label idLabel;
-    @FXML private TextField nombreField, direccionField, generoField, salarioField, usuarioField, contraseniaField;
-    @FXML private DatePicker fechaNacimientoPicker;
-    @FXML private ComboBox<Sucursal> sucursalComboBox;
-    @FXML private ComboBox<String> tipoEmpleadoComboBox;
+    @FXML
+    private Label tituloLabel;
+    @FXML
+    private TextField idField;
+    @FXML
+    private TextField nombreField;
+    @FXML
+    private TextField direccionField;
+    @FXML
+    private DatePicker fechaNacimientoPicker;
+    @FXML
+    private ComboBox<String> generoCombo;
+    @FXML
+    private TextField salarioField;
+    @FXML
+    private TextField usuarioField;
+    @FXML
+    private PasswordField contraseniaField;
+    @FXML
+    private ComboBox<String> tipoEmpleadoCombo;
     // Cajero
-    @FXML private TextField horarioTrabajoField, numeroVentanillaField;
+    @FXML
+    private Pane cajeroPane;
+    @FXML
+    private TextField horarioTrabajoField;
+    @FXML
+    private TextField numVentanillaField;
+
     // Ejecutivo
-    @FXML private TextField clientesAsignadosField;
-    @FXML private ComboBox<String> especializacionComboBox;
+    @FXML
+    private Pane ejecutivoPane;
+    @FXML
+    private TextField numClientesAsignadosField;
+    @FXML
+    private ComboBox<String> especializacionCombo;
+
     // Gerente
-    @FXML private ComboBox<String> nivelAccesoComboBox;
-    @FXML private TextField aniosExperienciaField;
+    @FXML
+    private Pane gerentePane;
+    @FXML
+    private ComboBox<String> nivelAccesoCombo;
+    @FXML
+    private TextField aniosExperienciaField;
 
-    @FXML private Button guardarButton;
-    @FXML private Label errorLabel;
+    @FXML
+    private Button guardarBtn;
+    @FXML
+    private Button cancelarBtn;
 
-    private Stage dialogStage;
-    private Empleado empleado;
-    private boolean modoEdicion;
-    private EmpleadoCSV empleadoCSV = new EmpleadoCSV();
-    private SucursalCSV sucursalCSV = new SucursalCSV();
+    private boolean modoEditar = false;
+    private Empleado empleadoEditar;
+    private EmpleadosMainViewController origenController;
+    private EmpleadoController empleadoController = new EmpleadoController();
 
-    private Runnable onGuardarSuccess;
-
-    public void setDialogStage(Stage dialogStage) { this.dialogStage = dialogStage; }
-
-    public void setEmpleado(Empleado empleado, boolean edicion) {
-        this.empleado = empleado;
-        this.modoEdicion = edicion;
-
-        // Llenar ComboBox de tipos, especialización y nivel acceso
-        tipoEmpleadoComboBox.getItems().setAll("Cajero", "Ejecutivo", "Gerente");
-        especializacionComboBox.getItems().setAll("PYMES", "Corporativo");
-        nivelAccesoComboBox.getItems().setAll("Sucursal", "Regional", "Nacional");
-        sucursalComboBox.getItems().setAll(sucursalCSV.cargar("ruta/Sucursales.csv"));
-
-        tipoEmpleadoComboBox.setOnAction(e -> actualizarCamposTipoEmpleado());
-
-        if (edicion && empleado != null) {
-            tituloLabel.setText("Editar Empleado");
-            idLabel.setText(empleado.getId());
-            llenarCampos(empleado);
-            tipoEmpleadoComboBox.setDisable(true);
-        } else {
-            tituloLabel.setText("Agregar Empleado");
-            String nuevoId = generarNuevoId();
-            idLabel.setText(nuevoId);
-            tipoEmpleadoComboBox.setDisable(false);
-        }
-        actualizarCamposTipoEmpleado();
+    public void setModoAgregar(EmpleadosMainViewController origenController) {
+        this.origenController = origenController;
+        modoEditar = false;
+        tituloLabel.setText("Añadir empleado");
+        idField.setEditable(true);
+        limpiarCampos();
+        cargarCombos();
+        mostrarCamposTipoEmpleado(null);
     }
 
-    private void llenarCampos(Empleado e) {
-        nombreField.setText(e.getNombre());
-        direccionField.setText(e.getDireccion());
-        fechaNacimientoPicker.setValue(LocalDate.parse(e.getFechaNacimiento()));
-        generoField.setText(e.getGenero());
-        salarioField.setText(String.valueOf(e.getSalario()));
-        usuarioField.setText(e.getUsuario());
-        contraseniaField.setText(e.getContrasenia());
-        sucursalComboBox.setValue(e.getSucursal());
-        if (e instanceof Cajero cajero) {
-            tipoEmpleadoComboBox.setValue("Cajero");
+    public void setModoEditar(EmpleadosMainViewController origenController, Empleado empleado) {
+        this.origenController = origenController;
+        modoEditar = true;
+        this.empleadoEditar = empleado;
+        tituloLabel.setText("Editar empleado");
+        cargarCombos();
+        cargarDatos(empleado);
+        idField.setEditable(false);
+        mostrarCamposTipoEmpleado(empleado.getTipoEmpleado());
+    }
+
+    private void limpiarCampos() {
+        idField.clear();
+        nombreField.clear();
+        direccionField.clear();
+        fechaNacimientoPicker.setValue(null);
+        generoCombo.getSelectionModel().clearSelection();
+        salarioField.clear();
+        usuarioField.clear();
+        contraseniaField.clear();
+        tipoEmpleadoCombo.getSelectionModel().clearSelection();
+        horarioTrabajoField.clear();
+        numVentanillaField.clear();
+        numClientesAsignadosField.clear();
+        especializacionCombo.getSelectionModel().clearSelection();
+        nivelAccesoCombo.getSelectionModel().clearSelection();
+        aniosExperienciaField.clear();
+    }
+
+    private void cargarCombos() {
+        generoCombo.setItems(FXCollections.observableArrayList("M", "F", "Otro"));
+        tipoEmpleadoCombo.setItems(FXCollections.observableArrayList("Cajero", "Ejecutivo", "Gerente"));
+        especializacionCombo.setItems(FXCollections.observableArrayList("PYMES", "Corporativo"));
+        nivelAccesoCombo.setItems(FXCollections.observableArrayList("Sucursal", "Regional", "Nacional"));
+
+        tipoEmpleadoCombo.valueProperty().addListener((obs, oldVal, newVal) -> mostrarCamposTipoEmpleado(newVal));
+    }
+
+    private void cargarDatos(Empleado empleado) {
+        idField.setText(empleado.getId());
+        nombreField.setText(empleado.getNombre());
+        direccionField.setText(empleado.getDireccion());
+        fechaNacimientoPicker.setValue(empleado.getFechaNacimiento());
+        generoCombo.getSelectionModel().select(empleado.getGenero());
+        salarioField.setText(String.valueOf(empleado.getSalario()));
+        usuarioField.setText(empleado.getUsuario());
+        contraseniaField.setText(empleado.getContrasenia());
+        tipoEmpleadoCombo.getSelectionModel().select(empleado.getTipoEmpleado());
+        if (empleado instanceof Cajero) {
+            Cajero cajero = (Cajero) empleado;
             horarioTrabajoField.setText(cajero.getHorarioTrabajo());
-            numeroVentanillaField.setText(String.valueOf(cajero.getNumeroVentanilla()));
-        } else if (e instanceof Ejecutivo ejecutivo) {
-            tipoEmpleadoComboBox.setValue("Ejecutivo");
-            clientesAsignadosField.setText(String.valueOf(ejecutivo.getNumeroClientesAsignados()));
-            especializacionComboBox.setValue(ejecutivo.getEspecializacion());
-        } else if (e instanceof Gerente gerente) {
-            tipoEmpleadoComboBox.setValue("Gerente");
-            nivelAccesoComboBox.setValue(gerente.getNivelAcceso());
+            numVentanillaField.setText(String.valueOf(cajero.getNumVentanilla()));
+        } else if (empleado instanceof Ejecutivo) {
+            Ejecutivo ejecutivo = (Ejecutivo) empleado;
+            numClientesAsignadosField.setText(String.valueOf(ejecutivo.getNumClientesAsignados()));
+            especializacionCombo.getSelectionModel().select(ejecutivo.getEspecializacion());
+        } else if (empleado instanceof Gerente) {
+            Gerente gerente = (Gerente) empleado;
+            nivelAccesoCombo.getSelectionModel().select(gerente.getNivelAcceso());
             aniosExperienciaField.setText(String.valueOf(gerente.getAniosExperiencia()));
         }
     }
 
-    private String generarNuevoId() {
-        try {
-            List<Empleado> lista = empleadoCSV.cargar("ruta/Empleados.csv");
-            int max = lista.stream().mapToInt(emp -> {
-                try { return Integer.parseInt(emp.getId().replaceAll("[^0-9]", "")); }
-                catch (Exception ex) { return 0; }
-            }).max().orElse(0);
-            return String.valueOf(max + 1);
-        } catch (Exception e) {
-            return "1";
-        }
+    private void mostrarCamposTipoEmpleado(String tipo) {
+        cajeroPane.setVisible("Cajero".equals(tipo));
+        ejecutivoPane.setVisible("Ejecutivo".equals(tipo));
+        gerentePane.setVisible("Gerente".equals(tipo));
     }
 
-    public void setOnGuardarSuccess(Runnable r) { this.onGuardarSuccess = r; }
-
-    private void actualizarCamposTipoEmpleado() {
-        String tipo = tipoEmpleadoComboBox.getValue();
-        // Ocultar todos primero
-        horarioTrabajoField.setVisible(false); horarioTrabajoField.setManaged(false);
-        numeroVentanillaField.setVisible(false); numeroVentanillaField.setManaged(false);
-        clientesAsignadosField.setVisible(false); clientesAsignadosField.setManaged(false);
-        especializacionComboBox.setVisible(false); especializacionComboBox.setManaged(false);
-        nivelAccesoComboBox.setVisible(false); nivelAccesoComboBox.setManaged(false);
-        aniosExperienciaField.setVisible(false); aniosExperienciaField.setManaged(false);
+    @FXML
+    private void handleGuardar(ActionEvent event) {
+        String id = idField.getText();
+        String nombre = nombreField.getText();
+        String direccion = direccionField.getText();
+        LocalDate fechaNacimiento = fechaNacimientoPicker.getValue();
+        String genero = generoCombo.getValue();
+        double salario = Double.parseDouble(salarioField.getText());
+        String usuario = usuarioField.getText();
+        String contrasenia = contraseniaField.getText();
+        String tipo = tipoEmpleadoCombo.getValue();
 
         if ("Cajero".equals(tipo)) {
-            horarioTrabajoField.setVisible(true); horarioTrabajoField.setManaged(true);
-            numeroVentanillaField.setVisible(true); numeroVentanillaField.setManaged(true);
-        } else if ("Ejecutivo".equals(tipo)) {
-            clientesAsignadosField.setVisible(true); clientesAsignadosField.setManaged(true);
-            especializacionComboBox.setVisible(true); especializacionComboBox.setManaged(true);
-        } else if ("Gerente".equals(tipo)) {
-            nivelAccesoComboBox.setVisible(true); nivelAccesoComboBox.setManaged(true);
-            aniosExperienciaField.setVisible(true); aniosExperienciaField.setManaged(true);
-        }
-    }
-
-    @FXML
-    private void handleGuardar() {
-        if (!validarCampos()) return;
-        try {
-            String tipo = tipoEmpleadoComboBox.getValue();
-            if (!modoEdicion) {
-                Empleado nuevo;
-                switch (tipo) {
-                    case "Cajero" -> nuevo = new Cajero(
-                            idLabel.getText(), nombreField.getText(), direccionField.getText(),
-                            fechaNacimientoPicker.getValue().toString(), generoField.getText(),
-                            Double.parseDouble(salarioField.getText()), usuarioField.getText(),
-                            contraseniaField.getText(), horarioTrabajoField.getText(),
-                            Integer.parseInt(numeroVentanillaField.getText()), sucursalComboBox.getValue()
-                    );
-                    case "Ejecutivo" -> nuevo = new Ejecutivo(
-                            idLabel.getText(), nombreField.getText(), direccionField.getText(),
-                            fechaNacimientoPicker.getValue().toString(), generoField.getText(),
-                            Double.parseDouble(salarioField.getText()), usuarioField.getText(),
-                            contraseniaField.getText(), Integer.parseInt(clientesAsignadosField.getText()),
-                            especializacionComboBox.getValue(), sucursalComboBox.getValue()
-                    );
-                    case "Gerente" -> nuevo = new Gerente(
-                            idLabel.getText(), nombreField.getText(), direccionField.getText(),
-                            fechaNacimientoPicker.getValue().toString(), generoField.getText(),
-                            Double.parseDouble(salarioField.getText()), usuarioField.getText(),
-                            contraseniaField.getText(), nivelAccesoComboBox.getValue(),
-                            Integer.parseInt(aniosExperienciaField.getText()), sucursalComboBox.getValue()
-                    );
-                    default -> throw new IllegalArgumentException("Tipo de empleado no válido");
-                }
-                empleadoCSV.guardarUno(nuevo, "ruta/Empleados.csv");
+            String horario = horarioTrabajoField.getText();
+            int numVentanilla = Integer.parseInt(numVentanillaField.getText());
+            if (modoEditar) {
+                Cajero cajero = (Cajero) empleadoEditar;
+                cajero.setNombre(nombre);
+                cajero.setDireccion(direccion);
+                cajero.setFechaNacimiento(fechaNacimiento);
+                cajero.setGenero(genero);
+                cajero.setSalario(salario);
+                cajero.setUsuario(usuario);
+                cajero.setContrasenia(contrasenia);
+                cajero.setHorarioTrabajo(horario);
+                cajero.setNumVentanilla(numVentanilla);
+                empleadoController.actualizarEmpleado(cajero);
             } else {
-                empleado.setNombre(nombreField.getText());
-                empleado.setDireccion(direccionField.getText());
-                empleado.setFechaNacimiento(fechaNacimientoPicker.getValue().toString());
-                empleado.setGenero(generoField.getText());
-                empleado.setSalario(Double.parseDouble(salarioField.getText()));
-                empleado.setUsuario(usuarioField.getText());
-                empleado.setContrasenia(contraseniaField.getText());
-                empleado.setSucursal(sucursalComboBox.getValue());
-                if (empleado instanceof Cajero cajero) {
-                    cajero.setHorarioTrabajo(horarioTrabajoField.getText());
-                    cajero.setNumeroVentanilla(Integer.parseInt(numeroVentanillaField.getText()));
-                } else if (empleado instanceof Ejecutivo ejecutivo) {
-                    ejecutivo.setNumeroClientesAsignados(Integer.parseInt(clientesAsignadosField.getText()));
-                    ejecutivo.setEspecializacion(especializacionComboBox.getValue());
-                } else if (empleado instanceof Gerente gerente) {
-                    gerente.setNivelAcceso(nivelAccesoComboBox.getValue());
-                    gerente.setAniosExperiencia(Integer.parseInt(aniosExperienciaField.getText()));
-                }
-                empleadoCSV.actualizar(empleado, "ruta/Empleados.csv");
+                Cajero nuevo = new Cajero(id, nombre, direccion, fechaNacimiento, genero, salario, usuario, contrasenia, horario, numVentanilla);
+                empleadoController.agregarEmpleado(nuevo);
             }
-            if (onGuardarSuccess != null) onGuardarSuccess.run();
-            dialogStage.close();
-        } catch (Exception e) {
-            errorLabel.setText("Error: " + e.getMessage());
+        } else if ("Ejecutivo".equals(tipo)) {
+            int numClientes = Integer.parseInt(numClientesAsignadosField.getText());
+            String especializacion = especializacionCombo.getValue();
+            if (modoEditar) {
+                Ejecutivo ejecutivo = (Ejecutivo) empleadoEditar;
+                ejecutivo.setNombre(nombre);
+                ejecutivo.setDireccion(direccion);
+                ejecutivo.setFechaNacimiento(fechaNacimiento);
+                ejecutivo.setGenero(genero);
+                ejecutivo.setSalario(salario);
+                ejecutivo.setUsuario(usuario);
+                ejecutivo.setContrasenia(contrasenia);
+                ejecutivo.setNumClientesAsignados(numClientes);
+                ejecutivo.setEspecializacion(especializacion);
+                empleadoController.actualizarEmpleado(ejecutivo);
+            } else {
+                Ejecutivo nuevo = new Ejecutivo(id, nombre, direccion, fechaNacimiento, genero, salario, usuario, contrasenia, numClientes, especializacion);
+                empleadoController.agregarEmpleado(nuevo);
+            }
+        } else if ("Gerente".equals(tipo)) {
+            String nivelAcceso = nivelAccesoCombo.getValue();
+            int aniosExp = Integer.parseInt(aniosExperienciaField.getText());
+            if (modoEditar) {
+                Gerente gerente = (Gerente) empleadoEditar;
+                gerente.setNombre(nombre);
+                gerente.setDireccion(direccion);
+                gerente.setFechaNacimiento(fechaNacimiento);
+                gerente.setGenero(genero);
+                gerente.setSalario(salario);
+                gerente.setUsuario(usuario);
+                gerente.setContrasenia(contrasenia);
+                gerente.setNivelAcceso(nivelAcceso);
+                gerente.setAniosExperiencia(aniosExp);
+                empleadoController.actualizarEmpleado(gerente);
+            } else {
+                Gerente nuevo = new Gerente(id, nombre, direccion, fechaNacimiento, genero, salario, usuario, contrasenia, nivelAcceso, aniosExp);
+                empleadoController.agregarEmpleado(nuevo);
+            }
         }
+        origenController.recargarTabla();
+        regresarEmpleadosMain(event);
     }
 
     @FXML
-    private void handleCancelar() {
+    private void handleCancelar(ActionEvent event) {
+        regresarEmpleadosMain(event);
+    }
+
+    private void regresarEmpleadosMain(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/EmpleadosMainView.fxml"));
+            Parent root = loader.load();
+            EmpleadosMainViewController controller = loader.getController();
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (Exception e) {}
     }
 }
