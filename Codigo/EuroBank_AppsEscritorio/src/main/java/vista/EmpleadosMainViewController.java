@@ -1,22 +1,23 @@
 package vista;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.Button;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.Node;
 import javafx.fxml.FXMLLoader;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
+
 import modelo.entidades.Empleado;
+import modelo.entidades.Sucursal;
 import controlador.EmpleadoController;
+import modelo.persistencia.SucursalCSV;
+
+import java.util.*;
 
 public class EmpleadosMainViewController {
 
@@ -25,22 +26,16 @@ public class EmpleadosMainViewController {
 
     @FXML
     private TableColumn<Empleado, String> nombreCol;
-
     @FXML
     private TableColumn<Empleado, String> usuarioCol;
-
     @FXML
     private TableColumn<Empleado, String> generoCol;
-
     @FXML
     private TableColumn<Empleado, String> sucursalCol;
-
     @FXML
     private TableColumn<Empleado, String> tipoEmpleadoCol;
-
     @FXML
     private Button editarButton;
-
     @FXML
     private Button eliminarButton;
 
@@ -49,16 +44,31 @@ public class EmpleadosMainViewController {
 
     @FXML
     private void initialize() {
+        // Cargar sucursales usando empleadosDummy vacío (no se necesita para la relación)
+        Map<String, Empleado> empleadosDummy = new HashMap<>();
+        List<Sucursal> sucursales = new SucursalCSV().cargar("src/main/resources/archivos/sucursales.csv", empleadosDummy);
+        Map<String, Sucursal> sucursalesMap = new HashMap<>();
+        for (Sucursal s : sucursales) {
+            sucursalesMap.put(s.getNumeroIdentificacion(), s);
+        }
+
+        // Crear controlador con el mapa listo
+        empleadoController = new EmpleadoController(sucursalesMap);
+
+        // Configurar columnas de la tabla
         nombreCol.setCellValueFactory(data -> data.getValue().nombreProperty());
         usuarioCol.setCellValueFactory(data -> data.getValue().usuarioProperty());
         generoCol.setCellValueFactory(data -> data.getValue().generoProperty());
         sucursalCol.setCellValueFactory(data -> data.getValue().sucursalNombreProperty());
         tipoEmpleadoCol.setCellValueFactory(data -> data.getValue().tipoEmpleadoProperty());
+
         empleadosTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
             boolean selected = newSel != null;
             editarButton.setDisable(!selected);
             eliminarButton.setDisable(!selected);
         });
+
+        // Llenar la tabla
         cargarEmpleados();
     }
 
@@ -78,7 +88,9 @@ public class EmpleadosMainViewController {
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -93,7 +105,9 @@ public class EmpleadosMainViewController {
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -101,18 +115,18 @@ public class EmpleadosMainViewController {
         Empleado seleccionado = empleadosTable.getSelectionModel().getSelectedItem();
         if (seleccionado == null) return;
 
-        Alert confirm = new Alert(AlertType.CONFIRMATION, "¿Eliminar empleado " + seleccionado.getNombre() + "?");
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "¿Eliminar empleado " + seleccionado.getNombre() + "?");
         confirm.setHeaderText(null);
         confirm.showAndWait().ifPresent(response -> {
             if (response == javafx.scene.control.ButtonType.OK) {
                 try {
                     empleadoController.eliminarEmpleado(seleccionado);
                     cargarEmpleados();
-                    Alert info = new Alert(AlertType.INFORMATION, "Empleado eliminado.");
+                    Alert info = new Alert(Alert.AlertType.INFORMATION, "Empleado eliminado.");
                     info.setHeaderText(null);
                     info.showAndWait();
                 } catch (Exception e) {
-                    Alert error = new Alert(AlertType.ERROR, "Error eliminando empleado: " + e.getMessage());
+                    Alert error = new Alert(Alert.AlertType.ERROR, "Error eliminando empleado: " + e.getMessage());
                     error.setHeaderText(null);
                     error.showAndWait();
                 }
@@ -150,7 +164,9 @@ public class EmpleadosMainViewController {
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void recargarTabla() {

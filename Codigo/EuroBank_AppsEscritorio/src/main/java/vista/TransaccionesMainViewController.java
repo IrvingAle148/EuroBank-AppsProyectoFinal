@@ -15,8 +15,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+
 import modelo.entidades.Transaccion;
 import controlador.TransaccionController;
+
+import java.util.HashMap;
 
 public class TransaccionesMainViewController {
 
@@ -49,6 +52,11 @@ public class TransaccionesMainViewController {
 
     @FXML
     private void initialize() {
+        if (transaccionController == null) {
+            transaccionController = new TransaccionController(new HashMap<>()); // mapa de clientes vacío
+        }
+
+        // Configuración de columnas
         idCol.setCellValueFactory(data -> data.getValue().idProperty());
         montoCol.setCellValueFactory(data -> data.getValue().montoProperty().asObject());
         fechaHoraCol.setCellValueFactory(data ->
@@ -60,9 +68,9 @@ public class TransaccionesMainViewController {
                 new SimpleStringProperty(data.getValue().getCuentaDestino() != null ? data.getValue().getCuentaDestino().getNumeroCuenta() : ""));
         sucursalCol.setCellValueFactory(data ->
                 new SimpleStringProperty(data.getValue().getSucursal() != null ? data.getValue().getSucursal().getNombre() : ""));
+
         cargarTransacciones();
     }
-
 
     private void cargarTransacciones() {
         transaccionesList.clear();
@@ -98,6 +106,8 @@ public class TransaccionesMainViewController {
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

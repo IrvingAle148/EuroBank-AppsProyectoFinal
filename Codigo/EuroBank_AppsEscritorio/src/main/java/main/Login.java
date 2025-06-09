@@ -6,17 +6,17 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-public class Main extends Application {
+public class Login extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         Parent root = FXMLLoader.load(getClass().getResource("/FXML/LoginMainView.fxml"));
 
-        Scene scene = new Scene(root, 800, 600);
+        Scene scene = new Scene(root, 400, 450);
         primaryStage.setTitle("EuroBank - Sistema de Gestión Bancaria");
         primaryStage.setScene(scene);
-        primaryStage.setMinWidth(800);
-        primaryStage.setMinHeight(600);
+        primaryStage.setMinWidth(200);
+        primaryStage.setMinHeight(250);
         primaryStage.show();
     }
 

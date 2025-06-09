@@ -11,7 +11,7 @@ import java.util.*;
 public class TransaccionCSV {
 
     // Cargar todas las transacciones (requiere mapas de cuentas y sucursales para relaciones)
-    public List<Transaccion> cargar(String rutaArchivo, Map<String, Cuenta> cuentas, Map<String, Sucursal> sucursales) {
+    public List<Transaccion> cargarTransaccion(String rutaArchivo, Map<String, Cuenta> cuentas, Map<String, Sucursal> sucursales) {
         List<Transaccion> transacciones = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(rutaArchivo))) {
             String linea;
@@ -42,7 +42,7 @@ public class TransaccionCSV {
     }
 
     // Guardar una transacción
-    public void guardarUno(Transaccion t, String rutaArchivo) {
+    public void guardarTransaccion(Transaccion t, String rutaArchivo) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaArchivo, true))) {
             bw.write(t.getId() + "," +
                     t.getMonto() + "," +
@@ -59,7 +59,7 @@ public class TransaccionCSV {
 
     // Actualizar una transacción (por ID)
     public void actualizar(Transaccion transaccion, String rutaArchivo, Map<String, Cuenta> cuentas, Map<String, Sucursal> sucursales) {
-        List<Transaccion> transacciones = cargar(rutaArchivo, cuentas, sucursales);
+        List<Transaccion> transacciones = cargarTransaccion(rutaArchivo, cuentas, sucursales);
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaArchivo))) {
             for (Transaccion t : transacciones) {
                 if (t.getId().equals(transaccion.getId())) {
@@ -81,7 +81,7 @@ public class TransaccionCSV {
 
     // Eliminar una transacción (por ID)
     public void eliminar(Transaccion transaccion, String rutaArchivo, Map<String, Cuenta> cuentas, Map<String, Sucursal> sucursales) {
-        List<Transaccion> transacciones = cargar(rutaArchivo, cuentas, sucursales);
+        List<Transaccion> transacciones = cargarTransaccion(rutaArchivo, cuentas, sucursales);
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaArchivo))) {
             for (Transaccion t : transacciones) {
                 if (!t.getId().equals(transaccion.getId())) {

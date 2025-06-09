@@ -34,13 +34,13 @@ public class TransaccionController {
     public List<Transaccion> obtenerTodasLasTransacciones() {
         Map<String, Cuenta> cuentas = obtenerMapaCuentas();
         Map<String, Sucursal> sucursales = obtenerMapaSucursales();
-        return transaccionCSV.cargar(rutaArchivo, cuentas, sucursales);
+        return transaccionCSV.cargarTransaccion(rutaArchivo, cuentas, sucursales);
     }
 
     public void exportarTransacciones(String ruta) {
         Map<String, Cuenta> cuentas = obtenerMapaCuentas();
         Map<String, Sucursal> sucursales = obtenerMapaSucursales();
-        List<Transaccion> transacciones = transaccionCSV.cargar(rutaArchivo, cuentas, sucursales);
+        List<Transaccion> transacciones = transaccionCSV.cargarTransaccion(rutaArchivo, cuentas, sucursales);
         try {
             transaccionCSV.exportar(transacciones, ruta);
         } catch (IOException e) {
@@ -69,9 +69,9 @@ public class TransaccionController {
         return mapa;
     }
 
-    // Método para cargar el mapa de empleados (puedes optimizarlo si ya lo tienes en memoria)
+    // Método para cargarTransaccion el mapa de empleados (puedes optimizarlo si ya lo tienes en memoria)
     private Map<String, Empleado> obtenerMapaEmpleados() {
-        // Para cargar empleados, si la clase EmpleadoCSV requiere Map de sucursales,
+        // Para cargarTransaccion empleados, si la clase EmpleadoCSV requiere Map de sucursales,
         // puedes pasar un mapa vacío (no lo necesita para este contexto)
         Map<String, Sucursal> sucursalesVacio = new HashMap<>();
         List<Empleado> listaEmpleados = empleadoCSV.cargar(rutaEmpleados, sucursalesVacio);

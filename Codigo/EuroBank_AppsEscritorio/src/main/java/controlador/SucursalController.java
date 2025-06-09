@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 public class SucursalController {
-    private SucursalCSV sucursalCSV = new SucursalCSV();
-    private String rutaArchivo = "src/main/resources/archivos/sucursales.csv";
+    private final SucursalCSV sucursalCSV = new SucursalCSV();
+    private final String rutaArchivo = "src/main/resources/archivos/sucursales.csv";
     private Map<String, Empleado> empleadosMap;
 
     // Constructor recomendado: recibe el mapa de empleados
@@ -19,16 +19,20 @@ public class SucursalController {
         this.empleadosMap = empleadosMap;
     }
 
-    // Constructor vacío por si usas setters luego
+    // Constructor vacío (por si quieres usar el setter luego)
     public SucursalController() {}
 
-    // Setter para el mapa, si lo necesitas después de instanciar
+    // Setter para el mapa de empleados (si usas el constructor vacío)
     public void setEmpleadosMap(Map<String, Empleado> empleadosMap) {
         this.empleadosMap = empleadosMap;
     }
 
-    // Listar todas las sucursales (siempre con objetos Empleado correctos)
+    // Listar todas las sucursales
     public List<Sucursal> obtenerTodasLasSucursales() {
+        if (empleadosMap == null) {
+            System.err.println("El mapa de empleados no ha sido inicializado en SucursalController.");
+            return java.util.Collections.emptyList();
+        }
         return sucursalCSV.cargar(rutaArchivo, empleadosMap);
     }
 
@@ -37,7 +41,7 @@ public class SucursalController {
         sucursalCSV.exportarSucursalesCSV(rutaExportacion, rutaArchivo, empleadosMap);
     }
 
-    // Agregar sucursal nueva
+    // Agregar nueva sucursal (validación básica)
     public void agregarSucursal(Sucursal sucursal) throws ElementoDuplicadoException, ValidacionException {
         if (sucursal.getNumeroIdentificacion() == null || sucursal.getNumeroIdentificacion().isBlank())
             throw new ValidacionException("El número de identificación de la sucursal no puede estar vacío.");

@@ -15,8 +15,15 @@ import javafx.fxml.FXMLLoader;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+
 import modelo.entidades.Cuenta;
+import modelo.entidades.Cliente;
+import modelo.entidades.Sucursal;
 import controlador.CuentaController;
+import modelo.persistencia.ClienteCSV;
+import modelo.persistencia.SucursalCSV;
+
+import java.util.*;
 
 public class CuentasMainViewController {
 
@@ -44,22 +51,60 @@ public class CuentasMainViewController {
     @FXML
     private Button eliminarButton;
 
-    private CuentaController cuentaController = new CuentaController();
+    private CuentaController cuentaController;
     private ObservableList<Cuenta> cuentasList = FXCollections.observableArrayList();
 
     @FXML
     private void initialize() {
-        clienteCol.setCellValueFactory(data -> data.getValue().clienteNombreProperty());
+        // 1. Cargar clientes y sucursales desde archivos
+        Map<String, Cliente> clientesMap = cargarMapaClientes("src/main/resources/archivos/clientes.csv");
+        Map<String, Sucursal> sucursalesMap = cargarMapaSucursales("src/main/resources/archivos/sucursales.csv");
+
+        // 2. Inicializar controller de cuentas
+        cuentaController = new CuentaController(clientesMap, sucursalesMap);
+
+        // 3. Configurar columnas
+        clienteCol.setCellValueFactory(data ->
+                new javafx.beans.property.SimpleStringProperty(
+                        data.getValue().getCliente() != null ? data.getValue().getCliente().getNombre() : "Sin cliente"
+                )
+        );
         tipoCol.setCellValueFactory(data -> data.getValue().tipoProperty());
         saldoActualCol.setCellValueFactory(data -> data.getValue().saldoActualProperty().asObject());
         limiteCreditoCol.setCellValueFactory(data -> data.getValue().limiteCreditoProperty().asObject());
-        sucursalCol.setCellValueFactory(data -> data.getValue().sucursalNombreProperty());
+        sucursalCol.setCellValueFactory(data ->
+                new javafx.beans.property.SimpleStringProperty(
+                        data.getValue().getSucursal() != null ? data.getValue().getSucursal().getNombre() : "Sin sucursal"
+                )
+        );
+
         cuentasTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
             boolean selected = newSel != null;
             editarButton.setDisable(!selected);
             eliminarButton.setDisable(!selected);
         });
+
         cargarCuentas();
+    }
+
+    private Map<String, Cliente> cargarMapaClientes(String ruta) {
+        List<Cliente> clientes = new ClienteCSV().cargar(ruta);
+        Map<String, Cliente> map = new HashMap<>();
+        for (Cliente c : clientes) {
+            map.put(c.getRfcCurp(), c);
+        }
+        return map;
+    }
+
+    private Map<String, Sucursal> cargarMapaSucursales(String ruta) {
+        // No necesitas empleados aquí, solo IDs para el mapa
+        Map<String, modelo.entidades.Empleado> empleadosDummy = new HashMap<>();
+        List<Sucursal> sucursales = new SucursalCSV().cargar(ruta, empleadosDummy);
+        Map<String, Sucursal> map = new HashMap<>();
+        for (Sucursal s : sucursales) {
+            map.put(s.getNumeroIdentificacion(), s);
+        }
+        return map;
     }
 
     private void cargarCuentas() {
@@ -78,7 +123,9 @@ public class CuentasMainViewController {
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -93,14 +140,17 @@ public class CuentasMainViewController {
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
     private void handleEliminar(ActionEvent event) {
         Cuenta seleccionada = cuentasTable.getSelectionModel().getSelectedItem();
         if (seleccionada == null) return;
-        Alert confirm = new Alert(AlertType.CONFIRMATION, "¿Eliminar cuenta de " + seleccionada.clienteNombreProperty()+ "?");
+        Alert confirm = new Alert(AlertType.CONFIRMATION, "¿Eliminar cuenta de " +
+                (seleccionada.getCliente() != null ? seleccionada.getCliente().getNombre() : "Sin cliente") + "?");
         confirm.setHeaderText(null);
         confirm.showAndWait().ifPresent(response -> {
             if (response == javafx.scene.control.ButtonType.OK) {
@@ -112,7 +162,6 @@ public class CuentasMainViewController {
             }
         });
     }
-
 
     @FXML
     private void handleExportar(ActionEvent event) {
@@ -144,7 +193,9 @@ public class CuentasMainViewController {
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void recargarTabla() {

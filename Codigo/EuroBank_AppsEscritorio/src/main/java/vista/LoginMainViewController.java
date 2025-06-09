@@ -8,17 +8,17 @@ import javafx.scene.Node;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+
 import controlador.AutentificacionController;
-import modelo.entidades.Cliente;
-import modelo.entidades.Empleado;
-import modelo.entidades.Cajero;
-import modelo.entidades.Gerente;
-import modelo.entidades.Ejecutivo;
-import modelo.excepciones.ValidacionException;
+import controlador.EmpleadoController;
 import controlador.SucursalController;
-import modelo.entidades.Sucursal;
+
+import modelo.entidades.*;
+import modelo.excepciones.ValidacionException;
+
 import java.io.IOException;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class LoginMainViewController {
 
@@ -37,19 +37,38 @@ public class LoginMainViewController {
     @FXML
     private RadioButton clienteRadio;
 
-    private AutentificacionController authController = new AutentificacionController();
-    private SucursalController sucursalController = new SucursalController();
-
     @FXML
     private void handleLogin(ActionEvent event) {
         String usuario = usernameField.getText();
         String contrasenia = passwordField.getText();
         errorLabel.setVisible(false);
 
+        if (usuario.isBlank() || contrasenia.isBlank()) {
+            errorLabel.setText("Por favor ingrese usuario y contraseña.");
+            errorLabel.setVisible(true);
+            return;
+        }
+
         try {
             if (empleadoRadio.isSelected()) {
-                Map<String, Sucursal> sucursales = (Map<String, Sucursal>) sucursalController.obtenerTodasLasSucursales();
-                Empleado empleado = authController.autenticarEmpleado(usuario, contrasenia, sucursales);
+                // Paso 1: Cargar empleados y construir mapa
+                EmpleadoController empleadoController = new EmpleadoController();
+                Map<String, Empleado> empleadosMap = empleadoController.obtenerTodosLosEmpleados()
+                        .stream().collect(Collectors.toMap(Empleado::getId, e -> e));
+
+                // Paso 2: Cargar sucursales con empleadosMap
+                SucursalController sucursalController = new SucursalController(empleadosMap);
+                Map<String, Sucursal> sucursalesMap = sucursalController.obtenerTodasLasSucursales()
+                        .stream().collect(Collectors.toMap(Sucursal::getNumeroIdentificacion, s -> s));
+
+                // Paso 3: Configurar controlador de autenticación
+                AutentificacionController authController = new AutentificacionController();
+                empleadoController.setSucursalesMap(sucursalesMap);
+                authController.setEmpleadoController(empleadoController);
+
+                // Paso 4: Autenticar
+                Empleado empleado = authController.autenticarEmpleado(usuario, contrasenia, sucursalesMap);
+
                 if (empleado instanceof Gerente) {
                     cargarVentana("/FXML/empleados/GerenteMainView.fxml", event, empleado);
                 } else if (empleado instanceof Ejecutivo) {
@@ -57,7 +76,9 @@ public class LoginMainViewController {
                 } else if (empleado instanceof Cajero) {
                     cargarVentana("/FXML/empleados/CajeroMainView.fxml", event, empleado);
                 }
+
             } else if (clienteRadio.isSelected()) {
+                AutentificacionController authController = new AutentificacionController();
                 Cliente cliente = authController.autenticarCliente(usuario, contrasenia);
                 cargarVentana("/FXML/cilente/ClienteMainView.fxml", event, cliente);
             }

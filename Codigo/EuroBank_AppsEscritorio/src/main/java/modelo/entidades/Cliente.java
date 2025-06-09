@@ -17,6 +17,8 @@ public class Cliente {
     private StringProperty contrasenia;
     private List<Cuenta> cuentas; // Si manejas varias cuentas por cliente
 
+    // rfcCurp, nombre, apellidos, nacionalidad, fechaNacimiento, direccion, telefono, correo, usuario, contrasenia
+
     public Cliente(String rfc, String nombre, String apellidos, String nacionalidad, LocalDate fechaNacimiento, String direccion, String telefono, String correo, String usuario, String contrasenia) {
         this.rfc = new SimpleStringProperty(rfc);
         this.nombre = new SimpleStringProperty(nombre);
