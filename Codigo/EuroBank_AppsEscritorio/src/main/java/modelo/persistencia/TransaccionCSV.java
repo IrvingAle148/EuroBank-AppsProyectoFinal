@@ -99,4 +99,24 @@ public class TransaccionCSV {
             System.out.println("Error eliminando transacción: " + e.getMessage());
         }
     }
+
+    public void exportar(List<Transaccion> transacciones, String rutaArchivo) throws IOException {
+        try (FileWriter writer = new FileWriter(rutaArchivo)) {
+            // Escribir encabezados
+            writer.append("ID,Monto,FechaHora,Tipo,CuentaOrigen,CuentaDestino,Sucursal\n");
+
+            // Escribir cada transacción
+            for (Transaccion t : transacciones) {
+                writer.append(t.getId()).append(",");
+                writer.append(String.valueOf(t.getMonto())).append(",");
+                writer.append(t.getFechaHora().toString()).append(",");
+                writer.append(t.getTipo()).append(",");
+                writer.append(t.getCuentaOrigen() != null ? t.getCuentaOrigen().getNumeroCuenta() : "").append(",");
+                writer.append(t.getCuentaDestino() != null ? t.getCuentaDestino().getNumeroCuenta() : "").append(",");
+                writer.append(t.getSucursal() != null ? t.getSucursal().getNumeroIdentificacion() : "");
+                writer.append("\n");
+            }
+        }
+    }
+
 }

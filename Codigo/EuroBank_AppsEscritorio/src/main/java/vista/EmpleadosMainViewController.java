@@ -6,6 +6,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.Button;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -95,26 +96,50 @@ public class EmpleadosMainViewController {
         } catch (Exception e) {}
     }
 
-    @FXML
     private void handleEliminar(ActionEvent event) {
         Empleado seleccionado = empleadosTable.getSelectionModel().getSelectedItem();
         if (seleccionado == null) return;
+
+
         Alert confirm = new Alert(AlertType.CONFIRMATION, "¿Eliminar empleado " + seleccionado.getNombre() + "?");
         confirm.setHeaderText(null);
         confirm.showAndWait().ifPresent(response -> {
             if (response == javafx.scene.control.ButtonType.OK) {
-                empleadoController.eliminarEmpleado(seleccionado);
-                cargarEmpleados();
-                Alert info = new Alert(AlertType.INFORMATION, "Empleado eliminado.");
-                info.setHeaderText(null);
-                info.showAndWait();
+                try {
+                    empleadoController.eliminarEmpleado(seleccionado);
+                    cargarEmpleados();
+                    Alert info = new Alert(AlertType.INFORMATION, "Empleado eliminado.");
+                    info.setHeaderText(null);
+                    info.showAndWait();
+                } catch (Exception e) {
+                    Alert error = new Alert(AlertType.ERROR, "Error eliminando empleado: " + e.getMessage());
+                    error.setHeaderText(null);
+                    error.showAndWait();
+                }
             }
         });
     }
 
     @FXML
     private void handleExportar(ActionEvent event) {
-        empleadoController.exportarEmpleados();
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Exportar empleados");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivo CSV", "*.csv"));
+        Stage stage = (Stage) empleadosTable.getScene().getWindow();
+        java.io.File file = fileChooser.showSaveDialog(stage);
+
+        if (file != null) {
+            try {
+                empleadoController.exportarEmpleados(file.getAbsolutePath());
+                Alert alert = new Alert(Alert.AlertType.INFORMATION, "Empleados exportados correctamente.");
+                alert.setHeaderText(null);
+                alert.showAndWait();
+            } catch (Exception e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Error al exportar: " + e.getMessage());
+                alert.setHeaderText(null);
+                alert.showAndWait();
+            }
+        }
     }
 
     @FXML

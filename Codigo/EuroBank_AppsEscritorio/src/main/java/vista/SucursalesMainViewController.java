@@ -6,6 +6,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.Button;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -45,7 +46,7 @@ public class SucursalesMainViewController {
 
     @FXML
     private void initialize() {
-        idColumn.setCellValueFactory(data -> data.getValue().idProperty());
+        idColumn.setCellValueFactory(data -> data.getValue().numeroIdentificacionProperty());
         nombreColumn.setCellValueFactory(data -> data.getValue().nombreProperty());
         direccionColumn.setCellValueFactory(data -> data.getValue().direccionProperty());
         gerenteColumn.setCellValueFactory(data -> data.getValue().gerenteNombreProperty());
@@ -110,7 +111,24 @@ public class SucursalesMainViewController {
 
     @FXML
     private void handleExportar(ActionEvent event) {
-        sucursalController.exportarSucursales();
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Exportar sucursales");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivo CSV", "*.csv"));
+        Stage stage = (Stage) sucursalesTable.getScene().getWindow();
+        java.io.File file = fileChooser.showSaveDialog(stage);
+
+        if (file != null) {
+            try {
+                sucursalController.exportarSucursales(file.getAbsolutePath());
+                Alert alert = new Alert(Alert.AlertType.INFORMATION, "Sucursales exportadas correctamente.");
+                alert.setHeaderText(null);
+                alert.showAndWait();
+            } catch (Exception e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Error al exportar: " + e.getMessage());
+                alert.setHeaderText(null);
+                alert.showAndWait();
+            }
+        }
     }
 
     @FXML

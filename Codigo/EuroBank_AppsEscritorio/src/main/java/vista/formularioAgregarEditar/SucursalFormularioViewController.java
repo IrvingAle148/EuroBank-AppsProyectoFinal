@@ -15,6 +15,8 @@ import modelo.entidades.Sucursal;
 import modelo.entidades.Empleado;
 import controlador.SucursalController;
 import controlador.EmpleadoController;
+import modelo.excepciones.ElementoDuplicadoException;
+import modelo.excepciones.ValidacionException;
 import vista.SucursalesMainViewController;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -50,6 +52,9 @@ public class SucursalFormularioViewController {
 
     @FXML
     private Button cancelarBtn;
+
+    @FXML
+    private Label errorLabel;
 
     private boolean modoEditar = false;
     private Sucursal sucursalEditar;
@@ -104,29 +109,56 @@ public class SucursalFormularioViewController {
 
     @FXML
     private void handleGuardar(ActionEvent event) {
-        String numero = numeroIdentificacionField.getText();
-        String nombre = nombreField.getText();
-        String direccion = direccionField.getText();
-        String telefono = telefonoField.getText();
-        String correo = correoField.getText();
-        Empleado gerente = gerenteCombo.getValue();
-        Empleado contacto = contactoCombo.getValue();
+        try {
+            String nombre = nombreField.getText();
+            String direccion = direccionField.getText();
+            String telefono = telefonoField.getText();
+            String correo = correoField.getText();
+            Empleado gerente = gerenteCombo.getValue();
+            Empleado contacto = contactoCombo.getValue();
 
-        if (modoEditar) {
-            sucursalEditar.setNombre(nombre);
-            sucursalEditar.setDireccion(direccion);
-            sucursalEditar.setTelefono(telefono);
-            sucursalEditar.setCorreo(correo);
-            sucursalEditar.setGerente(gerente);
-            sucursalEditar.setContacto(contacto);
-            sucursalController.actualizarSucursal(sucursalEditar);
-        } else {
-            String nuevoNumero = sucursalController.generarNuevoNumeroIdentificacion();
-            Sucursal nueva = new Sucursal(nuevoNumero, nombre, direccion, telefono, correo, gerente, contacto);
-            sucursalController.agregarSucursal(nueva);
+            // Validación básica
+            if (nombre == null || nombre.isBlank()) {
+                mostrarError("El nombre de la sucursal es obligatorio.");
+                return;
+            }
+            if (gerente == null) {
+                mostrarError("Debes seleccionar un gerente.");
+                return;
+            }
+            if (contacto == null) {
+                mostrarError("Debes seleccionar una persona de contacto.");
+                return;
+            }
+
+            if (modoEditar) {
+                sucursalEditar.setNombre(nombre);
+                sucursalEditar.setDireccion(direccion);
+                sucursalEditar.setTelefono(telefono);
+                sucursalEditar.setCorreo(correo);
+                sucursalEditar.setGerente(gerente);
+                sucursalEditar.setContacto(contacto);
+                sucursalController.actualizarSucursal(sucursalEditar);
+            } else {
+                String nuevoNumero = sucursalController.generarNuevoNumeroIdentificacion();
+                Sucursal nueva = new Sucursal(nuevoNumero, nombre, direccion, telefono, correo, gerente, contacto);
+                sucursalController.agregarSucursal(nueva);
+            }
+            origenController.recargarTabla();
+            regresarSucursalesMain(event);
+
+        } catch (ElementoDuplicadoException e) {
+            mostrarError("Ya existe una sucursal con ese número de identificación.");
+        } catch (ValidacionException e) {
+            mostrarError(e.getMessage());
+        } catch (Exception e) {
+            mostrarError("Ocurrió un error inesperado: " + e.getMessage());
         }
-        origenController.recargarTabla();
-        regresarSucursalesMain(event);
+    }
+
+    private void mostrarError(String mensaje) {
+        errorLabel.setText(mensaje);
+        errorLabel.setVisible(true);
     }
 
     @FXML

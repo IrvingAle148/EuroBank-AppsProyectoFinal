@@ -14,6 +14,9 @@ import javafx.scene.Node;
 import javafx.fxml.FXMLLoader;
 import modelo.entidades.Cliente;
 import controlador.ClienteController;
+import modelo.excepciones.ClienteNoEncontradoException;
+import modelo.excepciones.ElementoDuplicadoException;
+import modelo.excepciones.ValidacionException;
 import vista.ClientesMainViewController;
 import java.time.LocalDate;
 
@@ -57,6 +60,10 @@ public class ClienteFormularioViewController {
 
     @FXML
     private Button cancelarBtn;
+
+    @FXML
+    private Label errorLabel;
+
 
     private boolean modoEditar = false;
     private Cliente clienteEditar;
@@ -119,24 +126,39 @@ public class ClienteFormularioViewController {
         String usuario = usuarioField.getText();
         String contrasenia = contraseniaField.getText();
 
-        if (modoEditar) {
-            clienteEditar.setNombre(nombre);
-            clienteEditar.setApellidos(apellidos);
-            clienteEditar.setNacionalidad(nacionalidad);
-            clienteEditar.setFechaNacimiento(fechaNac);
-            clienteEditar.setDireccion(direccion);
-            clienteEditar.setTelefono(telefono);
-            clienteEditar.setCorreo(correo);
-            clienteEditar.setUsuario(usuario);
-            clienteEditar.setContrasenia(contrasenia);
-            clienteController.actualizarCliente(clienteEditar);
-        } else {
-            Cliente nuevo = new Cliente(rfc, nombre, apellidos, nacionalidad, fechaNac, direccion, telefono, correo, usuario, contrasenia);
-            clienteController.agregarCliente(nuevo);
+        try {
+            if (modoEditar) {
+                clienteEditar.setNombre(nombre);
+                clienteEditar.setApellidos(apellidos);
+                clienteEditar.setNacionalidad(nacionalidad);
+                clienteEditar.setFechaNacimiento(fechaNac);
+                clienteEditar.setDireccion(direccion);
+                clienteEditar.setTelefono(telefono);
+                clienteEditar.setCorreo(correo);
+                clienteEditar.setUsuario(usuario);
+                clienteEditar.setContrasenia(contrasenia);
+                clienteController.actualizarCliente(clienteEditar);
+            } else {
+                Cliente nuevo = new Cliente(rfc, nombre, apellidos, nacionalidad, fechaNac, direccion, telefono, correo, usuario, contrasenia);
+                clienteController.agregarCliente(nuevo);
+            }
+            origenController.recargarTabla();
+            regresarClientesMain(event);
+        } catch (ElementoDuplicadoException e) {
+            mostrarError("Ese RFC/CURP o usuario ya existe.");
+        } catch (ValidacionException e) {
+            mostrarError(e.getMessage());
+        } catch (ClienteNoEncontradoException e) {
+            mostrarError("No se encontró el cliente a editar.");
+        } catch (Exception e) {
+            mostrarError("Error inesperado: " + e.getMessage());
         }
-        origenController.recargarTabla();
-        regresarClientesMain(event);
     }
+
+        private void mostrarError(String mensaje) {
+            errorLabel.setText(mensaje);
+            errorLabel.setVisible(true);
+        }
 
     @FXML
     private void handleCancelar(ActionEvent event) {

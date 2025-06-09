@@ -48,6 +48,21 @@ public class EmpleadoCSV {
         return empleados;
     }
 
+    public void exportarEmpleadosCSV(String rutaExportacion, String rutaOriginal) {
+        List<Empleado> empleados = cargar(rutaOriginal);
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaExportacion))) {
+            // Escribe encabezado
+            bw.write("ID,Nombre,Direccion,FechaNacimiento,Genero,Salario,Usuario,Contraseña,Tipo,Campo1,Campo2");
+            bw.newLine();
+            for (Empleado e : empleados) {
+                bw.write(formatoCSV(e));
+                bw.newLine();
+            }
+        } catch (Exception e) {
+            System.out.println("Error exportando empleados: " + e.getMessage());
+        }
+    }
+
     // Guardar un empleado
     public void guardarUno(Empleado empleado, String rutaArchivo) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaArchivo, true))) {

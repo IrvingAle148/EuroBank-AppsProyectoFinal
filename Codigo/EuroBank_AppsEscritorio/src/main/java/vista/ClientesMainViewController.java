@@ -6,6 +6,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.Button;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -16,6 +17,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import modelo.entidades.Cliente;
 import controlador.ClienteController;
+import modelo.excepciones.ClienteNoEncontradoException;
 
 public class ClientesMainViewController {
 
@@ -67,7 +69,7 @@ public class ClientesMainViewController {
 
     private void cargarClientes() {
         clientesList.clear();
-        clientesList.addAll(clienteController.obtenerTodos());
+        clientesList.addAll(clienteController.obtenerTodosLosClientes());
         clientesTable.setItems(clientesList);
     }
 
@@ -103,23 +105,53 @@ public class ClientesMainViewController {
     private void handleEliminar(ActionEvent event) {
         Cliente seleccionado = clientesTable.getSelectionModel().getSelectedItem();
         if (seleccionado == null) return;
+
         Alert confirm = new Alert(AlertType.CONFIRMATION, "¿Eliminar cliente " + seleccionado.getNombreCompleto() + "?");
         confirm.setHeaderText(null);
         confirm.showAndWait().ifPresent(response -> {
             if (response == javafx.scene.control.ButtonType.OK) {
-                clienteController.eliminarCliente(seleccionado);
-                cargarClientes();
-                Alert info = new Alert(AlertType.INFORMATION, "Cliente eliminado.");
-                info.setHeaderText(null);
-                info.showAndWait();
+                try {
+                    clienteController.eliminarCliente(seleccionado);
+                    cargarClientes();
+                    Alert info = new Alert(AlertType.INFORMATION, "Cliente eliminado.");
+                    info.setHeaderText(null);
+                    info.showAndWait();
+                } catch (ClienteNoEncontradoException e) {
+                    Alert error = new Alert(AlertType.ERROR, "No se encontró el cliente: " + e.getMessage());
+                    error.setHeaderText(null);
+                    error.showAndWait();
+                } catch (Exception e) {
+                    Alert error = new Alert(AlertType.ERROR, "Error eliminando cliente: " + e.getMessage());
+                    error.setHeaderText(null);
+                    error.showAndWait();
+                }
             }
         });
     }
 
+
     @FXML
     private void handleExportar(ActionEvent event) {
-        clienteController.exportarClientes();
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Exportar clientes");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivo CSV", "*.csv"));
+        Stage stage = (Stage) clientesTable.getScene().getWindow();
+        java.io.File file = fileChooser.showSaveDialog(stage);
+
+        if (file != null) {
+            try {
+                clienteController.exportarClientes(file.getAbsolutePath());
+                Alert alert = new Alert(Alert.AlertType.INFORMATION, "Clientes exportados correctamente.");
+                alert.setHeaderText(null);
+                alert.showAndWait();
+            } catch (Exception e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Error al exportar: " + e.getMessage());
+                alert.setHeaderText(null);
+                alert.showAndWait();
+            }
+        }
     }
+
 
     @FXML
     private void handleRegresar(ActionEvent event) {

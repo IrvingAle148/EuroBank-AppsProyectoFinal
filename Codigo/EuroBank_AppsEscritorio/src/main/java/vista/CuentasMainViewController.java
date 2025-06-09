@@ -6,6 +6,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.Button;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -99,7 +100,7 @@ public class CuentasMainViewController {
     private void handleEliminar(ActionEvent event) {
         Cuenta seleccionada = cuentasTable.getSelectionModel().getSelectedItem();
         if (seleccionada == null) return;
-        Alert confirm = new Alert(AlertType.CONFIRMATION, "¿Eliminar cuenta de " + seleccionada.getClienteNombre() + "?");
+        Alert confirm = new Alert(AlertType.CONFIRMATION, "¿Eliminar cuenta de " + seleccionada.clienteNombreProperty()+ "?");
         confirm.setHeaderText(null);
         confirm.showAndWait().ifPresent(response -> {
             if (response == javafx.scene.control.ButtonType.OK) {
@@ -112,9 +113,27 @@ public class CuentasMainViewController {
         });
     }
 
+
     @FXML
     private void handleExportar(ActionEvent event) {
-        cuentaController.exportarCuentas();
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Exportar cuentas");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivo CSV", "*.csv"));
+        Stage stage = (Stage) cuentasTable.getScene().getWindow();
+        java.io.File file = fileChooser.showSaveDialog(stage);
+
+        if (file != null) {
+            try {
+                cuentaController.exportarCuentas(file.getAbsolutePath());
+                Alert alert = new Alert(Alert.AlertType.INFORMATION, "Cuentas exportadas correctamente.");
+                alert.setHeaderText(null);
+                alert.showAndWait();
+            } catch (Exception e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Error al exportar: " + e.getMessage());
+                alert.setHeaderText(null);
+                alert.showAndWait();
+            }
+        }
     }
 
     @FXML

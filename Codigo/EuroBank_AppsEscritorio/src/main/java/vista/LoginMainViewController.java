@@ -48,7 +48,7 @@ public class LoginMainViewController {
 
         try {
             if (empleadoRadio.isSelected()) {
-                Map<String, Sucursal> sucursales = (Map<String, Sucursal>) sucursalController.obtenerTodas();
+                Map<String, Sucursal> sucursales = (Map<String, Sucursal>) sucursalController.obtenerTodasLasSucursales();
                 Empleado empleado = authController.autenticarEmpleado(usuario, contrasenia, sucursales);
                 if (empleado instanceof Gerente) {
                     cargarVentana("/FXML/empleados/GerenteMainView.fxml", event, empleado);

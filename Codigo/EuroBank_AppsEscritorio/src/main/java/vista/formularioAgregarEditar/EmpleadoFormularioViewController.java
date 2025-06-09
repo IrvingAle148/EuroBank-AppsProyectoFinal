@@ -20,6 +20,9 @@ import modelo.entidades.Cajero;
 import modelo.entidades.Ejecutivo;
 import modelo.entidades.Gerente;
 import controlador.EmpleadoController;
+import modelo.excepciones.ElementoDuplicadoException;
+import modelo.excepciones.EmpleadoNoEncontradoException;
+import modelo.excepciones.ValidacionException;
 import vista.EmpleadosMainViewController;
 import javafx.collections.FXCollections;
 import java.time.LocalDate;
@@ -74,6 +77,9 @@ public class EmpleadoFormularioViewController {
     private Button guardarBtn;
     @FXML
     private Button cancelarBtn;
+
+    @FXML
+    private Label errorLabel;
 
     private boolean modoEditar = false;
     private Empleado empleadoEditar;
@@ -161,76 +167,100 @@ public class EmpleadoFormularioViewController {
 
     @FXML
     private void handleGuardar(ActionEvent event) {
-        String id = idField.getText();
-        String nombre = nombreField.getText();
-        String direccion = direccionField.getText();
-        LocalDate fechaNacimiento = fechaNacimientoPicker.getValue();
-        String genero = generoCombo.getValue();
-        double salario = Double.parseDouble(salarioField.getText());
-        String usuario = usuarioField.getText();
-        String contrasenia = contraseniaField.getText();
-        String tipo = tipoEmpleadoCombo.getValue();
+        try {
+            String id = idField.getText();
+            String nombre = nombreField.getText();
+            String direccion = direccionField.getText();
+            LocalDate fechaNacimiento = fechaNacimientoPicker.getValue();
+            String genero = generoCombo.getValue();
+            double salario = Double.parseDouble(salarioField.getText());
+            String usuario = usuarioField.getText();
+            String contrasenia = contraseniaField.getText();
+            String tipo = tipoEmpleadoCombo.getValue();
 
-        if ("Cajero".equals(tipo)) {
-            String horario = horarioTrabajoField.getText();
-            int numVentanilla = Integer.parseInt(numVentanillaField.getText());
-            if (modoEditar) {
-                Cajero cajero = (Cajero) empleadoEditar;
-                cajero.setNombre(nombre);
-                cajero.setDireccion(direccion);
-                cajero.setFechaNacimiento(fechaNacimiento);
-                cajero.setGenero(genero);
-                cajero.setSalario(salario);
-                cajero.setUsuario(usuario);
-                cajero.setContrasenia(contrasenia);
-                cajero.setHorarioTrabajo(horario);
-                cajero.setNumVentanilla(numVentanilla);
-                empleadoController.actualizarEmpleado(cajero);
-            } else {
-                Cajero nuevo = new Cajero(id, nombre, direccion, fechaNacimiento, genero, salario, usuario, contrasenia, horario, numVentanilla);
-                empleadoController.agregarEmpleado(nuevo);
+            if (id == null || id.isEmpty() || nombre == null || nombre.isEmpty() || usuario == null || usuario.isEmpty()) {
+                mostrarError("Todos los campos obligatorios deben estar completos.");
+                return;
             }
-        } else if ("Ejecutivo".equals(tipo)) {
-            int numClientes = Integer.parseInt(numClientesAsignadosField.getText());
-            String especializacion = especializacionCombo.getValue();
-            if (modoEditar) {
-                Ejecutivo ejecutivo = (Ejecutivo) empleadoEditar;
-                ejecutivo.setNombre(nombre);
-                ejecutivo.setDireccion(direccion);
-                ejecutivo.setFechaNacimiento(fechaNacimiento);
-                ejecutivo.setGenero(genero);
-                ejecutivo.setSalario(salario);
-                ejecutivo.setUsuario(usuario);
-                ejecutivo.setContrasenia(contrasenia);
-                ejecutivo.setNumClientesAsignados(numClientes);
-                ejecutivo.setEspecializacion(especializacion);
-                empleadoController.actualizarEmpleado(ejecutivo);
-            } else {
-                Ejecutivo nuevo = new Ejecutivo(id, nombre, direccion, fechaNacimiento, genero, salario, usuario, contrasenia, numClientes, especializacion);
-                empleadoController.agregarEmpleado(nuevo);
+
+            if ("Cajero".equals(tipo)) {
+                String horario = horarioTrabajoField.getText();
+                int numVentanilla = Integer.parseInt(numVentanillaField.getText());
+                if (modoEditar) {
+                    Cajero cajero = (Cajero) empleadoEditar;
+                    cajero.setNombre(nombre);
+                    cajero.setDireccion(direccion);
+                    cajero.setFechaNacimiento(fechaNacimiento);
+                    cajero.setGenero(genero);
+                    cajero.setSalario(salario);
+                    cajero.setUsuario(usuario);
+                    cajero.setContrasenia(contrasenia);
+                    cajero.setHorarioTrabajo(horario);
+                    cajero.setNumVentanilla(numVentanilla);
+                    empleadoController.actualizarEmpleado(cajero);
+                } else {
+                    Cajero nuevo = new Cajero(id, nombre, direccion, fechaNacimiento, genero, salario, usuario, contrasenia, horario, numVentanilla);
+                    empleadoController.agregarEmpleado(nuevo);
+                }
+            } else if ("Ejecutivo".equals(tipo)) {
+                int numClientes = Integer.parseInt(numClientesAsignadosField.getText());
+                String especializacion = especializacionCombo.getValue();
+                if (modoEditar) {
+                    Ejecutivo ejecutivo = (Ejecutivo) empleadoEditar;
+                    ejecutivo.setNombre(nombre);
+                    ejecutivo.setDireccion(direccion);
+                    ejecutivo.setFechaNacimiento(fechaNacimiento);
+                    ejecutivo.setGenero(genero);
+                    ejecutivo.setSalario(salario);
+                    ejecutivo.setUsuario(usuario);
+                    ejecutivo.setContrasenia(contrasenia);
+                    ejecutivo.setNumClientesAsignados(numClientes);
+                    ejecutivo.setEspecializacion(especializacion);
+                    empleadoController.actualizarEmpleado(ejecutivo);
+                } else {
+                    Ejecutivo nuevo = new Ejecutivo(id, nombre, direccion, fechaNacimiento, genero, salario, usuario, contrasenia, numClientes, especializacion);
+                    empleadoController.agregarEmpleado(nuevo);
+                }
+            } else if ("Gerente".equals(tipo)) {
+                String nivelAcceso = nivelAccesoCombo.getValue();
+                int aniosExp = Integer.parseInt(aniosExperienciaField.getText());
+                if (modoEditar) {
+                    Gerente gerente = (Gerente) empleadoEditar;
+                    gerente.setNombre(nombre);
+                    gerente.setDireccion(direccion);
+                    gerente.setFechaNacimiento(fechaNacimiento);
+                    gerente.setGenero(genero);
+                    gerente.setSalario(salario);
+                    gerente.setUsuario(usuario);
+                    gerente.setContrasenia(contrasenia);
+                    gerente.setNivelAcceso(nivelAcceso);
+                    gerente.setAniosExperiencia(aniosExp);
+                    empleadoController.actualizarEmpleado(gerente);
+                } else {
+                    Gerente nuevo = new Gerente(id, nombre, direccion, fechaNacimiento, genero, salario, usuario, contrasenia, nivelAcceso, aniosExp);
+                    empleadoController.agregarEmpleado(nuevo);
+                }
             }
-        } else if ("Gerente".equals(tipo)) {
-            String nivelAcceso = nivelAccesoCombo.getValue();
-            int aniosExp = Integer.parseInt(aniosExperienciaField.getText());
-            if (modoEditar) {
-                Gerente gerente = (Gerente) empleadoEditar;
-                gerente.setNombre(nombre);
-                gerente.setDireccion(direccion);
-                gerente.setFechaNacimiento(fechaNacimiento);
-                gerente.setGenero(genero);
-                gerente.setSalario(salario);
-                gerente.setUsuario(usuario);
-                gerente.setContrasenia(contrasenia);
-                gerente.setNivelAcceso(nivelAcceso);
-                gerente.setAniosExperiencia(aniosExp);
-                empleadoController.actualizarEmpleado(gerente);
-            } else {
-                Gerente nuevo = new Gerente(id, nombre, direccion, fechaNacimiento, genero, salario, usuario, contrasenia, nivelAcceso, aniosExp);
-                empleadoController.agregarEmpleado(nuevo);
-            }
+            origenController.recargarTabla();
+            regresarEmpleadosMain(event);
+
+        } catch (NumberFormatException e) {
+            mostrarError("Verifica los campos numéricos (salario, ventanilla, años, clientes).");
+        } catch (ElementoDuplicadoException e) {
+            mostrarError("Ya existe un empleado con ese usuario o ID.");
+        } catch (ValidacionException e) {
+            mostrarError(e.getMessage());
+        } catch (EmpleadoNoEncontradoException e) {
+            mostrarError("No se encontró el empleado a editar.");
+        } catch (Exception e) {
+            mostrarError("Ocurrió un error: " + e.getMessage());
         }
-        origenController.recargarTabla();
-        regresarEmpleadosMain(event);
+    }
+
+
+    private void mostrarError(String mensaje) {
+        errorLabel.setText(mensaje);
+        errorLabel.setVisible(true);
     }
 
     @FXML

@@ -75,6 +75,8 @@ public class SucursalCSV {
     public void exportarSucursalesCSV(String rutaExportacion, String rutaOriginal) {
         List<Sucursal> sucursales = cargar(rutaOriginal);
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaExportacion))) {
+            bw.write("Numero,Nombre,Direccion,Telefono,Correo,Gerente,Contacto");
+            bw.newLine();
             for (Sucursal s : sucursales) {
                 bw.write(formatoCSV(s));
                 bw.newLine();
@@ -83,6 +85,7 @@ public class SucursalCSV {
             System.out.println("Error exportando sucursales: " + e.getMessage());
         }
     }
+
 
     // Utilidad para convertir una sucursal a una línea de CSV
     private String formatoCSV(Sucursal sucursal) {

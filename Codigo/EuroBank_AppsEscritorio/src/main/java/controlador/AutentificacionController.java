@@ -22,7 +22,7 @@ public class AutentificacionController {
             throws ValidacionException, IOException {
         if (usuario == null || usuario.isBlank() || contrasenia == null || contrasenia.isBlank())
             throw new ValidacionException("Usuario y/o contraseña vacíos.");
-        Empleado e = empleadoController.buscarPorUsuario(usuario, sucursales);
+        Empleado e = empleadoController.buscarPorUsuario(usuario);
         if (e == null || !e.getContrasenia().equals(contrasenia))
             throw new ValidacionException("Usuario o contraseña incorrectos.");
         return e;

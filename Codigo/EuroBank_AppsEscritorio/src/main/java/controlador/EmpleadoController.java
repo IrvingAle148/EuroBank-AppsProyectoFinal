@@ -20,11 +20,11 @@ public class EmpleadoController {
 
     // Exportar empleados a CSV
     public void exportarEmpleados(String ruta) {
-        empleadoCSV.exportarEmpleadosCSV(ruta);
+        empleadoCSV.exportarEmpleadosCSV(ruta, rutaArchivo);
     }
 
     // Agregar un empleado nuevo
-    public void agregarEmpleado(Empleado empleado, List<Sucursal> sucursales)
+    public void agregarEmpleado(Empleado empleado)
             throws ElementoDuplicadoException, ValidacionException {
         if (empleado.getId() == null || empleado.getId().isBlank())
             throw new ValidacionException("El ID del empleado no puede estar vacío.");

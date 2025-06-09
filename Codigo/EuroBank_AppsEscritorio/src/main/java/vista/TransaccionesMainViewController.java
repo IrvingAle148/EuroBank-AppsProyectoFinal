@@ -1,9 +1,12 @@
 package vista;
 
+import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.Button;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -48,13 +51,18 @@ public class TransaccionesMainViewController {
     private void initialize() {
         idCol.setCellValueFactory(data -> data.getValue().idProperty());
         montoCol.setCellValueFactory(data -> data.getValue().montoProperty().asObject());
-        fechaHoraCol.setCellValueFactory(data -> data.getValue().fechaHoraProperty());
+        fechaHoraCol.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getFechaHora() != null ? data.getValue().getFechaHora().toString() : ""));
         tipoCol.setCellValueFactory(data -> data.getValue().tipoProperty());
-        cuentaOrigenCol.setCellValueFactory(data -> data.getValue().cuentaOrigenProperty());
-        cuentaDestinoCol.setCellValueFactory(data -> data.getValue().cuentaDestinoProperty());
-        sucursalCol.setCellValueFactory(data -> data.getValue().sucursalProperty());
+        cuentaOrigenCol.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getCuentaOrigen() != null ? data.getValue().getCuentaOrigen().getNumeroCuenta() : ""));
+        cuentaDestinoCol.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getCuentaDestino() != null ? data.getValue().getCuentaDestino().getNumeroCuenta() : ""));
+        sucursalCol.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getSucursal() != null ? data.getValue().getSucursal().getNombre() : ""));
         cargarTransacciones();
     }
+
 
     private void cargarTransacciones() {
         transaccionesList.clear();
@@ -64,7 +72,22 @@ public class TransaccionesMainViewController {
 
     @FXML
     private void handleExportar(ActionEvent event) {
-        transaccionController.exportarTransacciones();
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Exportar transacciones");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivo CSV", "*.csv"));
+        Stage stage = (Stage) transaccionesTable.getScene().getWindow();
+        java.io.File file = fileChooser.showSaveDialog(stage);
+
+        if (file != null) {
+            try {
+                transaccionController.exportarTransacciones(file.getAbsolutePath());
+                Alert alert = new Alert(Alert.AlertType.INFORMATION, "Exportación exitosa.");
+                alert.showAndWait();
+            } catch (Exception e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Error al exportar: " + e.getMessage());
+                alert.showAndWait();
+            }
+        }
     }
 
     @FXML

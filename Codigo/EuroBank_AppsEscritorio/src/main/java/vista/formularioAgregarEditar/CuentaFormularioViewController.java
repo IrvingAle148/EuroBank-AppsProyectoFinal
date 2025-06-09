@@ -17,6 +17,7 @@ import modelo.entidades.Sucursal;
 import controlador.CuentaController;
 import controlador.ClienteController;
 import controlador.SucursalController;
+import modelo.excepciones.ClienteNoEncontradoException;
 import vista.CuentasMainViewController;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -49,6 +50,9 @@ public class CuentaFormularioViewController {
 
     @FXML
     private Button cancelarBtn;
+
+    @FXML
+    private Label errorLabel;
 
     private boolean modoEditar = false;
     private Cuenta cuentaEditar;
@@ -103,33 +107,64 @@ public class CuentaFormularioViewController {
     }
 
     @FXML
-    private void onGuardar(ActionEvent event) {
-        String tipo = tipoCombo.getValue();
-        String saldoStr = saldoActualField.getText();
-        String limiteStr = limiteCreditoField.getText();
-        Cliente cliente = clienteCombo.getValue();
-        Sucursal sucursal = sucursalCombo.getValue();
-        double saldo = saldoStr == null || saldoStr.isEmpty() ? 0.0 : Double.parseDouble(saldoStr);
-        double limite = limiteStr == null || limiteStr.isEmpty() ? 0.0 : Double.parseDouble(limiteStr);
+    private void handleGuardar(ActionEvent event) {
+        try {
+            String tipo = tipoCombo.getValue();
+            String saldoStr = saldoActualField.getText();
+            String limiteStr = limiteCreditoField.getText();
+            Cliente cliente = clienteCombo.getValue();
+            Sucursal sucursal = sucursalCombo.getValue();
 
-        if (modoEditar) {
-            cuentaEditar.setTipo(tipo);
-            cuentaEditar.setSaldoActual(saldo);
-            cuentaEditar.setLimiteCredito(limite);
-            cuentaEditar.setCliente(cliente);
-            cuentaEditar.setSucursal(sucursal);
-            cuentaController.actualizarCuenta(cuentaEditar);
-        } else {
-            String numeroCuenta = cuentaController.generarNuevoNumeroCuenta();
-            Cuenta nueva = new Cuenta(numeroCuenta, tipo, saldo, limite, cliente, sucursal);
-            cuentaController.agregarCuenta(nueva);
+            // Validación básica
+            if (tipo == null || tipo.isEmpty()) {
+                mostrarError("Selecciona un tipo de cuenta.");
+                return;
+            }
+            if (cliente == null) {
+                mostrarError("Selecciona un cliente.");
+                return;
+            }
+            if (sucursal == null) {
+                mostrarError("Selecciona una sucursal.");
+                return;
+            }
+
+            double saldo = saldoStr == null || saldoStr.isEmpty() ? 0.0 : Double.parseDouble(saldoStr);
+            double limite = limiteStr == null || limiteStr.isEmpty() ? 0.0 : Double.parseDouble(limiteStr);
+
+            if (modoEditar) {
+                cuentaEditar.setTipo(tipo);
+                cuentaEditar.setSaldoActual(saldo);
+                cuentaEditar.setLimiteCredito(limite);
+                cuentaEditar.setCliente(cliente);
+                cuentaEditar.setSucursal(sucursal);
+                cuentaController.actualizarCuenta(cuentaEditar);
+            } else {
+                String numeroCuenta = cuentaController.generarNuevoNumeroCuenta();
+                Cuenta nueva = new Cuenta(numeroCuenta, tipo, saldo, limite, cliente, sucursal);
+                cuentaController.agregarCuenta(nueva); // Puede lanzar ClienteNoEncontradoException
+            }
+
+            origenController.recargarTabla();
+            regresarCuentasMain(event);
+
+        } catch (NumberFormatException e) {
+            mostrarError("Saldo y límite de crédito deben ser números.");
+        } catch (ClienteNoEncontradoException e) {
+            mostrarError("El cliente no fue encontrado.");
+        } catch (Exception e) {
+            mostrarError("Ocurrió un error: " + e.getMessage());
         }
-        origenController.recargarTabla();
-        regresarCuentasMain(event);
+    }
+
+
+    private void mostrarError(String mensaje) {
+        errorLabel.setText(mensaje);
+        errorLabel.setVisible(true);
     }
 
     @FXML
-    private void onCancelar(ActionEvent event) {
+    private void handleCancelar(ActionEvent event) {
         regresarCuentasMain(event);
     }
 

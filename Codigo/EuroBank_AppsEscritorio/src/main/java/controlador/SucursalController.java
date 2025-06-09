@@ -18,8 +18,8 @@ public class SucursalController {
     }
 
     // Exportar sucursales a CSV
-    public void exportarSucursales(String ruta) {
-        sucursalCSV.exportarSucursalesCSV(ruta);
+    public void exportarSucursales(String rutaExportacion) {
+        sucursalCSV.exportarSucursalesCSV(rutaExportacion, rutaArchivo);
     }
 
     // Agregar sucursal nueva

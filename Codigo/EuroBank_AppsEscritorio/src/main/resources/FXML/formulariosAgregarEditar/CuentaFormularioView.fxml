@@ -32,7 +32,7 @@
     </HBox>
 
     <HBox alignment="CENTER" spacing="15">
-        <Button fx:id="guardarBtn" onAction="#onGuardar" text="handleGuardar" />
-        <Button fx:id="cancelarBtn" onAction="#onCancelar" text="handleCancelar" />
+        <Button fx:id="guardarBtn" onAction="#handleGuardar" text="handleGuardar" />
+        <Button fx:id="cancelarBtn" onAction="#handleCancelar" text="handleCancelar" />
     </HBox>
 </VBox>

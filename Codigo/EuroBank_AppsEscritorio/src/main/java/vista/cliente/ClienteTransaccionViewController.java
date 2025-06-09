@@ -69,7 +69,9 @@ public class ClienteTransaccionViewController {
                 mostrarError("Monto debe ser positivo.");
                 return;
             }
-            cuentaController.transferir(cuentaOrigen, cuentaDestinoNumero, monto);
+            // **Esta es la línea importante**:
+            Cuenta cuentaDestino = cuentaController.buscarPorNumeroCuenta(cuentaDestinoNumero);
+            cuentaController.transferir(cuentaOrigen, cuentaDestino, monto);
             regresarClienteMain(event);
         } catch (NumberFormatException e) {
             mostrarError("Monto inválido.");
@@ -83,6 +85,7 @@ public class ClienteTransaccionViewController {
             mostrarError(e.getMessage());
         }
     }
+
 
     @FXML
     private void handleCancelar(ActionEvent event) {
