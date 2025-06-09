@@ -8,10 +8,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Button;
 import javafx.event.ActionEvent;
 import javafx.stage.Stage;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.Node;
-import javafx.fxml.FXMLLoader;
 import modelo.entidades.Cliente;
 import controlador.ClienteController;
 import modelo.excepciones.ClienteNoEncontradoException;
@@ -19,6 +15,7 @@ import modelo.excepciones.ElementoDuplicadoException;
 import modelo.excepciones.ValidacionException;
 import vista.ClientesMainViewController;
 import java.time.LocalDate;
+import javafx.scene.control.Alert;
 
 public class ClienteFormularioViewController {
 
@@ -27,54 +24,43 @@ public class ClienteFormularioViewController {
 
     @FXML
     private TextField rfcCurpField;
-
     @FXML
     private TextField nombreField;
-
     @FXML
     private TextField apellidosField;
-
     @FXML
     private TextField nacionalidadField;
-
     @FXML
     private DatePicker fechaNacimientoPicker;
-
     @FXML
     private TextField direccionField;
-
     @FXML
     private TextField telefonoField;
-
     @FXML
     private TextField correoField;
-
     @FXML
     private TextField usuarioField;
-
     @FXML
     private PasswordField contraseniaField;
 
     @FXML
     private Button guardarBtn;
-
     @FXML
     private Button cancelarBtn;
-
     @FXML
     private Label errorLabel;
-
 
     private boolean modoEditar = false;
     private Cliente clienteEditar;
     private vista.ClientesMainViewController origenController;
     private ClienteController clienteController = new ClienteController();
 
+
     public void setModoAgregar(ClientesMainViewController origenController) {
         this.origenController = origenController;
         modoEditar = false;
         tituloLabel.setText("Añadir cliente");
-        rfcCurpField.setEditable(true);
+        rfcCurpField.setEditable(true); // RFC/CURP editable al agregar
         limpiarCampos();
     }
 
@@ -84,7 +70,7 @@ public class ClienteFormularioViewController {
         this.clienteEditar = cliente;
         tituloLabel.setText("Editar cliente");
         cargarDatos(cliente);
-        rfcCurpField.setEditable(false);
+        rfcCurpField.setEditable(true); // RFC/CURP editable también al editar
     }
 
     private void limpiarCampos() {
@@ -98,10 +84,11 @@ public class ClienteFormularioViewController {
         correoField.clear();
         usuarioField.clear();
         contraseniaField.clear();
+        errorLabel.setVisible(false);
     }
 
     private void cargarDatos(Cliente cliente) {
-        rfcCurpField.setText(cliente.getRfcCurp());
+        rfcCurpField.setText(cliente.getRfc());
         nombreField.setText(cliente.getNombre());
         apellidosField.setText(cliente.getApellidos());
         nacionalidadField.setText(cliente.getNacionalidad());
@@ -111,6 +98,7 @@ public class ClienteFormularioViewController {
         correoField.setText(cliente.getCorreo());
         usuarioField.setText(cliente.getUsuario());
         contraseniaField.setText(cliente.getContrasenia());
+        errorLabel.setVisible(false);
     }
 
     @FXML
@@ -128,6 +116,7 @@ public class ClienteFormularioViewController {
 
         try {
             if (modoEditar) {
+                clienteEditar.setRfc(rfc);
                 clienteEditar.setNombre(nombre);
                 clienteEditar.setApellidos(apellidos);
                 clienteEditar.setNacionalidad(nacionalidad);
@@ -137,42 +126,59 @@ public class ClienteFormularioViewController {
                 clienteEditar.setCorreo(correo);
                 clienteEditar.setUsuario(usuario);
                 clienteEditar.setContrasenia(contrasenia);
+
                 clienteController.actualizarCliente(clienteEditar);
+                mostrarExito("Cliente editado correctamente.");
             } else {
                 Cliente nuevo = new Cliente(rfc, nombre, apellidos, nacionalidad, fechaNac, direccion, telefono, correo, usuario, contrasenia);
                 clienteController.agregarCliente(nuevo);
+                mostrarExito("Cliente agregado correctamente.");
             }
             origenController.recargarTabla();
-            regresarClientesMain(event);
+            cerrarVentana();
         } catch (ElementoDuplicadoException e) {
             mostrarError("Ese RFC/CURP o usuario ya existe.");
+            mostrarErrorPopup("Ese RFC/CURP o usuario ya existe.");
         } catch (ValidacionException e) {
             mostrarError(e.getMessage());
+            mostrarErrorPopup(e.getMessage());
         } catch (ClienteNoEncontradoException e) {
             mostrarError("No se encontró el cliente a editar.");
+            mostrarErrorPopup("No se encontró el cliente a editar.");
         } catch (Exception e) {
             mostrarError("Error inesperado: " + e.getMessage());
+            mostrarErrorPopup("Error inesperado: " + e.getMessage());
         }
     }
 
-        private void mostrarError(String mensaje) {
-            errorLabel.setText(mensaje);
-            errorLabel.setVisible(true);
-        }
+    private void mostrarExito(String mensaje) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Éxito");
+        alert.setHeaderText(null);
+        alert.setContentText(mensaje);
+        alert.showAndWait();
+    }
+
+    private void mostrarError(String mensaje) {
+        errorLabel.setText(mensaje);
+        errorLabel.setVisible(true);
+    }
+
+    private void mostrarErrorPopup(String mensaje) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setHeaderText(null);
+        alert.setContentText(mensaje);
+        alert.showAndWait();
+    }
 
     @FXML
     private void handleCancelar(ActionEvent event) {
-        regresarClientesMain(event);
+        cerrarVentana();
     }
 
-    private void regresarClientesMain(ActionEvent event) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/ClientesMainView.fxml"));
-            Parent root = loader.load();
-            ClientesMainViewController controller = loader.getController();
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.show();
-        } catch (Exception e) {}
+    private void cerrarVentana() {
+        Stage stage = (Stage) rfcCurpField.getScene().getWindow();
+        stage.close();
     }
 }

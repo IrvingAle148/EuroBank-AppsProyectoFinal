@@ -16,6 +16,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 
+import modelo.entidades.Empleado;
 import modelo.entidades.Transaccion;
 import controlador.TransaccionController;
 
@@ -49,6 +50,11 @@ public class TransaccionesMainViewController {
 
     private TransaccionController transaccionController;
     private ObservableList<Transaccion> transaccionesList = FXCollections.observableArrayList();
+    private Empleado empleadoActual; // o Gerente/Ejecutivo/Cajero según tu flujo
+
+    public void setEmpleadoActual(Empleado empleado) {
+        this.empleadoActual = empleado;
+    }
 
     @FXML
     private void initialize() {

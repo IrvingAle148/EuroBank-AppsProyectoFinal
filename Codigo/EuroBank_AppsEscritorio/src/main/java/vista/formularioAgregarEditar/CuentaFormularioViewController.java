@@ -18,9 +18,12 @@ import controlador.CuentaController;
 import controlador.ClienteController;
 import controlador.SucursalController;
 import modelo.excepciones.ClienteNoEncontradoException;
+import modelo.excepciones.ElementoDuplicadoException;
+import modelo.excepciones.ValidacionException;
 import vista.CuentasMainViewController;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.Alert;
 
 public class CuentaFormularioViewController {
 
@@ -65,9 +68,10 @@ public class CuentaFormularioViewController {
         this.origenController = origenController;
         modoEditar = false;
         tituloLabel.setText("Añadir cuenta");
-        numeroCuentaField.setEditable(false);
         cargarCombos();
         limpiarCampos();
+        numeroCuentaField.setEditable(false);
+        numeroCuentaField.setText(""); // vacía el campo
     }
 
     public void setModoEditar(CuentasMainViewController origenController, Cuenta cuenta) {
@@ -77,7 +81,7 @@ public class CuentaFormularioViewController {
         tituloLabel.setText("Editar cuenta");
         cargarCombos();
         cargarDatos(cuenta);
-        numeroCuentaField.setEditable(false);
+        numeroCuentaField.setEditable(false); // el número de cuenta nunca se edita
     }
 
     private void cargarCombos() {
@@ -89,12 +93,13 @@ public class CuentaFormularioViewController {
     }
 
     private void limpiarCampos() {
-        numeroCuentaField.clear();
         tipoCombo.getSelectionModel().clearSelection();
         saldoActualField.clear();
         limiteCreditoField.clear();
         clienteCombo.getSelectionModel().clearSelection();
         sucursalCombo.getSelectionModel().clearSelection();
+        errorLabel.setText("");
+        errorLabel.setVisible(false);
     }
 
     private void cargarDatos(Cuenta cuenta) {
@@ -104,6 +109,8 @@ public class CuentaFormularioViewController {
         limiteCreditoField.setText(String.valueOf(cuenta.getLimiteCredito()));
         clienteCombo.getSelectionModel().select(cuenta.getCliente());
         sucursalCombo.getSelectionModel().select(cuenta.getSucursal());
+        errorLabel.setText("");
+        errorLabel.setVisible(false);
     }
 
     @FXML
@@ -118,14 +125,17 @@ public class CuentaFormularioViewController {
             // Validación básica
             if (tipo == null || tipo.isEmpty()) {
                 mostrarError("Selecciona un tipo de cuenta.");
+                mostrarErrorPopup("Selecciona un tipo de cuenta.");
                 return;
             }
             if (cliente == null) {
                 mostrarError("Selecciona un cliente.");
+                mostrarErrorPopup("Selecciona un cliente.");
                 return;
             }
             if (sucursal == null) {
                 mostrarError("Selecciona una sucursal.");
+                mostrarErrorPopup("Selecciona una sucursal.");
                 return;
             }
 
@@ -139,43 +149,57 @@ public class CuentaFormularioViewController {
                 cuentaEditar.setCliente(cliente);
                 cuentaEditar.setSucursal(sucursal);
                 cuentaController.actualizarCuenta(cuentaEditar);
+                mostrarExito("Cuenta editada correctamente.");
             } else {
                 String numeroCuenta = cuentaController.generarNuevoNumeroCuenta();
                 Cuenta nueva = new Cuenta(numeroCuenta, tipo, saldo, limite, cliente, sucursal);
                 cuentaController.agregarCuenta(nueva); // Puede lanzar ClienteNoEncontradoException
+                mostrarExito("Cuenta agregada correctamente.");
             }
 
             origenController.recargarTabla();
-            regresarCuentasMain(event);
+            cerrarVentana();
 
         } catch (NumberFormatException e) {
             mostrarError("Saldo y límite de crédito deben ser números.");
+            mostrarErrorPopup("Saldo y límite de crédito deben ser números.");
         } catch (ClienteNoEncontradoException e) {
             mostrarError("El cliente no fue encontrado.");
+            mostrarErrorPopup("El cliente no fue encontrado.");
         } catch (Exception e) {
             mostrarError("Ocurrió un error: " + e.getMessage());
+            mostrarErrorPopup("Ocurrió un error: " + e.getMessage());
         }
     }
 
+    private void mostrarExito(String mensaje) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Éxito");
+        alert.setHeaderText(null);
+        alert.setContentText(mensaje);
+        alert.showAndWait();
+    }
 
     private void mostrarError(String mensaje) {
         errorLabel.setText(mensaje);
         errorLabel.setVisible(true);
     }
 
-    @FXML
-    private void handleCancelar(ActionEvent event) {
-        regresarCuentasMain(event);
+    private void mostrarErrorPopup(String mensaje) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setHeaderText(null);
+        alert.setContentText(mensaje);
+        alert.showAndWait();
     }
 
-    private void regresarCuentasMain(ActionEvent event) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/CuentasMainVIew.fxml"));
-            Parent root = loader.load();
-            CuentasMainViewController controller = loader.getController();
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.show();
-        } catch (Exception e) {}
+    @FXML
+    private void handleCancelar(ActionEvent event) {
+        cerrarVentana();
+    }
+
+    private void cerrarVentana() {
+        Stage stage = (Stage) tituloLabel.getScene().getWindow();
+        stage.close();
     }
 }

@@ -27,10 +27,12 @@ public class CajeroMainViewController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/ClientesMainView.fxml"));
             Parent root = loader.load();
+            vista.ClientesMainViewController controller = loader.getController();
+            controller.setEmpleadoActual(cajero);
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
-        } catch (Exception e) {}
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     @FXML
@@ -38,10 +40,12 @@ public class CajeroMainViewController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/CuentasMainVIew.fxml"));
             Parent root = loader.load();
+            vista.CuentasMainViewController controller = loader.getController();
+            controller.setEmpleadoActual(cajero);
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
-        } catch (Exception e) {}
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     @FXML
@@ -49,10 +53,12 @@ public class CajeroMainViewController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/TransaccionesMainView.fxml"));
             Parent root = loader.load();
+            vista.TransaccionesMainViewController controller = loader.getController();
+            controller.setEmpleadoActual(cajero);
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
-        } catch (Exception e) {}
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     @FXML
@@ -63,6 +69,6 @@ public class CajeroMainViewController {
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
-        } catch (Exception e) {}
+        } catch (Exception e) { e.printStackTrace(); }
     }
 }

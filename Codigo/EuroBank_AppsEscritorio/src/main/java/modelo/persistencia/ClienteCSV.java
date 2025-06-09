@@ -63,7 +63,7 @@ public class ClienteCSV {
     public void actualizar(Cliente cliente, String ruta) {
         List<Cliente> clientes = cargar(ruta);
         for (int i = 0; i < clientes.size(); i++) {
-            if (clientes.get(i).getRfcCurp().equals(cliente.getRfcCurp())) {
+            if (clientes.get(i).getRfc().equals(cliente.getRfc())) {
                 clientes.set(i, cliente);
                 break;
             }
@@ -74,7 +74,7 @@ public class ClienteCSV {
     // Eliminar cliente
     public void eliminar(Cliente cliente, String ruta) {
         List<Cliente> clientes = cargar(ruta);
-        clientes.removeIf(c -> c.getRfcCurp().equals(cliente.getRfcCurp()));
+        clientes.removeIf(c -> c.getRfc().equals(cliente.getRfc()));
         guardarTodos(clientes, ruta);
     }
 
@@ -100,7 +100,7 @@ public class ClienteCSV {
     // Convierte cliente a línea CSV
     private String formatoCSV(Cliente cliente) {
         return String.join(",",
-                cliente.getRfcCurp(),
+                cliente.getRfc(),
                 cliente.getNombre(),
                 cliente.getApellidos(),
                 cliente.getNacionalidad(),

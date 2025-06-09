@@ -27,10 +27,12 @@ public class GerenteMainViewController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/ClientesMainView.fxml"));
             Parent root = loader.load();
+            vista.ClientesMainViewController controller = loader.getController();
+            controller.setEmpleadoActual(gerente);
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
-        } catch (Exception e) {}
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     @FXML
@@ -38,10 +40,12 @@ public class GerenteMainViewController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/EmpleadosMainView.fxml"));
             Parent root = loader.load();
+            vista.EmpleadosMainViewController controller = loader.getController();
+            controller.setEmpleadoActual(gerente);
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
-        } catch (Exception e) {}
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     @FXML
@@ -49,10 +53,12 @@ public class GerenteMainViewController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/SucursalesMainView.fxml"));
             Parent root = loader.load();
+            vista.SucursalesMainViewController controller = loader.getController();
+            controller.setEmpleadoActual(gerente);
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
-        } catch (Exception e) {}
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     @FXML
@@ -60,10 +66,12 @@ public class GerenteMainViewController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/CuentasMainVIew.fxml"));
             Parent root = loader.load();
+            vista.CuentasMainViewController controller = loader.getController();
+            controller.setEmpleadoActual(gerente);
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
-        } catch (Exception e) {}
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     @FXML
@@ -71,10 +79,12 @@ public class GerenteMainViewController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/TransaccionesMainView.fxml"));
             Parent root = loader.load();
+            vista.TransaccionesMainViewController controller = loader.getController();
+            controller.setEmpleadoActual(gerente);
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
-        } catch (Exception e) {}
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     @FXML
@@ -85,6 +95,6 @@ public class GerenteMainViewController {
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
-        } catch (Exception e) {}
+        } catch (Exception e) { e.printStackTrace(); }
     }
 }

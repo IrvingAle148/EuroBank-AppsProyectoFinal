@@ -2,25 +2,21 @@ package vista;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
+import javafx.scene.control.Alert.AlertType;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.Node;
 import javafx.fxml.FXMLLoader;
-
-import modelo.entidades.Sucursal;
-import modelo.entidades.Empleado;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import modelo.entidades.*;
 import controlador.SucursalController;
-import modelo.persistencia.EmpleadoCSV;
-import modelo.persistencia.SucursalCSV;
-
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
+import modelo.excepciones.ElementoDuplicadoException;
+import modelo.excepciones.ValidacionException;
+import javafx.stage.Modality;
 
 public class SucursalesMainViewController {
 
@@ -28,72 +24,58 @@ public class SucursalesMainViewController {
     private TableView<Sucursal> sucursalesTable;
 
     @FXML
-    private TableColumn<Sucursal, String> idColumn;
-
+    private TableColumn<Sucursal, String> numeroCol;
     @FXML
-    private TableColumn<Sucursal, String> nombreColumn;
-
+    private TableColumn<Sucursal, String> nombreCol;
     @FXML
-    private TableColumn<Sucursal, String> direccionColumn;
-
+    private TableColumn<Sucursal, String> direccionCol;
     @FXML
-    private TableColumn<Sucursal, String> gerenteColumn;
+    private TableColumn<Sucursal, String> telefonoCol;
+    @FXML
+    private TableColumn<Sucursal, String> correoCol;
+    @FXML
+    private TableColumn<Sucursal, String> gerenteCol;
 
     @FXML
     private Button editarButton;
-
     @FXML
     private Button eliminarButton;
 
-    private SucursalController sucursalController;
+    private SucursalController sucursalController = new SucursalController();
     private ObservableList<Sucursal> sucursalesList = FXCollections.observableArrayList();
+    private Empleado empleadoActual; // Contexto de sesión
+
+    public void setEmpleadoActual(Empleado empleado) {
+        this.empleadoActual = empleado;
+    }
 
     @FXML
     private void initialize() {
-        // Cargar el mapa de empleados (para asociar gerente)
-        Map<String, Empleado> empleadosMap = cargarMapaEmpleados("src/main/resources/archivos/empleados.csv");
-
-        // Crear el SucursalController con el mapa de empleados
-        sucursalController = new SucursalController(empleadosMap);
-
-        // Configurar columnas
-        idColumn.setCellValueFactory(data -> data.getValue().numeroIdentificacionProperty());
-        nombreColumn.setCellValueFactory(data -> data.getValue().nombreProperty());
-        direccionColumn.setCellValueFactory(data -> data.getValue().direccionProperty());
-        gerenteColumn.setCellValueFactory(data -> data.getValue().gerenteNombreProperty());
+        // Vincula las columnas a las propiedades de tu clase Sucursal
+        numeroCol.setCellValueFactory(data -> data.getValue().numeroIdentificacionProperty());
+        nombreCol.setCellValueFactory(data -> data.getValue().nombreProperty());
+        direccionCol.setCellValueFactory(data -> data.getValue().direccionProperty());
+        telefonoCol.setCellValueFactory(data -> data.getValue().telefonoProperty());
+        correoCol.setCellValueFactory(data -> data.getValue().correoProperty());
+        gerenteCol.setCellValueFactory(data -> data.getValue().gerenteNombreProperty());
 
         sucursalesTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
             boolean selected = newSel != null;
             editarButton.setDisable(!selected);
             eliminarButton.setDisable(!selected);
         });
-
-        // Llenar la tabla
         cargarSucursales();
-    }
 
-    private Map<String, Empleado> cargarMapaEmpleados(String ruta) {
-        // Cargar las sucursales para asociarlas a los empleados
-        Map<String, Sucursal> sucursalesMap = cargarMapaSucursales("src/main/resources/archivos/sucursales.csv");
-
-        // Ahora cargar los empleados y asociarlos a las sucursales
-        List<Empleado> empleados = new EmpleadoCSV().cargar(ruta, sucursalesMap);
-
-        // Crear un mapa de empleados usando su ID como clave
-        Map<String, Empleado> map = new HashMap<>();
-        for (Empleado e : empleados) {
-            map.put(e.getId(), e);
-        }
-        return map;
-    }
-
-    private Map<String, Sucursal> cargarMapaSucursales(String ruta) {
-        List<Sucursal> sucursales = new SucursalCSV().cargar(ruta, new HashMap<>()); // Usamos un mapa vacío de empleados
-        Map<String, Sucursal> map = new HashMap<>();
-        for (Sucursal s : sucursales) {
-            map.put(s.getNumeroIdentificacion(), s);
-        }
-        return map;
+        sucursalesTable.setRowFactory(tv -> {
+            TableRow<Sucursal> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (!row.isEmpty() && event.getClickCount() == 2) {
+                    Sucursal sucursal = row.getItem();
+                    abrirFormularioEditarSucursal(sucursal);
+                }
+            });
+            return row;
+        });
     }
 
     private void cargarSucursales() {
@@ -109,11 +91,16 @@ public class SucursalesMainViewController {
             Parent root = loader.load();
             vista.formularioAgregarEditar.SucursalFormularioViewController controller = loader.getController();
             controller.setModoAgregar(this);
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+
+            Stage stage = new Stage();
             stage.setScene(new Scene(root));
-            stage.show();
+            stage.setTitle("Agregar Sucursal");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+
+            recargarTabla();
         } catch (Exception e) {
-            e.printStackTrace();
+            mostrarErrorPopup("Error abriendo formulario de agregar: " + e.getMessage());
         }
     }
 
@@ -121,16 +108,25 @@ public class SucursalesMainViewController {
     private void handleEditar(ActionEvent event) {
         Sucursal seleccionada = sucursalesTable.getSelectionModel().getSelectedItem();
         if (seleccionada == null) return;
+        abrirFormularioEditarSucursal(seleccionada);
+    }
+
+    private void abrirFormularioEditarSucursal(Sucursal sucursal) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/formulariosAgregarEditar/SucursalFormularioView.fxml"));
             Parent root = loader.load();
             vista.formularioAgregarEditar.SucursalFormularioViewController controller = loader.getController();
-            controller.setModoEditar(this, seleccionada);
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            controller.setModoEditar(this, sucursal);
+
+            Stage stage = new Stage();
             stage.setScene(new Scene(root));
-            stage.show();
+            stage.setTitle("Editar Sucursal");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+
+            recargarTabla();
         } catch (Exception e) {
-            e.printStackTrace();
+            mostrarErrorPopup("Error abriendo formulario de edición: " + e.getMessage());
         }
     }
 
@@ -138,15 +134,18 @@ public class SucursalesMainViewController {
     private void handleEliminar(ActionEvent event) {
         Sucursal seleccionada = sucursalesTable.getSelectionModel().getSelectedItem();
         if (seleccionada == null) return;
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "¿Eliminar sucursal " + seleccionada.getNombre() + "?");
+
+        Alert confirm = new Alert(AlertType.CONFIRMATION, "¿Eliminar sucursal " + seleccionada.getNombre() + "?");
         confirm.setHeaderText(null);
         confirm.showAndWait().ifPresent(response -> {
             if (response == javafx.scene.control.ButtonType.OK) {
-                sucursalController.eliminarSucursal(seleccionada);
-                cargarSucursales();
-                Alert info = new Alert(Alert.AlertType.INFORMATION, "Sucursal eliminada.");
-                info.setHeaderText(null);
-                info.showAndWait();
+                try {
+                    sucursalController.eliminarSucursal(seleccionada);
+                    cargarSucursales();
+                    mostrarExito("Sucursal eliminada correctamente.");
+                } catch (Exception e) {
+                    mostrarErrorPopup("Error eliminando sucursal: " + e.getMessage());
+                }
             }
         });
     }
@@ -162,13 +161,9 @@ public class SucursalesMainViewController {
         if (file != null) {
             try {
                 sucursalController.exportarSucursales(file.getAbsolutePath());
-                Alert alert = new Alert(Alert.AlertType.INFORMATION, "Sucursales exportadas correctamente.");
-                alert.setHeaderText(null);
-                alert.showAndWait();
+                mostrarExito("Sucursales exportadas correctamente.");
             } catch (Exception e) {
-                Alert alert = new Alert(Alert.AlertType.ERROR, "Error al exportar: " + e.getMessage());
-                alert.setHeaderText(null);
-                alert.showAndWait();
+                mostrarErrorPopup("Error al exportar: " + e.getMessage());
             }
         }
     }
@@ -176,17 +171,57 @@ public class SucursalesMainViewController {
     @FXML
     private void handleRegresar(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/LoginMainView.fxml"));
-            Parent root = loader.load();
+            FXMLLoader loader;
+            Parent root;
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+
+            if (empleadoActual instanceof Gerente) {
+                loader = new FXMLLoader(getClass().getResource("/FXML/empleados/GerenteMainView.fxml"));
+                root = loader.load();
+                vista.empleados.GerenteMainViewController controller = loader.getController();
+                controller.setGerente((Gerente) empleadoActual);
+            } else if (empleadoActual instanceof Ejecutivo) {
+                loader = new FXMLLoader(getClass().getResource("/FXML/empleados/EjecutivoMainView.fxml"));
+                root = loader.load();
+                vista.empleados.EjecutivoMainViewController controller = loader.getController();
+                controller.setEjecutivo((Ejecutivo) empleadoActual);
+            } else if (empleadoActual instanceof Cajero) {
+                loader = new FXMLLoader(getClass().getResource("/FXML/empleados/CajeroMainView.fxml"));
+                root = loader.load();
+                vista.empleados.CajeroMainViewController controller = loader.getController();
+                controller.setCajero((Cajero) empleadoActual);
+            } else {
+                loader = new FXMLLoader(getClass().getResource("/FXML/LoginMainView.fxml"));
+                root = loader.load();
+            }
             stage.setScene(new Scene(root));
             stage.show();
         } catch (Exception e) {
-            e.printStackTrace();
+            mostrarErrorPopup("Error regresando al menú principal: " + e.getMessage());
         }
     }
 
     public void recargarTabla() {
         cargarSucursales();
+    }
+
+    public SucursalController getSucursalController() {
+        return sucursalController;
+    }
+
+    private void mostrarExito(String mensaje) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Éxito");
+        alert.setHeaderText(null);
+        alert.setContentText(mensaje);
+        alert.showAndWait();
+    }
+
+    private void mostrarErrorPopup(String mensaje) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setHeaderText(null);
+        alert.setContentText(mensaje);
+        alert.showAndWait();
     }
 }

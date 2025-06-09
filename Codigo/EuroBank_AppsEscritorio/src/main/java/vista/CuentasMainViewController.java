@@ -18,6 +18,7 @@ import javafx.event.ActionEvent;
 
 import modelo.entidades.Cuenta;
 import modelo.entidades.Cliente;
+import modelo.entidades.Empleado;
 import modelo.entidades.Sucursal;
 import controlador.CuentaController;
 import modelo.persistencia.ClienteCSV;
@@ -53,6 +54,11 @@ public class CuentasMainViewController {
 
     private CuentaController cuentaController;
     private ObservableList<Cuenta> cuentasList = FXCollections.observableArrayList();
+    private Empleado empleadoActual; // o Gerente/Ejecutivo/Cajero según tu flujo
+
+    public void setEmpleadoActual(Empleado empleado) {
+        this.empleadoActual = empleado;
+    }
 
     @FXML
     private void initialize() {
@@ -91,7 +97,7 @@ public class CuentasMainViewController {
         List<Cliente> clientes = new ClienteCSV().cargar(ruta);
         Map<String, Cliente> map = new HashMap<>();
         for (Cliente c : clientes) {
-            map.put(c.getRfcCurp(), c);
+            map.put(c.getRfc(), c);
         }
         return map;
     }

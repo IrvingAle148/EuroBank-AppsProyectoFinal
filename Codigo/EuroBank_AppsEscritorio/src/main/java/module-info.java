@@ -2,10 +2,16 @@ module controlador {
     requires javafx.controls;
     requires javafx.fxml;
 
-    opens controlador to javafx.fxml;
-    exports controlador ;
-    opens vista to javafx.fxml;
+
+    exports vista;
+    exports vista.empleados;
     exports vista.cliente;
-    opens vista.cliente to javafx.fxml;
+    exports vista.formularioAgregarEditar;
     exports main;
+
+    opens main;
+    opens vista;
+    opens vista.empleados;
+    opens vista.cliente;
+    opens vista.formularioAgregarEditar;
 }

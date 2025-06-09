@@ -3,9 +3,12 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox xmlns:fx="http://javafx.com/fxml" fx:controller="vista.formularioAgregarEditar.ClienteFormularioViewController"
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="vista.formularioAgregarEditar.ClienteFormularioViewController"
       spacing="10" alignment="CENTER" style="-fx-padding: 25;">
-    <Label style="-fx-font-size: 18; -fx-font-weight: bold;" />
+
+    <!-- Título del formulario -->
+    <Label fx:id="tituloLabel" style="-fx-font-size: 18; -fx-font-weight: bold;" />
 
     <HBox spacing="5">
         <Label text="RFC/CURP:" minWidth="120"/>
@@ -52,4 +55,6 @@
         <Button text="Guardar" fx:id="guardarBtn" onAction="#handleGuardar"/>
         <Button text="Cancelar" fx:id="cancelarBtn" onAction="#handleCancelar"/>
     </HBox>
+
+    <Label fx:id="errorLabel" style="-fx-text-fill: red;" visible="false"/>
 </VBox>

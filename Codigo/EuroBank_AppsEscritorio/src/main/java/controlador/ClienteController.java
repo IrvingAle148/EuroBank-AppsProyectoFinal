@@ -23,7 +23,7 @@ public class ClienteController {
 
     // Agregar un cliente nuevo con validaciones y control de duplicados
     public void agregarCliente(Cliente cliente) throws ElementoDuplicadoException, ValidacionException {
-        if (cliente.getRfcCurp() == null || cliente.getRfcCurp().isBlank())
+        if (cliente.getRfc() == null || cliente.getRfc().isBlank())
             throw new ValidacionException("El RFC/CURP no puede estar vacío.");
         if (cliente.getUsuario() == null || cliente.getUsuario().isBlank())
             throw new ValidacionException("El usuario no puede estar vacío.");
@@ -32,7 +32,7 @@ public class ClienteController {
         if (cliente.getContrasenia() == null || cliente.getContrasenia().isBlank())
             throw new ValidacionException("La contraseña no puede estar vacía.");
 
-        if (buscarPorRFC(cliente.getRfcCurp()) != null)
+        if (buscarPorRFC(cliente.getRfc()) != null)
             throw new ElementoDuplicadoException("Ya existe un cliente con este RFC/CURP.");
         if (buscarPorUsuario(cliente.getUsuario()) != null)
             throw new ElementoDuplicadoException("Ya existe un cliente con este usuario.");
@@ -42,16 +42,16 @@ public class ClienteController {
 
     // Editar un cliente existente (solo si existe)
     public void actualizarCliente(Cliente cliente) throws ValidacionException, ClienteNoEncontradoException {
-        if (cliente.getRfcCurp() == null || cliente.getRfcCurp().isBlank())
+        if (cliente.getRfc() == null || cliente.getRfc().isBlank())
             throw new ValidacionException("El RFC/CURP no puede estar vacío.");
-        if (buscarPorRFC(cliente.getRfcCurp()) == null)
+        if (buscarPorRFC(cliente.getRfc()) == null)
             throw new ClienteNoEncontradoException("No se encontró el cliente con ese RFC/CURP.");
         clienteCSV.actualizar(cliente, rutaArchivo);
     }
 
     // Eliminar cliente por objeto (usa RFC como identificador)
     public void eliminarCliente(Cliente cliente) throws ClienteNoEncontradoException {
-        if (buscarPorRFC(cliente.getRfcCurp()) == null)
+        if (buscarPorRFC(cliente.getRfc()) == null)
             throw new ClienteNoEncontradoException("No se encontró el cliente con ese RFC/CURP.");
         clienteCSV.eliminar(cliente, rutaArchivo);
     }
@@ -59,7 +59,7 @@ public class ClienteController {
     // Buscar por RFC/CURP exacto (para edición, eliminación, validación)
     public Cliente buscarPorRFC(String rfc) {
         return obtenerTodosLosClientes().stream()
-                .filter(c -> c.getRfcCurp().equals(rfc))
+                .filter(c -> c.getRfc().equals(rfc))
                 .findFirst()
                 .orElse(null);
     }

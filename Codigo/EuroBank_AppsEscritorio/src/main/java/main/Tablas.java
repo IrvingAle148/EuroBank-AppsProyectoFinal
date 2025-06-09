@@ -10,7 +10,7 @@ public class Tablas extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("/FXML/TransaccionesMainView.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("/FXML/SucursalesMainView.fxml"));
 
         //Ingresar Directamente a otras tablas
          //"/FXML/ClientesMainView.fxml"

@@ -18,12 +18,12 @@
 
     <TableView fx:id="clientesTable" prefWidth="900">
         <columns>
-            <TableColumn fx:id="nombreCompletoCol" prefWidth="140.99999696016312" text="Nombre Completo" />
-            <TableColumn fx:id="usuarioCol" prefWidth="117.59999084472656" text="Usuario" />
-            <TableColumn fx:id="rfcCol" prefWidth="97.4000244140625" text="RFC/CURP" />
-            <TableColumn fx:id="nacionalidadCol" minWidth="4.0" prefWidth="104.20001220703125" text="Nacionalidad" />
-            <TableColumn fx:id="telefonoCol" prefWidth="118.5999755859375" text="Teléfono" />
-            <TableColumn fx:id="correoCol" prefWidth="217.4000244140625" text="Correo" />
+            <TableColumn fx:id="nombreCompletoCol" prefWidth="141" text="Nombre Completo" />
+            <TableColumn fx:id="usuarioCol" prefWidth="118" text="Usuario" />
+            <TableColumn fx:id="rfcCol" prefWidth="97" text="RFC/CURP" />
+            <TableColumn fx:id="nacionalidadCol" prefWidth="104" text="Nacionalidad" />
+            <TableColumn fx:id="telefonoCol" prefWidth="119" text="Teléfono" />
+            <TableColumn fx:id="correoCol" prefWidth="217" text="Correo" />
         </columns>
     </TableView>
 </VBox>

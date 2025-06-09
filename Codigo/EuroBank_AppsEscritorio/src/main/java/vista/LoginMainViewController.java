@@ -80,7 +80,7 @@ public class LoginMainViewController {
             } else if (clienteRadio.isSelected()) {
                 AutentificacionController authController = new AutentificacionController();
                 Cliente cliente = authController.autenticarCliente(usuario, contrasenia);
-                cargarVentana("/FXML/cilente/ClienteMainView.fxml", event, cliente);
+                cargarVentana("/FXML/cliente/ClienteMainView.fxml", event, cliente);
             }
         } catch (ValidacionException | IOException ex) {
             errorLabel.setText(ex.getMessage());
@@ -113,6 +113,7 @@ public class LoginMainViewController {
         } catch (Exception e) {
             errorLabel.setText("No se pudo cargar la interfaz principal.");
             errorLabel.setVisible(true);
+            e.printStackTrace();
         }
     }
 }

@@ -22,7 +22,7 @@ public class Cuenta {
         this.limiteCredito = new SimpleDoubleProperty(limiteCredito);
         this.cliente = new SimpleObjectProperty<>(cliente);
         this.sucursal = new SimpleObjectProperty<>(sucursal);
-        this.rfcClienteTemporal = cliente != null ? cliente.getRfcCurp() : "";
+        this.rfcClienteTemporal = cliente != null ? cliente.getRfc() : "";
         this.idSucursalTemporal = sucursal != null ? sucursal.getNumeroIdentificacion() : "";
     }
 
@@ -62,7 +62,7 @@ public class Cuenta {
     public Cliente getCliente() { return cliente.get(); }
     public void setCliente(Cliente c) {
         this.cliente.set(c);
-        if (c != null) this.rfcClienteTemporal = c.getRfcCurp();
+        if (c != null) this.rfcClienteTemporal = c.getRfc();
     }
 
     public Sucursal getSucursal() { return sucursal.get(); }
@@ -73,7 +73,7 @@ public class Cuenta {
 
     // Para persistencia: si tienes el objeto, lo usas; si no, usas el temporal
     public String getRfcCliente() {
-        return getCliente() != null ? getCliente().getRfcCurp() : (rfcClienteTemporal != null ? rfcClienteTemporal : "");
+        return getCliente() != null ? getCliente().getRfc() : (rfcClienteTemporal != null ? rfcClienteTemporal : "");
     }
 
     public String getIdSucursal() {

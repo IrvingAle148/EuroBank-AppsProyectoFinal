@@ -16,6 +16,7 @@ import modelo.entidades.Empleado;
 import modelo.entidades.Sucursal;
 import controlador.EmpleadoController;
 import modelo.persistencia.SucursalCSV;
+import vista.formularioAgregarEditar.EmpleadosFormularioViewController;
 
 import java.util.*;
 
@@ -41,6 +42,11 @@ public class EmpleadosMainViewController {
 
     private EmpleadoController empleadoController = new EmpleadoController();
     private ObservableList<Empleado> empleadosList = FXCollections.observableArrayList();
+    private Empleado empleadoActual; // o Gerente/Ejecutivo/Cajero según tu flujo
+
+    public void setEmpleadoActual(Empleado empleado) {
+        this.empleadoActual = empleado;
+    }
 
     @FXML
     private void initialize() {
@@ -83,7 +89,7 @@ public class EmpleadosMainViewController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/formulariosAgregarEditar/EmpleadoFormularioView.fxml"));
             Parent root = loader.load();
-            vista.formularioAgregarEditar.EmpleadoFormularioViewController controller = loader.getController();
+            EmpleadosFormularioViewController controller = loader.getController();
             controller.setModoAgregar(this);
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
@@ -100,7 +106,7 @@ public class EmpleadosMainViewController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/formulariosAgregarEditar/EmpleadoFormularioView.fxml"));
             Parent root = loader.load();
-            vista.formularioAgregarEditar.EmpleadoFormularioViewController controller = loader.getController();
+            EmpleadosFormularioViewController controller = loader.getController();
             controller.setModoEditar(this, seleccionado);
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));

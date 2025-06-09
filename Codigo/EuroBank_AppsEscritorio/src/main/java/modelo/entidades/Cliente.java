@@ -45,7 +45,7 @@ public class Cliente {
     public StringProperty contraseniaProperty() { return contrasenia; }
 
     // Getters/Setters normales
-    public String getRfcCurp() { return rfc.get(); }
+    public String getRfc() { return rfc.get(); }
     public void setRfc(String rfc) { this.rfc.set(rfc); }
 
     public String getNombre() { return nombre.get(); }

@@ -1,10 +1,7 @@
 package vista;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.Button;
-import javafx.scene.control.Alert;
+import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -15,9 +12,10 @@ import javafx.fxml.FXMLLoader;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import modelo.entidades.Cliente;
+import modelo.entidades.*;
 import controlador.ClienteController;
 import modelo.excepciones.ClienteNoEncontradoException;
+import javafx.stage.Modality;
 
 public class ClientesMainViewController {
 
@@ -50,6 +48,11 @@ public class ClientesMainViewController {
 
     private ClienteController clienteController = new ClienteController();
     private ObservableList<Cliente> clientesList = FXCollections.observableArrayList();
+    private Empleado empleadoActual; // o Gerente/Ejecutivo/Cajero según tu flujo
+
+    public void setEmpleadoActual(Empleado empleado) {
+        this.empleadoActual = empleado;
+    }
 
     @FXML
     private void initialize() {
@@ -59,12 +62,25 @@ public class ClientesMainViewController {
         nacionalidadCol.setCellValueFactory(data -> data.getValue().nacionalidadProperty());
         telefonoCol.setCellValueFactory(data -> data.getValue().telefonoProperty());
         correoCol.setCellValueFactory(data -> data.getValue().correoProperty());
+
         clientesTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
             boolean selected = newSel != null;
             editarButton.setDisable(!selected);
             eliminarButton.setDisable(!selected);
         });
         cargarClientes();
+
+        // Doble clic = editar
+        clientesTable.setRowFactory(tv -> {
+            TableRow<Cliente> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (!row.isEmpty() && event.getClickCount() == 2) {
+                    Cliente cliente = row.getItem();
+                    abrirFormularioEditarCliente(cliente);
+                }
+            });
+            return row;
+        });
     }
 
     private void cargarClientes() {
@@ -75,30 +91,52 @@ public class ClientesMainViewController {
 
     @FXML
     private void handleAgregar(ActionEvent event) {
+        abrirFormularioAgregarCliente();
+    }
+
+    private void abrirFormularioAgregarCliente() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/formulariosAgregarEditar/ClienteFormularioView.fxml"));
             Parent root = loader.load();
             vista.formularioAgregarEditar.ClienteFormularioViewController controller = loader.getController();
             controller.setModoAgregar(this);
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+
+            Stage stage = new Stage();
             stage.setScene(new Scene(root));
-            stage.show();
-        } catch (Exception e) {}
+            stage.setTitle("Agregar Cliente");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+
+            recargarTabla();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
     private void handleEditar(ActionEvent event) {
         Cliente seleccionado = clientesTable.getSelectionModel().getSelectedItem();
         if (seleccionado == null) return;
+        abrirFormularioEditarCliente(seleccionado);
+    }
+
+    private void abrirFormularioEditarCliente(Cliente cliente) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/formulariosAgregarEditar/ClienteFormularioView.fxml"));
             Parent root = loader.load();
             vista.formularioAgregarEditar.ClienteFormularioViewController controller = loader.getController();
-            controller.setModoEditar(this, seleccionado);
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            controller.setModoEditar(this, cliente);
+
+            Stage stage = new Stage();
             stage.setScene(new Scene(root));
-            stage.show();
-        } catch (Exception e) {}
+            stage.setTitle("Editar Cliente");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+
+            recargarTabla();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -129,7 +167,6 @@ public class ClientesMainViewController {
         });
     }
 
-
     @FXML
     private void handleExportar(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
@@ -152,19 +189,46 @@ public class ClientesMainViewController {
         }
     }
 
-
     @FXML
     private void handleRegresar(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/LoginMainView.fxml"));
-            Parent root = loader.load();
+            FXMLLoader loader;
+            Parent root;
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+
+            if (empleadoActual instanceof Gerente) {
+                loader = new FXMLLoader(getClass().getResource("/FXML/empleados/GerenteMainView.fxml"));
+                root = loader.load();
+                vista.empleados.GerenteMainViewController controller = loader.getController();
+                controller.setGerente((Gerente) empleadoActual);
+            } else if (empleadoActual instanceof Ejecutivo) {
+                loader = new FXMLLoader(getClass().getResource("/FXML/empleados/EjecutivoMainView.fxml"));
+                root = loader.load();
+                vista.empleados.EjecutivoMainViewController controller = loader.getController();
+                controller.setEjecutivo((Ejecutivo) empleadoActual);
+            } else if (empleadoActual instanceof Cajero) {
+                loader = new FXMLLoader(getClass().getResource("/FXML/empleados/CajeroMainView.fxml"));
+                root = loader.load();
+                vista.empleados.CajeroMainViewController controller = loader.getController();
+                controller.setCajero((Cajero) empleadoActual);
+            } else {
+                // Fallback: Regresar al login si no se reconoce el tipo
+                loader = new FXMLLoader(getClass().getResource("/FXML/LoginMainView.fxml"));
+                root = loader.load();
+            }
             stage.setScene(new Scene(root));
             stage.show();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void recargarTabla() {
         cargarClientes();
+    }
+
+    // Puedes exponer el controlador si lo necesitas desde el formulario
+    public ClienteController getClienteController() {
+        return clienteController;
     }
 }

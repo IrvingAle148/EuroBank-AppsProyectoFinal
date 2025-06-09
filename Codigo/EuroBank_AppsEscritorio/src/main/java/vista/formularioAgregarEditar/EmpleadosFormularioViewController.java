@@ -10,10 +10,7 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.Pane;
 import javafx.event.ActionEvent;
 import javafx.stage.Stage;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.Node;
-import javafx.fxml.FXMLLoader;
+import javafx.scene.control.Alert;
 import modelo.entidades.Empleado;
 import modelo.entidades.Cajero;
 import modelo.entidades.Ejecutivo;
@@ -26,11 +23,10 @@ import modelo.excepciones.EmpleadoNoEncontradoException;
 import modelo.excepciones.ValidacionException;
 import vista.EmpleadosMainViewController;
 import javafx.collections.FXCollections;
-
 import java.time.LocalDate;
 import java.util.List;
 
-public class EmpleadoFormularioViewController {
+public class EmpleadosFormularioViewController {
 
     @FXML private Label tituloLabel;
     @FXML private TextField idField;
@@ -105,6 +101,8 @@ public class EmpleadoFormularioViewController {
         nivelAccesoCombo.getSelectionModel().clearSelection();
         aniosExperienciaField.clear();
         sucursalCombo.getSelectionModel().clearSelection();
+        errorLabel.setText("");
+        errorLabel.setVisible(false);
     }
 
     private void cargarCombos() {
@@ -113,9 +111,7 @@ public class EmpleadoFormularioViewController {
         especializacionCombo.setItems(FXCollections.observableArrayList("PYMES", "Corporativo"));
         nivelAccesoCombo.setItems(FXCollections.observableArrayList("Sucursal", "Regional", "Nacional"));
 
-        // Cargar sucursales desde archivo y poner en el ComboBox
         SucursalCSV sucursalCSV = new SucursalCSV();
-        // Aquí puedes pasar un Map vacío si gerente/contacto no son obligatorios para mostrar
         listaSucursales = sucursalCSV.cargar("src/main/resources/archivos/sucursales.csv", new java.util.HashMap<>());
         sucursalCombo.setItems(FXCollections.observableArrayList(listaSucursales));
 
@@ -150,6 +146,8 @@ public class EmpleadoFormularioViewController {
             nivelAccesoCombo.getSelectionModel().select(gerente.getNivelAcceso());
             aniosExperienciaField.setText(String.valueOf(gerente.getAniosExperiencia()));
         }
+        errorLabel.setText("");
+        errorLabel.setVisible(false);
     }
 
     private void mostrarCamposTipoEmpleado(String tipo) {
@@ -166,18 +164,29 @@ public class EmpleadoFormularioViewController {
             String direccion = direccionField.getText();
             LocalDate fechaNacimiento = fechaNacimientoPicker.getValue();
             String genero = generoCombo.getValue();
-            double salario = Double.parseDouble(salarioField.getText());
+            String salarioStr = salarioField.getText();
             String usuario = usuarioField.getText();
             String contrasenia = contraseniaField.getText();
             String tipo = tipoEmpleadoCombo.getValue();
             Sucursal sucursal = sucursalCombo.getValue();
 
+            // Validaciones
             if (id == null || id.isEmpty() || nombre == null || nombre.isEmpty() || usuario == null || usuario.isEmpty()) {
                 mostrarError("Todos los campos obligatorios deben estar completos.");
+                mostrarErrorPopup("Todos los campos obligatorios deben estar completos.");
                 return;
             }
             if (sucursal == null) {
                 mostrarError("Debes seleccionar una sucursal para el empleado.");
+                mostrarErrorPopup("Debes seleccionar una sucursal para el empleado.");
+                return;
+            }
+            double salario = 0;
+            try {
+                salario = Double.parseDouble(salarioStr);
+            } catch (NumberFormatException e) {
+                mostrarError("El salario debe ser numérico.");
+                mostrarErrorPopup("El salario debe ser numérico.");
                 return;
             }
 
@@ -197,9 +206,11 @@ public class EmpleadoFormularioViewController {
                     cajero.setHorarioTrabajo(horario);
                     cajero.setNumVentanilla(numVentanilla);
                     empleadoController.actualizarEmpleado(cajero);
+                    mostrarExito("Cajero editado correctamente.");
                 } else {
                     Cajero nuevo = new Cajero(id, nombre, direccion, fechaNacimiento, genero, salario, usuario, contrasenia, sucursal, horario, numVentanilla);
                     empleadoController.agregarEmpleado(nuevo);
+                    mostrarExito("Cajero agregado correctamente.");
                 }
             } else if ("Ejecutivo".equals(tipo)) {
                 int numClientes = Integer.parseInt(numClientesAsignadosField.getText());
@@ -217,9 +228,11 @@ public class EmpleadoFormularioViewController {
                     ejecutivo.setNumClientesAsignados(numClientes);
                     ejecutivo.setEspecializacion(especializacion);
                     empleadoController.actualizarEmpleado(ejecutivo);
+                    mostrarExito("Ejecutivo editado correctamente.");
                 } else {
                     Ejecutivo nuevo = new Ejecutivo(id, nombre, direccion, fechaNacimiento, genero, salario, usuario, contrasenia, sucursal, numClientes, especializacion);
                     empleadoController.agregarEmpleado(nuevo);
+                    mostrarExito("Ejecutivo agregado correctamente.");
                 }
             } else if ("Gerente".equals(tipo)) {
                 String nivelAcceso = nivelAccesoCombo.getValue();
@@ -237,23 +250,37 @@ public class EmpleadoFormularioViewController {
                     gerente.setNivelAcceso(nivelAcceso);
                     gerente.setAniosExperiencia(aniosExp);
                     empleadoController.actualizarEmpleado(gerente);
+                    mostrarExito("Gerente editado correctamente.");
                 } else {
                     Gerente nuevo = new Gerente(id, nombre, direccion, fechaNacimiento, genero, salario, usuario, contrasenia, sucursal, nivelAcceso, aniosExp);
                     empleadoController.agregarEmpleado(nuevo);
+                    mostrarExito("Gerente agregado correctamente.");
                 }
             }
             origenController.recargarTabla();
-            regresarEmpleadosMain(event);
+            cerrarVentana();
 
         } catch (NumberFormatException e) {
             mostrarError("Verifica los campos numéricos (salario, ventanilla, años, clientes).");
+            mostrarErrorPopup("Verifica los campos numéricos (salario, ventanilla, años, clientes).");
         } catch (ElementoDuplicadoException e) {
             mostrarError("Ya existe un empleado con ese usuario o ID.");
+            mostrarErrorPopup("Ya existe un empleado con ese usuario o ID.");
         } catch (ValidacionException e) {
             mostrarError(e.getMessage());
+            mostrarErrorPopup(e.getMessage());
         } catch (Exception e) {
             mostrarError("Ocurrió un error: " + e.getMessage());
+            mostrarErrorPopup("Ocurrió un error: " + e.getMessage());
         }
+    }
+
+    private void mostrarExito(String mensaje) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Éxito");
+        alert.setHeaderText(null);
+        alert.setContentText(mensaje);
+        alert.showAndWait();
     }
 
     private void mostrarError(String mensaje) {
@@ -261,19 +288,21 @@ public class EmpleadoFormularioViewController {
         errorLabel.setVisible(true);
     }
 
-    @FXML
-    private void handleCancelar(ActionEvent event) {
-        regresarEmpleadosMain(event);
+    private void mostrarErrorPopup(String mensaje) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setHeaderText(null);
+        alert.setContentText(mensaje);
+        alert.showAndWait();
     }
 
-    private void regresarEmpleadosMain(ActionEvent event) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/EmpleadosMainView.fxml"));
-            Parent root = loader.load();
-            EmpleadosMainViewController controller = loader.getController();
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.show();
-        } catch (Exception e) {}
+    @FXML
+    private void handleCancelar(ActionEvent event) {
+        cerrarVentana();
+    }
+
+    private void cerrarVentana() {
+        Stage stage = (Stage) tituloLabel.getScene().getWindow();
+        stage.close();
     }
 }

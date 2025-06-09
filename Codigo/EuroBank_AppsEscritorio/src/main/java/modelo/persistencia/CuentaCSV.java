@@ -107,7 +107,7 @@ public class CuentaCSV {
 
     // Formato CSV para una cuenta
     private String formatoCSV(Cuenta cuenta) {
-        String rfcCliente = cuenta.getCliente() != null ? cuenta.getCliente().getRfcCurp() : "";
+        String rfcCliente = cuenta.getCliente() != null ? cuenta.getCliente().getRfc() : "";
         String idSucursal = cuenta.getSucursal() != null ? cuenta.getSucursal().getNumeroIdentificacion() : "";
         return String.join(",",
                 cuenta.getNumeroCuenta(),
