@@ -86,7 +86,6 @@ public class SucursalCSV {
         }
     }
 
-
     // Utilidad para convertir una sucursal a una línea de CSV
     private String formatoCSV(Sucursal sucursal) {
         return sucursal.getNumeroIdentificacion() + "," +

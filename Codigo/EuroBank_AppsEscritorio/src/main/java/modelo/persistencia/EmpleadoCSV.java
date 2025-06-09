@@ -48,11 +48,18 @@ public class EmpleadoCSV {
         return empleados;
     }
 
-    public void exportarEmpleadosCSV(String rutaExportacion, String rutaOriginal) {
-        List<Empleado> empleados = cargar(rutaOriginal);
+    // (Elimina este método si no lo necesitas, o que lance excepción)
+    @Deprecated
+    public List<Empleado> cargar(String rutaArchivo) {
+        throw new UnsupportedOperationException("Usa cargar(rutaArchivo, sucursalesMap)");
+    }
+
+    // Exportar empleados a CSV (requiere map de sucursales)
+    public void exportarEmpleadosCSV(String rutaExportacion, String rutaOriginal, Map<String, Sucursal> sucursales) {
+        List<Empleado> empleados = cargar(rutaOriginal, sucursales);
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaExportacion))) {
             // Escribe encabezado
-            bw.write("ID,Nombre,Direccion,FechaNacimiento,Genero,Salario,Usuario,Contraseña,Tipo,Campo1,Campo2");
+            bw.write("TipoEmpleado,ID,Nombre,Direccion,FechaNacimiento,Genero,Salario,Usuario,Contraseña,SucursalID,Campo1,Campo2");
             bw.newLine();
             for (Empleado e : empleados) {
                 bw.write(formatoCSV(e));
@@ -63,7 +70,7 @@ public class EmpleadoCSV {
         }
     }
 
-    // Guardar un empleado
+    // Guardar un empleado (no requiere Map)
     public void guardarUno(Empleado empleado, String rutaArchivo) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaArchivo, true))) {
             bw.write(formatoCSV(empleado));
