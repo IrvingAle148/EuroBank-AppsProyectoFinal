@@ -26,7 +26,7 @@ public class Sucursal {
         this.contacto = new SimpleObjectProperty<>(contacto);
     }
 
-    // Properties para JavaFX TableView
+    // JavaFX Properties
     public StringProperty numeroIdentificacionProperty() { return numeroIdentificacion; }
     public StringProperty nombreProperty() { return nombre; }
     public StringProperty direccionProperty() { return direccion; }
@@ -57,7 +57,15 @@ public class Sucursal {
     public Empleado getContacto() { return contacto.get(); }
     public void setContacto(Empleado contacto) { this.contacto.set(contacto); }
 
-    // Si quieres mostrar el nombre del gerente en la tabla
+    // Métodos auxiliares para persistencia (obtener el ID, nunca null)
+    public String getGerenteId() {
+        return getGerente() != null ? getGerente().getId() : "";
+    }
+    public String getContactoId() {
+        return getContacto() != null ? getContacto().getId() : "";
+    }
+
+    // Para mostrar el nombre del gerente en la tabla
     public StringProperty gerenteNombreProperty() {
         return new SimpleStringProperty(getGerente() != null ? getGerente().getNombre() : "");
     }

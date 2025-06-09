@@ -7,19 +7,34 @@ import modelo.excepciones.ValidacionException;
 import modelo.persistencia.SucursalCSV;
 
 import java.util.List;
+import java.util.Map;
 
 public class SucursalController {
     private SucursalCSV sucursalCSV = new SucursalCSV();
     private String rutaArchivo = "src/main/resources/archivos/sucursales.csv";
+    private Map<String, Empleado> empleadosMap;
 
-    // Listar todas las sucursales
+    // Constructor recomendado: recibe el mapa de empleados
+    public SucursalController(Map<String, Empleado> empleadosMap) {
+        this.empleadosMap = empleadosMap;
+    }
+
+    // Constructor vacío por si usas setters luego
+    public SucursalController() {}
+
+    // Setter para el mapa, si lo necesitas después de instanciar
+    public void setEmpleadosMap(Map<String, Empleado> empleadosMap) {
+        this.empleadosMap = empleadosMap;
+    }
+
+    // Listar todas las sucursales (siempre con objetos Empleado correctos)
     public List<Sucursal> obtenerTodasLasSucursales() {
-        return sucursalCSV.cargar(rutaArchivo);
+        return sucursalCSV.cargar(rutaArchivo, empleadosMap);
     }
 
     // Exportar sucursales a CSV
     public void exportarSucursales(String rutaExportacion) {
-        sucursalCSV.exportarSucursalesCSV(rutaExportacion, rutaArchivo);
+        sucursalCSV.exportarSucursalesCSV(rutaExportacion, rutaArchivo, empleadosMap);
     }
 
     // Agregar sucursal nueva
@@ -35,12 +50,12 @@ public class SucursalController {
     public void actualizarSucursal(Sucursal sucursal) throws ValidacionException {
         if (sucursal.getNumeroIdentificacion() == null || sucursal.getNumeroIdentificacion().isBlank())
             throw new ValidacionException("El número de identificación de la sucursal no puede estar vacío.");
-        sucursalCSV.actualizar(sucursal, rutaArchivo);
+        sucursalCSV.actualizar(sucursal, rutaArchivo, empleadosMap);
     }
 
     // Eliminar sucursal
     public void eliminarSucursal(Sucursal sucursal) {
-        sucursalCSV.eliminar(sucursal, rutaArchivo);
+        sucursalCSV.eliminar(sucursal, rutaArchivo, empleadosMap);
     }
 
     // Buscar por número de identificación

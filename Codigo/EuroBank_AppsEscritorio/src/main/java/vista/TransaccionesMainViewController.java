@@ -44,7 +44,7 @@ public class TransaccionesMainViewController {
     @FXML
     private TableColumn<Transaccion, String> sucursalCol;
 
-    private TransaccionController transaccionController = new TransaccionController();
+    private TransaccionController transaccionController;
     private ObservableList<Transaccion> transaccionesList = FXCollections.observableArrayList();
 
     @FXML

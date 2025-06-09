@@ -96,10 +96,10 @@ public class EmpleadosMainViewController {
         } catch (Exception e) {}
     }
 
+    @FXML
     private void handleEliminar(ActionEvent event) {
         Empleado seleccionado = empleadosTable.getSelectionModel().getSelectedItem();
         if (seleccionado == null) return;
-
 
         Alert confirm = new Alert(AlertType.CONFIRMATION, "¿Eliminar empleado " + seleccionado.getNombre() + "?");
         confirm.setHeaderText(null);

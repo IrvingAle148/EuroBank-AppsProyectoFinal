@@ -5,30 +5,29 @@ import modelo.entidades.Cliente;
 import modelo.entidades.Sucursal;
 
 import java.io.*;
-import java.nio.file.*;
 import java.util.*;
-import java.time.LocalDate;
 
 public class CuentaCSV {
 
-    // Leer todas las cuentas desde el archivo CSV
-    public List<Cuenta> cargar(String ruta) {
+    // Cargar cuentas: requiere mapas de clientes y sucursales para referenciar objetos
+    public List<Cuenta> cargar(String ruta, Map<String, Cliente> clientes, Map<String, Sucursal> sucursales) {
         List<Cuenta> cuentas = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(ruta))) {
             String linea;
             while ((linea = br.readLine()) != null) {
                 String[] datos = linea.split(",");
-                // númeroCuenta, tipo, saldoActual, limiteCredito, rfcCliente, idSucursal
                 if (datos.length >= 6) {
-                    // OJO: Aquí necesitas mapear el cliente y la sucursal (puedes adaptar según tu arquitectura).
-                    Cuenta cuenta = new Cuenta(
-                            datos[0],                                 // número de cuenta
-                            datos[1],                                 // tipo
-                            Double.parseDouble(datos[2]),             // saldo actual
-                            Double.parseDouble(datos[3]),             // límite de crédito
-                            datos[4],                                 // rfcCliente (relacionar después)
-                            datos[5]                                  // idSucursal (relacionar después)
-                    );
+                    String numeroCuenta = datos[0];
+                    String tipo = datos[1];
+                    double saldoActual = Double.parseDouble(datos[2]);
+                    double limiteCredito = Double.parseDouble(datos[3]);
+                    String rfcCliente = datos[4];
+                    String idSucursal = datos[5];
+
+                    Cliente cliente = clientes.get(rfcCliente);
+                    Sucursal sucursal = sucursales.get(idSucursal);
+
+                    Cuenta cuenta = new Cuenta(numeroCuenta, tipo, saldoActual, limiteCredito, cliente, sucursal);
                     cuentas.add(cuenta);
                 }
             }
@@ -49,8 +48,8 @@ public class CuentaCSV {
     }
 
     // Actualizar una cuenta existente (por número de cuenta)
-    public void actualizar(Cuenta cuenta, String ruta) {
-        List<Cuenta> cuentas = cargar(ruta);
+    public void actualizar(Cuenta cuenta, String ruta, Map<String, Cliente> clientes, Map<String, Sucursal> sucursales) {
+        List<Cuenta> cuentas = cargar(ruta, clientes, sucursales);
         for (int i = 0; i < cuentas.size(); i++) {
             if (cuentas.get(i).getNumeroCuenta().equals(cuenta.getNumeroCuenta())) {
                 cuentas.set(i, cuenta);
@@ -61,15 +60,15 @@ public class CuentaCSV {
     }
 
     // Eliminar una cuenta existente
-    public void eliminar(Cuenta cuenta, String ruta) {
-        List<Cuenta> cuentas = cargar(ruta);
+    public void eliminar(Cuenta cuenta, String ruta, Map<String, Cliente> clientes, Map<String, Sucursal> sucursales) {
+        List<Cuenta> cuentas = cargar(ruta, clientes, sucursales);
         cuentas.removeIf(c -> c.getNumeroCuenta().equals(cuenta.getNumeroCuenta()));
         guardarTodos(cuentas, ruta);
     }
 
-    // Exportar todas las cuentas a una ruta dada
-    public void exportarCuentasCSV(String rutaExportacion) {
-        List<Cuenta> cuentas = cargar("src/main/resources/archivos/cuentas.csv");
+    // Exportar todas las cuentas a una ruta dada (recibe mapas también si lo necesitas)
+    public void exportarCuentasCSV(String rutaExportacion, String rutaOriginal, Map<String, Cliente> clientes, Map<String, Sucursal> sucursales) {
+        List<Cuenta> cuentas = cargar(rutaOriginal, clientes, sucursales);
         guardarTodos(cuentas, rutaExportacion);
     }
 
@@ -85,15 +84,17 @@ public class CuentaCSV {
         }
     }
 
-    // Formato CSV para una cuenta (mismo orden que el constructor)
+    // Formato CSV para una cuenta
     private String formatoCSV(Cuenta cuenta) {
+        String rfcCliente = cuenta.getCliente() != null ? cuenta.getCliente().getRfcCurp() : cuenta.getRfcCliente();
+        String idSucursal = cuenta.getSucursal() != null ? cuenta.getSucursal().getNumeroIdentificacion() : cuenta.getIdSucursal();
         return String.join(",",
                 cuenta.getNumeroCuenta(),
                 cuenta.getTipo(),
                 String.valueOf(cuenta.getSaldoActual()),
                 String.valueOf(cuenta.getLimiteCredito()),
-                cuenta.getCliente() != null ? cuenta.getCliente().getRfcCurp() : cuenta.getRfcCliente(),
-                cuenta.getSucursal() != null ? cuenta.getSucursal().getNumeroIdentificacion() : cuenta.getIdSucursal()
+                rfcCliente,
+                idSucursal
         );
     }
 }
